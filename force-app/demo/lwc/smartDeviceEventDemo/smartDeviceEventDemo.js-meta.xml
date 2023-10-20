@@ -1,0 +1,25 @@
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+	<apiVersion>57.0</apiVersion>
+	<isExposed>true</isExposed>
+	<masterLabel>Smart Device Event Demo</masterLabel>
+	<description>Demo for the showcasing for sending events directly to Data Cloud</description>
+	<targets>
+		<target>lightning__AppPage</target>
+		<target>lightning__RecordPage</target>
+		<target>lightning__Tab</target>
+	</targets>
+	<targetConfigs>
+		<targetConfig targets="lightning__AppPage">
+			<supportedFormFactors>
+				<supportedFormFactor type="Small"/>
+				<supportedFormFactor type="Large"/>
+			</supportedFormFactors>
+		</targetConfig>
+		<targetConfig targets="lightning__RecordPage">
+			<supportedFormFactors>
+				<supportedFormFactor type="Small"/>
+				<supportedFormFactor type="Large"/>
+			</supportedFormFactors>
+		</targetConfig>
+	</targetConfigs>
+</LightningComponentBundle>

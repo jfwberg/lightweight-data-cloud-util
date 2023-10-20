@@ -1,0 +1,34 @@
+<template>
+    <lightning-card icon-name="standard:account" variant="base">
+      <div slot="title">
+          Create a new Smart Device Event
+      </div>
+      <div slot="actions">
+    
+      </div>
+      <div slot="footer">
+            <lightning-button 
+              variant="brand"
+              label="Create Event" 
+              onclick={handleClickCreate} 
+            ></lightning-button>
+      </div>
+      <div class="slds-var-p-around_small">
+        <lightning-combobox
+        name="Device Type"
+        label="Device Type"
+        value={device}
+        placeholder="Select..."
+        options={deviceOptions}
+        onchange={handleChangeDevice} ></lightning-combobox>
+
+        <lightning-combobox
+            name="Action"
+            label="Action"
+            value={action}
+            placeholder="Select..."
+            options={actionOptions}
+            onchange={handleChangeAction} ></lightning-combobox>
+      </div>
+    </lightning-card>
+</template>

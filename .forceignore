@@ -1,0 +1,22 @@
+# Common test files for connection testing
+**/contentassets/**
+**/profiles/**
+**/samlssoconfigs/**
+**/certs/**
+**/appMenus/**
+**/objectTranslations/**
+**/connectedApps/**
+**/namedCredentials/**
+**/externalCredentials/**
+**/flows/**
+**/authproviders/**
+#**/customMetadata/**
+**/remoteSiteSettings/**
+
+
+# LWC configuration files
+**/jsconfig.json
+**/.eslintrc.json
+
+# LWC Jest
+**/__tests__/**

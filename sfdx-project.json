@@ -1,0 +1,46 @@
+{
+    "packageDirectories": [
+        {
+            "path": "force-app/package",
+            "default": true,
+            "package": "Lightweight - Data Cloud Util",
+            "versionName": "v59.0 - 0.1",
+            "versionNumber": "0.1.0.NEXT",
+            "versionDescription": "A lightweight set of Data Cloud utilities",
+            "dependencies": [
+                {
+                    "package": "Lightweight - Apex Unit Test Util v2@2.2.0-1"
+                },
+                {
+                    "package": "Lightweight - REST Util@0.9.0-1"
+                }
+            ]
+        },
+        {
+            "path": "force-app/package",
+            "default": false,
+            "package": "Lightweight - Data Cloud Util (Unlocked)",
+            "versionName": "v59.0 - 0.1",
+            "versionNumber": "0.1.0.NEXT",
+            "versionDescription": "A lightweight set of Data Cloud utilities",
+            "dependencies": [
+                {
+                    "package": "Lightweight - Apex Unit Test Util v2 (Unlocked)@2.2.0-1"
+                },
+                {
+                    "package": "Lightweight - REST Util (Unlocked)@0.9.0-1"
+                }
+            ]
+        }
+    ],
+    "name": "lightweight-data-cloud-util",
+    "namespace": "utl",
+    "sfdcLoginUrl": "https://login.salesforce.com",
+    "sourceApiVersion": "59.0",
+    "packageAliases": {
+        "Lightweight - Apex Unit Test Util v2@2.2.0-1": "04tP30000007Ez7IAE",
+        "Lightweight - Apex Unit Test Util v2 (Unlocked)@2.2.0-1": "04tP30000007F3xIAE",
+        "Lightweight - REST Util@0.9.0-1": "04tP30000007FOvIAM",
+        "Lightweight - REST Util (Unlocked)@0.9.0-1": "04tP30000007FVNIA2"
+    }
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PlatformEventSubscriberConfig xmlns="http://soap.sforce.com/2006/04/metadata">
+    <platformEventConsumer>SmartDeviceEventTrigger</platformEventConsumer>
+    <batchSize>100</batchSize>
+    <masterLabel>SmartDeviceEventTriggerConfig</masterLabel>
+    <user>test-1beuqo7adugm@example.com</user>
+    <isProtected>false</isProtected>
+</PlatformEventSubscriberConfig>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Apex_Unit_Test_Id</label>
+    <protected>true</protected>
+    <values>
+        <field>Data_Cloud_Ingestion_API_Configuration__c</field>
+        <value xsi:type="xsd:string">Apex_Unit_Test</value>
+    </values>
+    <values>
+        <field>Source__c</field>
+        <value xsi:type="xsd:string">Id</value>
+    </values>
+    <values>
+        <field>Target__c</field>
+        <value xsi:type="xsd:string">Target_Id</value>
+    </values>
+</CustomMetadata>
