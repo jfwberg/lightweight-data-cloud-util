@@ -1,0 +1,21 @@
+openapi: 3.0.3
+components:
+  schemas:
+    Smart_Device_Event:
+      type: object
+      properties:
+        ReplayId:
+          type: string
+        EventUuid:
+          type: stringop
+        Action:
+          type: string
+        Device_Type:
+          type: string
+        Status_Code:
+          type: number
+        Status_Reason:
+          type: string
+        Timestamp:
+          type: string
+          format: date-time

@@ -1,8 +1,6 @@
 // Method to get all the metadata including child records basedon ont he API Name
-//utl__Data_Cloud_Ingestion_API_Configuration__mdt mdtRecord = utl.Dc.getMetadataRecord('Smart_Device_Event_Configuration');
-
-//System.debug(JSON.serializePretty(mdtRecord));
-
+utl__Data_Cloud_Ingestion_API_Configuration__mdt mdtRecord = utl.Dc.getMetadataRecord('Smart_Device_Event_Configuration');
+System.debug(JSON.serializePretty(mdtRecord));
 
 sObject[] records = new sObject[]{ 
     new Smart_Device_Event__e(
@@ -20,13 +18,13 @@ utl.Dc.streamRecordsToDataCloud(
     'Smart_Device_Event_Configuration'
 );
 
-
-//EventBus.publish(records);
+EventBus.publish(records);
 
 /**
  * WITH EXTRACTED AND SORTED HEADERS EXAMPLE
  * (add class with sort in future)
- */
+ *
+
 // Query callout to named credential
 utl.Rst callout = new utl.Rst('DC_ORG_01')
     .setEndpoint('/api/v2/query')
@@ -66,3 +64,4 @@ utl.JsnTbl table= new utl.JsnTbl()
 
 // Data table output in the console
 System.debug(table.getConsoleString());
+*/
