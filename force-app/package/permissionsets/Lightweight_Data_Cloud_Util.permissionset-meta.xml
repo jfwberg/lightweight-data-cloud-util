@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <classAccesses>
+        <apexClass>Dc</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <customMetadataTypeAccesses>
+        <enabled>true</enabled>
+        <name>Data_Cloud_Ingestion_API_Configuration__mdt</name>
+    </customMetadataTypeAccesses>
+    <customMetadataTypeAccesses>
+        <enabled>true</enabled>
+        <name>Data_Cloud_Ingestion_API_Field_Mapping__mdt</name>
+    </customMetadataTypeAccesses>
+    <description>Access required to the lightweight Data Cloud Util</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Lightweight - Data Cloud Util</label>
+</PermissionSet>
