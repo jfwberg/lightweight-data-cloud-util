@@ -13,6 +13,9 @@
                 },
                 {
                     "package": "Lightweight - REST Util@0.9.0-1"
+                },
+                {
+                    "package": "Lightweight - JSON Util@0.1.0-1"
                 }
             ]
         },
@@ -29,6 +32,9 @@
                 },
                 {
                     "package": "Lightweight - REST Util (Unlocked)@0.9.0-1"
+                },
+                {
+                    "package": "Lightweight - JSON Util@0.1.0-1 (Unlocked)"
                 }
             ]
         }
@@ -41,6 +47,8 @@
         "Lightweight - Apex Unit Test Util v2@2.2.0-1": "04tP30000007Ez7IAE",
         "Lightweight - Apex Unit Test Util v2 (Unlocked)@2.2.0-1": "04tP30000007F3xIAE",
         "Lightweight - REST Util@0.9.0-1": "04tP30000007FOvIAM",
-        "Lightweight - REST Util (Unlocked)@0.9.0-1": "04tP30000007FVNIA2"
+        "Lightweight - REST Util (Unlocked)@0.9.0-1": "04tP30000007FVNIA2",
+        "Lightweight - JSON Util@0.1.0-1": "04tP30000005PYrIAM",
+        "Lightweight - JSON Util@0.1.0-1 (Unlocked)": "04tP30000005XXXXXX"
     }
 }

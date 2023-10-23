@@ -15,14 +15,46 @@
 @SuppressWarnings('PMD.OneDeclarationPerLine, PMD.AvoidGlobalModifier')
 global with sharing class Dc {
 
-
+    /** **************************************************************************************************** **
+     **                                          PRIVATE VARIABLES                                           **
+     ** **************************************************************************************************** **/
     // Variable to hold the callout details so it can be asserted during a unit test
     @TestVisible private static utl.Rst testCallout;
 
-    // Messages
-    @TestVisible private static final String NO_MDT_RECORD_FOUND_MSG = 'No Data_Cloud_Ingestion_API_Configuration__mdt record with the name "{0}" exists.';
-    @TestVisible private static final String CALLOUT_EXCEPTION_MSG   = 'Something went wrong during the callout to the Ingest API endpoint: {0}';
 
+    /** **************************************************************************************************** **
+     **                                          PRIVATE CONSTANTS                                           **
+     ** **************************************************************************************************** **/
+    // Streaming Ingestion (Error) Messages
+    @TestVisible private static final String NO_MDT_RECORD_FOUND_MSG    = 'No Data_Cloud_Ingestion_API_Configuration__mdt record with the name "{0}" exists.';
+    @TestVisible private static final String CALLOUT_EXCEPTION_MSG      = 'Something went wrong during the callout to the Ingest API endpoint: {0}';
+    
+    // Get ordered colum names (Error) Messages
+    @TestVisible private static final String INVALID_MTD_JSON_ERROR_MSG = 'Something went wrong extracting the column data from the metadata JSON Object: {0}';
+    @TestVisible private static final String INVALID_MTD_INPUT_ERROR_MSG= 'The input metadata map cannot be empty';
+    
+    // Bulk Ingestion (Error) Messages
+    @TestVisible private static final String CSV_LIST_INPUT_ERROR_MSG   = 'There should be at least 1 CSV file and no more than 8 csv files in a synchronous transaction';
+
+    // Create Bulk Job (Error) Messages
+    @TestVisible private static final String INVALID_OPERATION_ERROR_MSG= 'Invalid operation type for the bulk ingestion job. "{0}". Valid values are "upsert" or "delete" (case sensitive)';
+    @TestVisible private static final String CREATE_BULK_JOB_ERROR_MSG  = 'There was an error creating the Bulk Ingestion Job: {0}';
+    
+    // Add CSV to Bulk Job (Error) Messages
+    @TestVisible private static final String INVALID_CSV_ERROR_MSG      = 'You cannot add a blank CSV file to the Ingestion Job';
+    @TestVisible private static final String ADD_CSV_ERROR_MSG          = 'There was an error whilst adding CSV Data to the Bulk Ingestion Job: {0}';
+    
+    // Add CSV to Bulk Job (Error) Messages
+    @TestVisible private static final String INVALID_STATE_ERROR_MSG    = 'Invalid state type for the bulk ingestion job. "{0}". Valid values are "UploadComplete" or "Aborted" (case sensitive)';
+    @TestVisible private static final String UPDATE_STATE_ERROR_MSG     = 'There was an error whilst updating the state of the Bulk Ingestion Job: {0}';
+
+    // Delete Bulk Job (Error) Messages
+    @TestVisible private static final String DELETE_ERROR_MSG           = 'There was an error whilst updating the state of the Bulk Ingestion Job: {0}';
+    
+    
+    /** **************************************************************************************************** **
+     **                                        GLOBAL SUPPORT METHODS                                        **
+     ** **************************************************************************************************** **/
     /**
      * @description Method to get a single Data_Cloud_Ingestion_API_Configuration__mdt
      *              record based on the DeveloperName
@@ -46,6 +78,51 @@ global with sharing class Dc {
         }
         // If no records are found throw an eception
         throw new DataCloudUtilException(String.format(NO_MDT_RECORD_FOUND_MSG,new String[]{mdtRecordName}));
+    }
+
+
+    /**
+     * @description Method to get a set of column names in the correct from a metadata
+     *              response. This can be used to generate CSV or table headers
+     * @param metadataMap The parsed metadata response map from
+     * @return A set of column names in the correct order
+     */
+    global static Set<String> getOrderedColumnNamesFromMetadata( Map<String,Object> metadataMap){
+        
+        // Input validation for the columns
+        if(metadataMap == null || metadataMap.size() > 8){
+            throw new DataCloudUtilException(INVALID_MTD_INPUT_ERROR_MSG);
+        }
+
+        try{
+            // Force exception for testing
+            utl.Tst.forceException('ORDER_COLUMNS');
+
+            // Create a mapping between column index and column name
+            Map<Integer,String> columnIndexMap = new Map<Integer,String>();
+
+            // Create a new set for the column names
+            Set<String> columnNamesInOrder = new Set<String>{};
+
+            // Iterate the metadata to get the columns
+            for(String key : metadataMap.keySet()){
+                columnIndexMap.put(
+                    (Integer) utl.Jsn.getObject('placeInOrder', (Map<String,Object>) metadataMap.get(key)),
+                    key
+                );
+            }
+
+            // Create an ordered list
+            for(Integer i=0,max=columnIndexMap.size(); i<max;i++){
+                columnNamesInOrder.add(columnIndexMap.get(i));
+            }
+
+            // Return the column Names in the correct order based on the metadata
+            return columnNamesInOrder;
+
+        }catch(Exception e){
+            throw new DataCloudUtilException(String.format(INVALID_MTD_JSON_ERROR_MSG, new String[]{e.getMessage()}));
+        }
     }
 
 
@@ -107,17 +184,9 @@ global with sharing class Dc {
             if(Test.isRunningTest()){testCallout = callout;}
 
         }catch(Exception e){
-            throw new DataCloudUtilException(String.format(CALLOUT_EXCEPTION_MSG,new String[]{e.getMessage()}));
+            throw new DataCloudUtilException(String.format(CALLOUT_EXCEPTION_MSG, new String[]{e.getMessage()}));
         }
     }
-
-
-
-
-    // Bulk objects from query (with mapping)
-    // ingestBulkCsvDataToDataCloudAsync
-    // ingestBulkCsvFilesToDataCloudAsync
-
 
 
     /** **************************************************************************************************** **
@@ -126,20 +195,24 @@ global with sharing class Dc {
     /**
      * @description Method that orchestrates the creation of a bulk API in a single synchronous operation.
      *              !! This is mainly for testing and should be used with caution and small data sets only !!
+     * @param operation Either upsert or delete
+     * @param csvFiles  A list of CSV Files to upload to Data Cloud
      */
-    global void ingestBulkCsvDataInDataCloud(String mdtConfigName, String operation, String[] csvFiles){
+    global static void ingestBulkCsvDataInDataCloud(String mdtConfigName, String operation, String[] csvFiles){
 
         // Input validation for the file list
         if(csvFiles == null || csvFiles.size() > 8){
-            throw new DataCloudUtilException('There should be at least 1 CSV file and no more than 8 csv files in a synchronous transaction');
+            throw new DataCloudUtilException(CSV_LIST_INPUT_ERROR_MSG);
         }
 
         // Create a correlation Id that can be used in the entire job chain to find messages in the debug logs
         String correlationId = utl.Rst.guid();
 
+        /* --------- STEP 01 - CREATE THE JOB --------- */
         // Create the job ID
         String jobId = createIngestionBulkJob(mdtConfigName, correlationId, operation);
 
+        /* --------- STEP 02 - ADD CSV FILES --------- */
         try{
             // Add all the files
             for (Integer i = 0; i < csvFiles.size(); i++) {
@@ -151,6 +224,7 @@ global with sharing class Dc {
             throw new DataCloudUtilException(e.getMessage());
         }
 
+        /* --------- STEP 03 - CLOSE THE JOB --------- */
         try{
             // Finally close the job when ingestion is complete
             updateIngestionBulkJobState(mdtConfigName, correlationId, jobId, 'UploadComplete');
@@ -164,13 +238,13 @@ global with sharing class Dc {
     }
 
 
-
     /**
      * @description Method to add a CSV file (from data) to a Ingestion Job
      * @param mdtConfigName The name of the metadata configuration record
      * @param correlationId The correlation Id for the API calls
      * @param jobId         The Id for the bulk job
      * @param csvData       The Raw CSV data
+     * @return The Id of the ingestion job
      */
     global static String createIngestionBulkJob(String mdtConfigName, String correlationId, String operation){
 
@@ -178,7 +252,7 @@ global with sharing class Dc {
         if(!(new Set<String>{'upsert','delete'}).contains(operation)){
             throw new DataCloudUtilException(
                 String.format(
-                    'Invalid operation type for the bulk ingestion job. "{0}". Valid values are "upsert" or "delete" (case sensitive)',
+                    INVALID_OPERATION_ERROR_MSG,
                     new String[]{operation}
                 )
             );
@@ -188,6 +262,9 @@ global with sharing class Dc {
         Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
 
         try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('CREATE_BULK_JOB');
+
             // Create the body
             String body = JSON.serialize(new Map<String,String>{
                 'Object'    => config.Ingestion_API_Target_Object_Name__c,
@@ -206,11 +283,14 @@ global with sharing class Dc {
                 .setBody(body)
                 .call();
 
+            // Set the callout during tests, so it can be asserted
+            if(Test.isRunningTest()){testCallout = callout;}
+
             // Return the ingestion job Id
             return (String) utl.Jsn.getObject('id', (Map<String,Object>) JSON.deserializeUntyped(callout.getResponse().getBody()));
 
         }catch(Exception e){
-            throw new DataCloudUtilException('There was an error creating the Bulk Ingestion Job: ' + e.getMessage());
+            throw new DataCloudUtilException(String.format(CREATE_BULK_JOB_ERROR_MSG, new String[]{e.getMessage()}));
         }
     }
 
@@ -226,13 +306,16 @@ global with sharing class Dc {
 
         // Input validation for the files
         if(csvData == null || String.isBlank(csvData)){
-            throw new DataCloudUtilException('You cannot add a blank CSV file to the Ingestion Job');
+            throw new DataCloudUtilException(INVALID_CSV_ERROR_MSG);
         }
 
         // Get all record info
         Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
 
         try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('ADD_CSV_TO_BULK_JOB');
+
             // Execute the call out for a specific named credential
             utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
                 .setMockResponseIdentifier('ADD_CSV_TO_BULK_JOB')    
@@ -245,8 +328,11 @@ global with sharing class Dc {
                 .setBody(csvData)
                 .call();
 
+            // Set the callout during tests, so it can be asserted
+            if(Test.isRunningTest()){testCallout = callout;}
+
         }catch(Exception e){
-            throw new DataCloudUtilException('There was an error whilst adding CSV Data to the Bulk Ingestion Job: ' + e.getMessage());
+            throw new DataCloudUtilException(String.format(ADD_CSV_ERROR_MSG, new String[]{e.getMessage()}));
         }
     }
 
@@ -264,7 +350,7 @@ global with sharing class Dc {
         if(!(new Set<String>{'UploadComplete','Aborted'}).contains(state)){
             throw new DataCloudUtilException(
                 String.format(
-                    'Invalid state type for the bulk ingestion job. "{0}". Valid values are "UploadComplete" or "Aborted" (case sensitive)',
+                    INVALID_STATE_ERROR_MSG,
                     new String[]{state}
                 )
             );
@@ -274,6 +360,9 @@ global with sharing class Dc {
         Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
 
         try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('UPDATE_BULK_JOB');
+
             // Create the body
             String body = JSON.serialize(new Map<String,String>{
                 'state' => state
@@ -289,26 +378,30 @@ global with sharing class Dc {
                 .setMethod('PATCH')
                 .setBody(body)
                 .call();
+
+            // Set the callout during tests, so it can be asserted
+            if(Test.isRunningTest()){testCallout = callout;}
+
         }catch(Exception e){
-            throw new DataCloudUtilException('There was an error whilst updating the state of the Bulk Ingestion Job: ' + e.getMessage());
+            throw new DataCloudUtilException(String.format(UPDATE_STATE_ERROR_MSG, new String[]{e.getMessage()}));
         }
     }
 
 
-    /** **************************************************************************************************** **
-     **                                       PRIVATE SUPPORT METHODS                                        **
-     ** **************************************************************************************************** **/
     /**
      * @description Method to delete the ingestion Bulk Job
      * @param mdtConfigName The name of the metadata configuration record
      * @param correlationId The correlation Id for the API calls
      * @param jobId         The Id for the bulk job
      */
-    private static void deleteIngestionBulkJob(String mdtConfigName, String correlationId, String jobId){
+    global static void deleteIngestionBulkJob(String mdtConfigName, String correlationId, String jobId){
         // Get all record info
         Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
 
         try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('DELETE_BULK_JOB');
+
             // Execute the call out for a specific named credential
             utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
                 .setMockResponseIdentifier('DELETE_BULK_JOB')    
@@ -318,12 +411,19 @@ global with sharing class Dc {
                 .setEndpoint(String.format('/api/v1/ingest/jobs/{0}', new String[]{jobId}))
                 .setMethod('DELETE')
                 .call();
+
+            // Set the callout during tests, so it can be asserted
+            if(Test.isRunningTest()){testCallout = callout;}
+
         }catch(Exception e){
-            throw new DataCloudUtilException('There was an error whilst deleting the Bulk Ingestion Job: ' + e.getMessage());
+            throw new DataCloudUtilException(String.format(DELETE_ERROR_MSG, new String[]{e.getMessage()}));
         }
     }
 
 
+    /** **************************************************************************************************** **
+     **                                       PRIVATE SUPPORT METHODS                                        **
+     ** **************************************************************************************************** **/
     /**
      * @description Method to create a mapping between sObject and Data Ingestion Object
      * @param  fieldMappingRecords List of Data_Cloud_Ingestion_API_Field_Mapping__c records
