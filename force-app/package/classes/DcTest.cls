@@ -9,31 +9,48 @@
 private with sharing class DcTest {
 
     /** **************************************************************************************************** **
+     **                                          PRIVATE CONSTANTS                                           **
+     ** **************************************************************************************************** **/
+    // Permission set to test with
+    private static final String PERMISSION_SET_NAME = 'Lightweight_Data_Cloud_Util';
+
+    // Create a test user
+    private static final User TST_USER = utl.Tst.createRunAsUser(
+        utl.Tst.MINIMUM_ACCESS_PROFILE,
+        PERMISSION_SET_NAME
+    );
+
+    /** **************************************************************************************************** **
      **                                        GLOBAL SUPPORT METHODS                                        **
      ** **************************************************************************************************** **/
     @IsTest
     static void testGetMetadataRecord(){
+        
+        // Variable to hold the metadata config record
+        Data_Cloud_Ingestion_API_Configuration__mdt mdtRecord;
 
         // Variable to hold the test Exception
         Exception testException;
 
+        // Run test
         Test.startTest();
+        System.runAs(TST_USER){
 
-        // Query the record
-        Data_Cloud_Ingestion_API_Configuration__mdt mdtRecord = Dc.getMetadataRecord('Apex_Unit_Test');
+            // Query the record
+            mdtRecord = Dc.getMetadataRecord('Apex_Unit_Test');
 
-        // Test exception
-        try{
-            // Invalid id
-            Dc.getMetadataRecord('utl__Invalid');
+            // Test exception
+            try{
+                // Invalid id
+                Dc.getMetadataRecord('utl__Invalid');
 
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
 
-        }catch(Exception e){
-            testException  =e;
+            }catch(Exception e){
+                testException = e;
+            }
         }
-
         Test.stopTest();
 
         // Check there are 2 mapping fields
@@ -43,49 +60,67 @@ private with sharing class DcTest {
         utl.Tst.assertExceptionMessage(Dc.NO_MDT_RECORD_FOUND_MSG, 'utl__Invalid', testException);
     }
 
+
     @IsTest
     static void testGetOrderedColumnNamesFromMetadata(){
         
-        // Typical metadata String
-        String metadataJSON = '{ "metadata": { "ssot__CreatedDate__c": { "type": "TIMESTAMP WITH TIME ZONE", "placeInOrder": 1, "typeCode": 2014 }, "ssot__Name__c": { "type": "VARCHAR", "placeInOrder": 2, "typeCode": 12 }, "ssot__Id__c": { "type": "VARCHAR", "placeInOrder": 0, "typeCode": 12 } } }';
+        // Columns to assert
+        Set<String> columns;
 
-        // Get the metadata from the JSON String
-        Set<String> columns = Dc.getOrderedColumnNamesFromMetadata(utl.Jsn.getObjectMap('metadata',(Map<String,Object>) JSON.deserializeUntyped(metadataJSON)));
+        // Variable to hold the test Exceptions
+        Exception validationException;
+        Exception generalException;
 
-        // Exception path
-        try{
-            Dc.getOrderedColumnNamesFromMetadata(null);
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+            // Typical metadata String
+            String metadataJSON = '{ "metadata": { "ssot__CreatedDate__c": { "type": "TIMESTAMP WITH TIME ZONE", "placeInOrder": 1, "typeCode": 2014 }, "ssot__Name__c": { "type": "VARCHAR", "placeInOrder": 2, "typeCode": 12 }, "ssot__Id__c": { "type": "VARCHAR", "placeInOrder": 0, "typeCode": 12 } } }';
 
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
+            // Get the metadata from the JSON String
+            columns = Dc.getOrderedColumnNamesFromMetadata(utl.Jsn.getObjectMap('metadata',(Map<String,Object>) JSON.deserializeUntyped(metadataJSON)));
 
-        }catch(Exception e){
-            utl.Tst.assertExceptionMessage(Dc.INVALID_MTD_INPUT_ERROR_MSG, e);
+            // Exception path
+            try{
+                Dc.getOrderedColumnNamesFromMetadata(null);
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                validationException = e;
+            }
+
+            // Exception path
+            try{
+                // Force exception 
+                utl.Tst.addForcedException('ORDER_COLUMNS');
+                Dc.getOrderedColumnNamesFromMetadata(new Map<String,Object>());
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                generalException = e;
+            }
         }
+        Test.stopTest();
 
-
-        // Exception path
-        try{
-            // Force exception 
-            utl.Tst.addForcedException('ORDER_COLUMNS');
-            Dc.getOrderedColumnNamesFromMetadata(new Map<String,Object>());
-
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
-
-        }catch(Exception e){
-            utl.Tst.assertExceptionMessage(
-                Dc.INVALID_MTD_JSON_ERROR_MSG,
-                utl.Tst.getForcedExceptionMessage(),
-                e
-            );
-        }
-        
         // Assert the list of column names is ordered
         Assert.areEqual(
             new Set<String>{'ssot__Id__c', 'ssot__CreatedDate__c', 'ssot__Name__c'},
             columns,
             'Unexpected column order'
+        );
+
+        // Assert exception
+        utl.Tst.assertExceptionMessage(Dc.INVALID_MTD_INPUT_ERROR_MSG, validationException);
+
+        // Assert exception
+        utl.Tst.assertExceptionMessage(
+            Dc.INVALID_MTD_JSON_ERROR_MSG,
+            utl.Tst.getForcedExceptionMessage(),
+            generalException
         );
 
     }
@@ -96,17 +131,19 @@ private with sharing class DcTest {
     @IsTest
     static void testStreamRecordsToDataCloudAsync(){
 
-        // Setup the callout response
-        utl.Mck.setResponse(202, '{"accepted" : true}');
-
+        // Run test
         Test.startTest();
+        
+        System.runAs(TST_USER){
+            
+            // Setup the callout response
+            utl.Mck.setResponse(202, '{"accepted" : true}');    
 
-        // No exception should have been thrown
-        Dc.streamRecordsToDataCloudAsync(
-            JSON.serialize([SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()]),
-            'Apex_Unit_Test'
-        );
-
+            Dc.streamRecordsToDataCloudAsync(
+                JSON.serialize([SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()]),
+                'Apex_Unit_Test'
+            );
+        }
         Test.stopTest();
 
         // Handle asserts
@@ -117,17 +154,20 @@ private with sharing class DcTest {
     @IsTest
     static void testStreamRecordsToDataCloud(){
 
-        // Setup the callout response
-        utl.Mck.setResponse(202, '{"accepted" : true}');
-
+        // Run test
         Test.startTest();
 
-        // No exception should have been thrown
-        Dc.streamRecordsToDataCloud(
-            [SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()],
-            'Apex_Unit_Test'
-        );
+        System.runAs(TST_USER){
 
+            // Setup the callout response
+            utl.Mck.setResponse(202, '{"accepted" : true}');
+
+            // No exception should have been thrown
+            Dc.streamRecordsToDataCloud(
+                [SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()],
+                'Apex_Unit_Test'
+            );
+        }
         Test.stopTest();
 
         // Handle asserts
@@ -141,32 +181,31 @@ private with sharing class DcTest {
         // Variable to hold the test Exception
         Exception testException;
 
-        // Setup the callout response
-        utl.Mck.setResponse(429, '{"error": "Bad Request", "message": "JSON is properly formatted but has a mismatch with Schema."}');
-
+        // Run test
         Test.startTest();
+        System.runAs(TST_USER){
+            try{
+                // Setup the callout response
+                utl.Mck.setResponse(429, '{"error": "Bad Request", "message": "JSON is properly formatted but has a mismatch with Schema."}');
 
-        try{
-            // No exception should have been thrown
-            Dc.streamRecordsToDataCloud(
-                [SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()],
-                'Apex_Unit_Test'
-            );
+                // No exception should have been thrown
+                Dc.streamRecordsToDataCloud(
+                    [SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()],
+                    'Apex_Unit_Test'
+                );
 
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
 
-        }catch(Exception e){
-            testException = e;
+            }catch(Exception e){
+                testException = e;
+            }
         }
         Test.stopTest();
 
         // Assert exception
         utl.Tst.assertExceptionMessage(Dc.CALLOUT_EXCEPTION_MSG,'Bad Request :: JSON is properly formatted but has a mismatch with Schema.', testException);
     }
-
-
-
 
 
     /** **************************************************************************************************** **
@@ -180,55 +219,53 @@ private with sharing class DcTest {
         Exception addCsvException;
         Exception closeException;
 
-        // Setup the callout responses
-        utl.Mck.addResponse('CREATE_BULK_JOB',     202, '{"id": "4d5a4477-e27f-4bc1-a219-31e79407eade", "operation": "upsert", "object": "my_object", "sourceName": "my_api_connector", "createdById": "005R0000000sJ1hIAE", "createdDate": "2021-04-05T13:35:31.000Z", "systemModstamp": "2021-04-05T13:35:31.000Z", "state": "Open", "contentType": "CSV", "apiVersion": "v1", "contentUrl": "api/v1/ingest/jobs/4d5a4477-e27f-4bc1-a219-31e79407eade/batches"}');
-        utl.Mck.addResponse('ADD_CSV_TO_BULK_JOB', 202, null);
-        utl.Mck.addResponse('UPDATE_BULK_JOB',     200, '{ "id": "7505e000001NLkPAAW", "operation": "upsert", "object": "Contact", "createdById": "0055e000003PfMYAA0", "createdDate": "2021-06-10T13:25:40.000Z", "systemModstamp": "2021-06-10T13:25:40.000Z", "state": "UploadComplete", "contentType": "CSV", "apiVersion": "v1" }');
-        utl.Mck.addResponse('DELETE_BULK_JOB',     204, null);
-
+        // Run test
         Test.startTest();
-
-        // Happy path
-        Dc.ingestBulkCsvDataInDataCloud( 'Apex_Unit_Test', 'upsert', new String[]{'TEST_CSV_DATA'});
-
-         // Validation error path
-         try{
-            Dc.ingestBulkCsvDataInDataCloud( 'Apex_Unit_Test', 'upsert', null);
-
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
-        }catch(Exception e){
-            validationException = e;
-        }
-
-        // CSV error path
-        try{
-            utl.Mck.addResponse('ADD_CSV_TO_BULK_JOB', 429, '{"error": "Bad Request", "message": "Data Cloud Error Message Add CSV"}');
-            Dc.ingestBulkCsvDataInDataCloud( 'Apex_Unit_Test', 'upsert', new String[]{'TEST_CSV_DATA'});
-
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
-        }catch(Exception e){
-            addCsvException = e;
-        }
-
-        // Close error path
-        try{
+        System.runAs(TST_USER){
+            // Setup the callout responses
+            utl.Mck.addResponse('CREATE_BULK_JOB',     202, '{"id": "4d5a4477-e27f-4bc1-a219-31e79407eade", "operation": "upsert", "object": "my_object", "sourceName": "my_api_connector", "createdById": "005R0000000sJ1hIAE", "createdDate": "2021-04-05T13:35:31.000Z", "systemModstamp": "2021-04-05T13:35:31.000Z", "state": "Open", "contentType": "CSV", "apiVersion": "v1", "contentUrl": "api/v1/ingest/jobs/4d5a4477-e27f-4bc1-a219-31e79407eade/batches"}');
             utl.Mck.addResponse('ADD_CSV_TO_BULK_JOB', 202, null);
-            utl.Mck.addResponse('UPDATE_BULK_JOB', 429, '{"error": "Bad Request", "message": "Data Cloud Error Message Update"}');
+            utl.Mck.addResponse('UPDATE_BULK_JOB',     200, '{ "id": "7505e000001NLkPAAW", "operation": "upsert", "object": "Contact", "createdById": "0055e000003PfMYAA0", "createdDate": "2021-06-10T13:25:40.000Z", "systemModstamp": "2021-06-10T13:25:40.000Z", "state": "UploadComplete", "contentType": "CSV", "apiVersion": "v1" }');
+            utl.Mck.addResponse('DELETE_BULK_JOB',     204, null);
+
+            // Happy path
             Dc.ingestBulkCsvDataInDataCloud( 'Apex_Unit_Test', 'upsert', new String[]{'TEST_CSV_DATA'});
 
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
-        }catch(Exception e){
-            closeException = e;
+            // Validation error path
+            try{
+                Dc.ingestBulkCsvDataInDataCloud( 'Apex_Unit_Test', 'upsert', null);
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+            }catch(Exception e){
+                validationException = e;
+            }
+
+            // CSV error path
+            try{
+                utl.Mck.addResponse('ADD_CSV_TO_BULK_JOB', 429, '{"error": "Bad Request", "message": "Data Cloud Error Message Add CSV"}');
+                Dc.ingestBulkCsvDataInDataCloud( 'Apex_Unit_Test', 'upsert', new String[]{'TEST_CSV_DATA'});
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+            }catch(Exception e){
+                addCsvException = e;
+            }
+
+            // Close error path
+            try{
+                utl.Mck.addResponse('ADD_CSV_TO_BULK_JOB', 202, null);
+                utl.Mck.addResponse('UPDATE_BULK_JOB', 429, '{"error": "Bad Request", "message": "Data Cloud Error Message Update"}');
+                Dc.ingestBulkCsvDataInDataCloud( 'Apex_Unit_Test', 'upsert', new String[]{'TEST_CSV_DATA'});
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+            }catch(Exception e){
+                closeException = e;
+            }
         }
-
         Test.stopTest();
-
-        // Assert the validation exception message
-        //utl.Tst.assertExceptionMessage(Dc.CSV_LIST_INPUT_ERROR_MSG, validationException);
-        
+ 
         // Assert the add CSV error
         utl.Tst.assertExceptionMessage(Dc.ADD_CSV_ERROR_MSG, 'Bad Request :: Data Cloud Error Message Add CSV', addCsvException);
 
@@ -247,39 +284,41 @@ private with sharing class DcTest {
         // Variable to assert the job id
         String jobId;
 
+        // Run test
         Test.startTest();
+        System.runAs(TST_USER){
 
-        // Setup the callout responses
-        utl.Mck.addResponse('CREATE_BULK_JOB', 202, '{"id": "4d5a4477-e27f-4bc1-a219-31e79407eade", "operation": "upsert", "object": "my_object", "sourceName": "my_api_connector", "createdById": "005R0000000sJ1hIAE", "createdDate": "2021-04-05T13:35:31.000Z", "systemModstamp": "2021-04-05T13:35:31.000Z", "state": "Open", "contentType": "CSV", "apiVersion": "v1", "contentUrl": "api/v1/ingest/jobs/4d5a4477-e27f-4bc1-a219-31e79407eade/batches"}');
+            // Setup the callout responses
+            utl.Mck.addResponse('CREATE_BULK_JOB', 202, '{"id": "4d5a4477-e27f-4bc1-a219-31e79407eade", "operation": "upsert", "object": "my_object", "sourceName": "my_api_connector", "createdById": "005R0000000sJ1hIAE", "createdDate": "2021-04-05T13:35:31.000Z", "systemModstamp": "2021-04-05T13:35:31.000Z", "state": "Open", "contentType": "CSV", "apiVersion": "v1", "contentUrl": "api/v1/ingest/jobs/4d5a4477-e27f-4bc1-a219-31e79407eade/batches"}');
 
-        // Happy path
-        jobId = Dc.createIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID', 'upsert');
+            // Happy path
+            jobId = Dc.createIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID', 'upsert');
 
-        // Error path
-        try{
-            jobId = Dc.createIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','invalid');
+            // Error path
+            try{
+                jobId = Dc.createIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','invalid');
 
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
 
-        }catch(Exception e){
-            validationException = e;
+            }catch(Exception e){
+                validationException = e;
+            }
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('CREATE_BULK_JOB');
+
+                jobId = Dc.createIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','delete');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                generalException = e;
+            }
         }
-
-        // Forced error path
-        try{
-            // Force the exception
-            utl.Tst.addForcedException('CREATE_BULK_JOB');
-
-            jobId = Dc.createIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','delete');
-
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
-
-        }catch(Exception e){
-            generalException = e;
-        }
-
         Test.stopTest();
 
         // This test validates all calls run correctly
@@ -303,39 +342,41 @@ private with sharing class DcTest {
         Exception validationException;
         Exception generalException;
 
+        // Run test
         Test.startTest();
+        System.runAs(TST_USER){
 
-        // Setup the callout responses
-        utl.Mck.addResponse('ADD_CSV_TO_BULK_JOB', 202, null);
+            // Setup the callout responses
+            utl.Mck.addResponse('ADD_CSV_TO_BULK_JOB', 202, null);
 
-        // Happy path
-        Dc.addCsvToIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', 'CSV_DATA');
-
-        // Error path
-        try{
-            Dc.addCsvToIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', null);
-
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
-
-        }catch(Exception e){
-            validationException = e;
-        }
-
-        // Forced error path
-        try{
-            // Force the exception
-            utl.Tst.addForcedException('ADD_CSV_TO_BULK_JOB');
-
+            // Happy path
             Dc.addCsvToIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', 'CSV_DATA');
 
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
+            // Error path
+            try{
+                Dc.addCsvToIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', null);
 
-        }catch(Exception e){
-            generalException = e;
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                validationException = e;
+            }
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('ADD_CSV_TO_BULK_JOB');
+
+                Dc.addCsvToIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', 'CSV_DATA');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                generalException = e;
+            }
         }
-
         Test.stopTest();
 
         // Assert the expected response code has been given
@@ -356,39 +397,41 @@ private with sharing class DcTest {
         Exception validationException;
         Exception generalException;
 
+        // Run test
         Test.startTest();
+        System.runAs(TST_USER){
 
-        // Setup the callout responses
-        utl.Mck.addResponse('UPDATE_BULK_JOB', 200, '{ "id": "7505e000001NLkPAAW", "operation": "upsert", "object": "Contact", "createdById": "0055e000003PfMYAA0", "createdDate": "2021-06-10T13:25:40.000Z", "systemModstamp": "2021-06-10T13:25:40.000Z", "state": "UploadComplete", "contentType": "CSV", "apiVersion": "v1" }');
+            // Setup the callout responses
+            utl.Mck.addResponse('UPDATE_BULK_JOB', 200, '{ "id": "7505e000001NLkPAAW", "operation": "upsert", "object": "Contact", "createdById": "0055e000003PfMYAA0", "createdDate": "2021-06-10T13:25:40.000Z", "systemModstamp": "2021-06-10T13:25:40.000Z", "state": "UploadComplete", "contentType": "CSV", "apiVersion": "v1" }');
 
-        // Happy path
-        Dc.updateIngestionBulkJobState( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', 'UploadComplete');
-
-        // Error path
-        try{
-            Dc.updateIngestionBulkJobState( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', 'invalid');
-
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
-
-        }catch(Exception e){
-            validationException = e;
-        }
-
-        // Forced error path
-        try{
-            // Force the exception
-            utl.Tst.addForcedException('UPDATE_BULK_JOB');
-
+            // Happy path
             Dc.updateIngestionBulkJobState( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', 'UploadComplete');
 
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
+            // Error path
+            try{
+                Dc.updateIngestionBulkJobState( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', 'invalid');
 
-        }catch(Exception e){
-            generalException = e;
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                validationException = e;
+            }
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('UPDATE_BULK_JOB');
+
+                Dc.updateIngestionBulkJobState( 'Apex_Unit_Test', 'CORRELATION_ID','jobId', 'UploadComplete');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                generalException = e;
+            }
         }
-
         Test.stopTest();
 
         // Assert the expected response code has been given
@@ -408,28 +451,29 @@ private with sharing class DcTest {
         // Variable to hold the test Exception
         Exception generalException;
 
+        // Run test
         Test.startTest();
+        System.runAs(TST_USER){
+            // Setup the callout responses
+            utl.Mck.addResponse('DELETE_BULK_JOB', 204, null);
 
-        // Setup the callout responses
-        utl.Mck.addResponse('DELETE_BULK_JOB', 204, null);
-
-        // Happy path
-        Dc.deleteIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','jobId');
-
-        // Forced error path
-        try{
-            // Force the exception
-            utl.Tst.addForcedException('DELETE_BULK_JOB');
-
+            // Happy path
             Dc.deleteIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','jobId');
 
-            // This method will fail the test as it should not be reached
-            utl.Tst.assertExceptionHasBeenThrow();
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('DELETE_BULK_JOB');
 
-        }catch(Exception e){
-            generalException = e;
+                Dc.deleteIngestionBulkJob( 'Apex_Unit_Test', 'CORRELATION_ID','jobId');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                generalException = e;
+            }
         }
-
         Test.stopTest();
 
         // Assert the expected response code has been given
@@ -462,7 +506,7 @@ private with sharing class DcTest {
         // Assert the status code
         Assert.areEqual(
             Dc.testCallout.getRequest().getBody(),
-            '{"data":[{"Target_Username":"'+UserInfo.getUserName()+'","Target_Id":"'+UserInfo.getUserId()+'"}]}'
+            '{"data":[{"Target_Username":"'+TST_USER.Username+'","Target_Id":"'+TST_USER.Id+'"}]}'
         );
     }
 
