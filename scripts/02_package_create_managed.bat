@@ -4,13 +4,13 @@ REM *****************************
 
 REM Package Create Config
 SET devHub=devHubAlias
-SET packageName=Lightweight - Org Util
-SET packageDescription=A lightweight utility for Managing Org Information
+SET packageName=Lightweight - Data Cloud Util
+SET packageDescription=A lightweight set of Data Cloud API and mapping utilities for streaming and bulk data ingestion.
 SET packageType=Managed
 SET packagePath=force-app/package
 
 REM Package Config
-SET packageId=
+SET packageId=0HoP300000000BJKAY
 SET packageVersionId=
 
 REM Create package

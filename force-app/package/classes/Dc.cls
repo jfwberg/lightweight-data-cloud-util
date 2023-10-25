@@ -33,9 +33,11 @@ global with sharing class Dc {
     @TestVisible private static final String INVALID_MTD_JSON_ERROR_MSG = 'Something went wrong extracting the column data from the metadata JSON Object: {0}';
     @TestVisible private static final String INVALID_MTD_INPUT_ERROR_MSG= 'The input metadata map cannot be empty';
     
-    // Bulk Ingestion (Error) Messages
+    // Bulk Ingestion Utils (Error) Messages
     @TestVisible private static final String CSV_LIST_INPUT_ERROR_MSG   = 'There should be at least 1 CSV file and no more than 8 csv files in a synchronous transaction';
-
+    @TestVisible private static final String LIST_BULK_JOBS_ERROR_MSG   = 'Something went wrong whilst fetching the list of ingestion API Bulk Jobs: {0}';
+    @TestVisible private static final String BULK_JOB_DETAILS_ERROR_MSG = 'Something went wrong whilst fetching the details for the ingestion API Bulk Job: {0}';
+    
     // Create Bulk Job (Error) Messages
     @TestVisible private static final String INVALID_OPERATION_ERROR_MSG= 'Invalid operation type for the bulk ingestion job. "{0}". Valid values are "upsert" or "delete" (case sensitive)';
     @TestVisible private static final String CREATE_BULK_JOB_ERROR_MSG  = 'There was an error creating the Bulk Ingestion Job: {0}';
@@ -76,6 +78,7 @@ global with sharing class Dc {
             // When a record is found return the first record
             return record;
         }
+
         // If no records are found throw an eception
         throw new DataCloudUtilException(String.format(NO_MDT_RECORD_FOUND_MSG,new String[]{mdtRecordName}));
     }
@@ -125,6 +128,22 @@ global with sharing class Dc {
         }
     }
 
+
+    /**
+     * @description Method to get the metadata configuration labels and names in an LWC
+     *              picklist values.
+     * @return      An LWC ready to use set of picklist values
+     */
+    global static List<Map<String,String>> getConfigMetadataRecordsPicklistOptions(){
+        List<Map<String,String>> output = new List<Map<String,String>>();
+        for(Data_Cloud_Ingestion_API_Configuration__mdt record : [SELECT Label,DeveloperName FROM Data_Cloud_Ingestion_API_Configuration__mdt WITH USER_MODE ORDER BY Label LIMIT 1000]){
+            output.add(new Map<String,String>{
+                'label' => record.Label,
+                'value' => record.DeveloperName
+            });
+        }
+        return output;
+    }
 
     /** **************************************************************************************************** **
      **                                  GLOBAL STREAMING INGESTION METHODS                                  **
@@ -232,10 +251,64 @@ global with sharing class Dc {
 
             // If the upload complete fails, delete the job so we can start over again
             // If one of the CSV fiels fails, abort the job
-            deleteIngestionBulkJob(mdtConfigName, correlationId, jobId);
+            updateIngestionBulkJobState(mdtConfigName, correlationId, jobId, 'Aborted');
             throw new DataCloudUtilException(e.getMessage());
         }
     }
+
+
+    global static List<Map<String,Object>> getBulkIngestionJobs(String mdtConfigName){
+        try{
+            // Output of lists
+            List<Map<String,Object>> output = new List<Map<String,Object>>();
+
+            // Get all record info
+            Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
+
+            // Get all jobs and iterate the response list
+            for(Object record : utl.Jsn.getObjectList('data', (Map<String,Object>) JSON.deserializeUntyped(
+                new utl.Rst(config.Named_Credential_Name__c, true)
+                    .setHandleSfEndpoint(false)
+                    .setRequestIdHeader(null)
+                    .setEndpoint('/api/v1/ingest/jobs')
+                    .call()
+                    .getResponse()
+                    .getBody()
+                ))
+            ){
+                //Cnvert records to object map and add to the otuput.
+                output.add((Map<String,Object>) record);
+            }
+
+            // Return the map
+            return output;
+
+        }catch(Exception e){
+            throw new DataCloudUtilException(String.format(LIST_BULK_JOBS_ERROR_MSG, new String[]{e.getMessage()}));
+        }
+    }
+
+    
+    global static Map<String,Object> getBulkIngestionJobDetails(String mdtConfigName, String jobId){
+        try{
+            // Get all record info
+            Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
+
+            // Get all jobs and iterate the response list
+            return (Map<String,Object>) JSON.deserializeUntyped(
+                new utl.Rst(config.Named_Credential_Name__c, true)
+                    .setHandleSfEndpoint(false)
+                    .setRequestIdHeader(null)
+                    .setEndpoint(String.format('/api/v1/ingest/jobs/{0}',new STring[]{jobId}))
+                    .call()
+                    .getResponse()
+                    .getBody()
+                );
+        }catch(Exception e){
+            throw new DataCloudUtilException(String.format(BULK_JOB_DETAILS_ERROR_MSG, new String[]{e.getMessage()}));
+        }
+    }
+
 
 
     /**
@@ -267,7 +340,7 @@ global with sharing class Dc {
 
             // Create the body
             String body = JSON.serialize(new Map<String,String>{
-                'Object'    => config.Ingestion_API_Target_Object_Name__c,
+                'object'    => config.Ingestion_API_Target_Object_Name__c,
                 'sourceName'=> config.Ingestion_API_Connector_Name__c,
                 'operation' => operation
             });
@@ -282,6 +355,8 @@ global with sharing class Dc {
                 .setMethod('POST')
                 .setBody(body)
                 .call();
+
+            System.debug(callout.getResponse().getBody());
 
             // Set the callout during tests, so it can be asserted
             if(Test.isRunningTest()){testCallout = callout;}
@@ -327,6 +402,8 @@ global with sharing class Dc {
                 .setHeader('Content-Type','text/csv')
                 .setBody(csvData)
                 .call();
+
+                System.debug('Add CSV: ' + callout.getResponse().getBody());
 
             // Set the callout during tests, so it can be asserted
             if(Test.isRunningTest()){testCallout = callout;}
@@ -382,6 +459,8 @@ global with sharing class Dc {
             // Set the callout during tests, so it can be asserted
             if(Test.isRunningTest()){testCallout = callout;}
 
+            System.debug('State: ' + callout.getResponse().getBody());
+
         }catch(Exception e){
             throw new DataCloudUtilException(String.format(UPDATE_STATE_ERROR_MSG, new String[]{e.getMessage()}));
         }
@@ -414,6 +493,8 @@ global with sharing class Dc {
 
             // Set the callout during tests, so it can be asserted
             if(Test.isRunningTest()){testCallout = callout;}
+
+            System.debug('Delete: ' + callout.getResponse().getBody());
 
         }catch(Exception e){
             throw new DataCloudUtilException(String.format(DELETE_ERROR_MSG, new String[]{e.getMessage()}));

@@ -18,11 +18,15 @@ order
 /**
  * UTILITY METHODS
  */
-// Method to get all the metadata including child records basedon ont he API Name
+// Method to get all the metadata including child records based on on the API Name
 utl__Data_Cloud_Ingestion_API_Configuration__mdt configRecord = utl.Dc.getMetadataRecord(String mdtConfigName);
 
-// Method to create an ordered set of column names from a Data Cloud Metadata response
+// Method to create an ordered set of column names from a Data Cloud (query) Metadata response
 Set<String> columns = getOrderedColumnNamesFromMetadata( Map<String,Object> metadataMap);
+
+// Method to get the metadata configuration labels and names in a ready to use LWC picklist format
+List<Map<String,String>> mdtOptions = utl.Dc.getConfigMetadataRecordsPicklistOptions();
+
 
 /**
  * STREAMING INGESTION API METHODS
