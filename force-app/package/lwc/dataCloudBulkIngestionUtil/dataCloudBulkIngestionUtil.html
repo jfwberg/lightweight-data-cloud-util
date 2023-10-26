@@ -1,0 +1,57 @@
+<template>
+    <lightning-spinner 
+        if:true={loading}
+        alternative-text="Loading" 
+        size="medium"
+        variant="base"
+    ></lightning-spinner>
+    <lightning-card icon-name="standard:entitlement" variant="base">
+        <div slot="title">
+            Data Cloud Bulk Ingestion Utility
+        </div>
+        <div slot="actions">
+            <lightning-button 
+              variant="neutral"
+              label="Create New Job" 
+              onclick={handleClickNew} 
+              disabled={configSelected}
+            ></lightning-button>
+            <lightning-button
+              variant="neutral"
+              label="Show Mapping" 
+              onclick={handleClickShowMapping} 
+              disabled={configSelected}
+            ></lightning-button>
+        </div>
+        <div slot="footer">
+
+        </div>
+        <div class="slds-var-p-around_small">
+            <lightning-combobox
+              
+                if:true={mdtConfigOptionsLoaded}
+                name="Metadata Configuration"
+                label="Metadata Configuration"
+                value={mdtConfigRecord}
+                placeholder="Select..."
+                options={mdtConfigOptions}
+                onchange={handleChangeMtdConfig}
+                >
+            </lightning-combobox>
+           
+        </div>
+        
+        <div class="slds-var-p-around_small">
+            <lightning-datatable
+                key-field="id"
+                data={jobTableData}
+                columns={columns}
+                onrowaction={handleRowAction}
+                hide-checkbox-column
+            ></lightning-datatable>
+        </div>
+    
+
+    </lightning-card>
+
+</template>
