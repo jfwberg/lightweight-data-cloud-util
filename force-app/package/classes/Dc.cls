@@ -67,7 +67,7 @@ global with sharing class Dc {
     global static Data_Cloud_Ingestion_API_Configuration__mdt getMetadataRecord(String mdtRecordName){
         for(Data_Cloud_Ingestion_API_Configuration__mdt record : [
                                                                 SELECT
-                                                                    Ingestion_API_Connector_Name__c, Ingestion_API_Target_Object_Name__c, Named_Credential_Name__c,
+                                                                    DeveloperName, Ingestion_API_Connector_Name__c, Ingestion_API_Target_Object_Name__c, Named_Credential_Name__c,
                                                                     (SELECT Source__c, Target__c FROM Data_Cloud_Ingestion_API_Field_Mappings__r)
                                                                 FROM
                                                                     Data_Cloud_Ingestion_API_Configuration__mdt

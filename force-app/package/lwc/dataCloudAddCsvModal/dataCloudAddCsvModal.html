@@ -1,0 +1,18 @@
+<template>
+    <lightning-modal-header label="Add CSV to Bulk Job"></lightning-modal-header>
+    <lightning-modal-body>
+        
+        <div class="slds-var-p-bottom_medium">
+            <div class="slds-form-element">
+                <div class="slds-form-element__control">
+                    <textarea id="ta" placeholder="CSV String..." class="slds-textarea ta" onchange={handleChangeCsvData}>{csvData}</textarea>
+                </div>
+            </div>
+        </div>
+        
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button label="Add CSV" onclick={handleClickAddCsv}></lightning-button>
+        <lightning-button label="Close" onclick={handleClickClose}></lightning-button>
+    </lightning-modal-footer>
+</template>

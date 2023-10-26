@@ -1,14 +1,21 @@
+// Lightning stuff
+import   LightningAlert     from 'lightning/alert';
 import { LightningElement } from "lwc";
+
+// Modals
+import mappingModal         from 'c/dataCloudMappingModal';
+import jobDetailsModal      from 'c/dataCloudJobDetailsModal';
+import addCsvModal          from 'c/dataCloudAddCsvModal';
+
+// Apex methods
 import getMtdConfigOptions  from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getConfigMetadataRecordsPicklistOptions";
 import getIngestionJobTable from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getIngestionJobTable";
-import newJob         from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.newJob";
+import newJob               from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.newJob";
 import abortJob             from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.abortJob";
 import completeJob          from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.completeJob";
 import deleteJob            from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.deleteJob";
 
-
-import LightningAlert from 'lightning/alert';
-
+// Actions for the bulk jobs
 const actions = [
     { label: 'Details', name: 'details' },
     { label: 'Add CSV', name: 'csv'     },
@@ -17,6 +24,7 @@ const actions = [
     { label: 'Delete',  name: 'delete'  }
 ];
 
+// Columns for the bulk jobs
 const columns = [
     { label: 'Created Date', fieldName: 'createdDate' },
     { label: 'Job Id',       fieldName: 'id' },
@@ -29,6 +37,7 @@ const columns = [
 
 export default class DataCloudBulkIngestionUtil extends LightningElement {
 
+    // Loading indicator for the spinner
     loading = false;
 
     // Bulk job column details
@@ -44,73 +53,38 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     mdtConfigOptions = [];
 
     // Disable buttons
-    get configSelected(){
+    get buttonsEnabled(){
         return !this.mdtConfigSelected;
     }
 
-    // Start with getting the metadata configurations
+    /** **************************************************************************************************** **
+     **                                         LIFECYCLE HANDLERS                                           **
+     ** **************************************************************************************************** **/
     connectedCallback(){
+        // Start with getting the metadata configurations
         this.handleGetMdtOptions();
     }
 
-    // Set the confgi record name and update the table
-    handleChangeMtdConfig(event) {
-        this.jobTableData = [];
-        this.mdtConfigRecord = event.detail.value;
-        this.mdtConfigSelected = true;
-        this.handleGetIngestionJobTable();
-    }
 
-
-    handleGetMdtOptions(){
-        try{
-            getMtdConfigOptions()
-                .then((result) => {
-                    this.mdtConfigOptions = result;
-                })
-                .catch((error) => {
-                    this.handleError(error.body.message);
-                })
-                .finally(()=>{
-                    this.mdtConfigOptionsLoaded = true;
-                });
-        }catch(error){
-            this.handleError(error.message); 
-        }
-    }
-
-    handleGetIngestionJobTable(){
-        try{
-            this.loading = true;
-            getIngestionJobTable({mdtConfigName : this.mdtConfigRecord})
-                .then((result) => {
-                    this.jobTableData = result;
-                    console.log(this.jobTableData);
-                })
-                .catch((error) => {
-                    this.handleError(error.body.message);
-                    
-                    // Disable buttons on fault state
-                    this.mdtConfigSelected = false;
-                })
-                .finally(()=>{
-                    this.loading = false;
-                });
-        }catch(error){
-            this.handleError(error.message);
-        }
-    }
-
+    /** **************************************************************************************************** **
+     **                                       TABLE ACTION HANDLERS                                          **
+     ** **************************************************************************************************** **/
     handleRowAction(event) {
         const action = event.detail.action;
         const row = event.detail.row;
         switch (action.name) {
             case 'details':
-                alert('Csv: ' + row.id);
+                this.handleOpenJobDetailsModal({
+                    mdtConfigRecord : this.mdtConfigRecord,
+                    jobId : row.id
+                });
             break;
 
             case 'csv':
-                alert('Csv: ' + row.id);
+                this.handleOpenAddCsvModal({
+                        mdtConfigRecord : this.mdtConfigRecord,
+                        jobId : row.id
+                    });
             break;
 
             case 'complete':
@@ -128,6 +102,34 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     }
 
 
+    /** **************************************************************************************************** **
+     **                                            APEX HANDLERS                                             **
+     ** **************************************************************************************************** **/
+
+    handleNew(){
+        try{
+            newJob( {mdtConfigName : this.mdtConfigRecord})
+                .then((result) => {
+                    LightningAlert.open({
+                        message: 'Succesfully created a new bulk job with Id : "' + result +'"',
+                        label: 'Success',
+                        theme : 'success'
+                    });
+                    
+                    // Update the job table after creation
+                    this.handleGetIngestionJobTable();
+                })
+                .catch((error) => {
+                    this.handleError(error.body.message);
+                })
+                .finally(()=>{
+                    this.mdtConfigOptionsLoaded = true;
+                });
+        }catch(error){
+            this.handleError(error.message); 
+        }
+    }
+    
     handleAbort(jobId){
         try{
             this.loading = true;
@@ -202,25 +204,12 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             this.handleError(error.message);
         }
     }
-
-
-
-    handleClickShowMapping(event){
-        console.log(this.mdtConfigRecord);
-    }
-
-    handleClickNew(event){
+    
+    handleGetMdtOptions(){
         try{
-            newJob( {mdtConfigName : this.mdtConfigRecord})
+            getMtdConfigOptions()
                 .then((result) => {
-                    LightningAlert.open({
-                        message: 'Succesfully created a new bulk job with Id : "' + result +'"',
-                        label: 'Success',
-                        theme : 'success'
-                    });
-                    
-                    // Update the job table after creation
-                    this.handleGetIngestionJobTable();
+                    this.mdtConfigOptions = result;
                 })
                 .catch((error) => {
                     this.handleError(error.body.message);
@@ -233,10 +222,110 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         }
     }
 
+    handleGetIngestionJobTable(){
+        try{
+            this.loading = true;
+            getIngestionJobTable({mdtConfigName : this.mdtConfigRecord})
+                .then((result) => {
+                    this.jobTableData = result;
+                    console.log(this.jobTableData);
+                })
+                .catch((error) => {
+                    this.handleError(error.body.message);
+                    
+                    // Disable buttons on fault state
+                    this.mdtConfigSelected = false;
+                })
+                .finally(()=>{
+                    this.loading = false;
+                });
+        }catch(error){
+            this.handleError(error.message);
+        }
+    }
+
+
+    /** **************************************************************************************************** **
+     **                                        INPUT CHANGE HANDLERS                                         **
+     ** **************************************************************************************************** **/
+    // Set the config record name and update the table
+    handleChangeMtdConfig(event) {
+        this.jobTableData = [];
+        this.mdtConfigRecord = event.detail.value;
+        this.mdtConfigSelected = true;
+        this.handleGetIngestionJobTable();
+    }
+
+
+    /** **************************************************************************************************** **
+     **                                        CLICK BUTTON HANDLERS                                         **
+     ** **************************************************************************************************** **/
+    handleClickNew(){
+        this.handleNew();
+    }
+
+    handleClickRefresh(){
+        this.handleGetIngestionJobTable();
+    }
+
+    handleClickShowMapping(){
+        this.handleOpenMappingModal({
+            mdtConfigRecord : this.mdtConfigRecord
+        });
+    }
+
+
+    /** **************************************************************************************************** **
+     **                                            MODAL METHODS                                             **
+     ** **************************************************************************************************** **/
+    /**
+     * Open the Mapping Modal
+     */
+    async handleOpenMappingModal (config) {
+        mappingModal.open({
+            config: config,
+            size: 'small',
+        }).then((result) => {
+            
+        });
+    }
+
+
+    /**
+     * Open the Job Details Modal
+     */
+    async handleOpenJobDetailsModal (config) {
+        jobDetailsModal.open({
+            config: config,
+            size: 'small',
+        }).then((result) => {
+            
+        });
+    }
+
+
+    /**
+     * Open the CSV Modal, on successful addition of the CSV file refresh the table
+     */
+     async handleOpenAddCsvModal (config) {
+        addCsvModal.open({
+            config: config,
+            size: 'medium',
+        }).then((result) => {
+            if(result === 'ok') {
+                this.handleGetIngestionJobTable();
+            }
+        });
+    }
+
+
+    /** **************************************************************************************************** **
+     **                                           SUPPORT METHODS                                            **
+     ** **************************************************************************************************** **/
     handleError(msg){
         LightningAlert.open({
             message: 'An unexpected error occurred: ' + msg,
-            label: 'Error',
+            label  : 'Error',
             theme : 'error'
         }); 
     }

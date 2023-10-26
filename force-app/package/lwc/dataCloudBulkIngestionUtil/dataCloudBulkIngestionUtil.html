@@ -14,13 +14,19 @@
               variant="neutral"
               label="Create New Job" 
               onclick={handleClickNew} 
-              disabled={configSelected}
+              disabled={buttonsEnabled}
             ></lightning-button>
+            <lightning-button 
+            variant="neutral"
+            label="Refresh" 
+            onclick={handleClickRefresh} 
+            disabled={buttonsEnabled}
+          ></lightning-button>
             <lightning-button
               variant="neutral"
               label="Show Mapping" 
               onclick={handleClickShowMapping} 
-              disabled={configSelected}
+              disabled={buttonsEnabled}
             ></lightning-button>
         </div>
         <div slot="footer">
