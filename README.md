@@ -1,14 +1,11 @@
 # Lightweight - Data Cloud Util
 A lightweight set of Data Cloud utilities
 
-## Dependencies
-order
-- test
-- rest
-- json
-- authprovider (optional but recommended)
-- auth provider util(optional)
+## Blog
 
+## Dependencies
+
+## Package info
 
 ## Custom Metadata Configuration
 
@@ -65,8 +62,8 @@ utl.Dc.deleteIngestionBulkJob(String mdtConfigName, String correlationId, String
 trigger SmartDeviceEventTrigger on Smart_Device_Event__e (after insert) {
     // Stream the data to data cloud
     utl.Dc.streamRecordsToDataCloudAsync(
-        JSON.serialize(trigger.new),
-        'Smart_Device_Event_Configuration'
+        'Smart_Device_Event_Configuration',
+        JSON.serialize(trigger.new)
     );
 }
 ```
@@ -86,8 +83,8 @@ sObject[] records = new sObject[]{
 
 // Stream the data to data cloud instantly (note from triggers or platform vents it needs to be async)
 utl.Dc.streamRecordsToDataCloud(
-    records,
-    'Smart_Device_Event_Configuration'
+    'Smart_Device_Event_Configuration',
+    records
 );
 
 ```

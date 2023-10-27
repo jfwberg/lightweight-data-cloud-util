@@ -5,24 +5,26 @@
         size="medium"
         variant="base"
     ></lightning-spinner>
-    <lightning-card icon-name="standard:entitlement" variant="base">
+    <lightning-card icon-name="standard:assigned_resource" variant="base">
         <div slot="title">
-            Data Cloud Bulk Ingestion Utility
+            Data Cloud Streaming Ingestion Utility
         </div>
         <div slot="actions">
             <lightning-button-group>
                 <lightning-button 
                 variant="neutral"
-                label="Create New Job" 
-                onclick={handleClickNew} 
+                label="Send" 
+                onclick={handleClickSend} 
                 disabled={buttonsEnabled}
                 ></lightning-button>
+                
                 <lightning-button 
                 variant="neutral"
-                label="Refresh" 
-                onclick={handleClickRefresh} 
+                label="Test" 
+                onclick={handleClickTest} 
                 disabled={buttonsEnabled}
             ></lightning-button>
+            
                 <lightning-button
                 variant="neutral"
                 label="Show Mapping" 
@@ -49,14 +51,12 @@
            
         </div>
         
-        <div class="slds-var-p-around_small ta">
-            <lightning-datatable
-                key-field="id"
-                data={jobTableData}
-                columns={columns}
-                onrowaction={handleRowAction}
-                hide-checkbox-column
-            ></lightning-datatable>
+        <div class="slds-var-p-around_small">
+            <div class="slds-form-element">
+                <div class="slds-form-element__control">
+                    <textarea id="ta" placeholder="Streaming Data Payload" class="slds-textarea ta" onchange={handleChangePayload}>{payload}</textarea>
+                </div>
+            </div>
         </div>
     
 

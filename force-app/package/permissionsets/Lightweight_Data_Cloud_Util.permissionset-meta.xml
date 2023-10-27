@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <applicationVisibilities>
+        <application>Data_Cloud_Util</application>
+        <visible>true</visible>
+    </applicationVisibilities>
     <classAccesses>
         <apexClass>Dc</apexClass>
         <enabled>true</enabled>
@@ -15,4 +19,8 @@
     <description>Access required to the lightweight Data Cloud Util</description>
     <hasActivationRequired>false</hasActivationRequired>
     <label>Lightweight - Data Cloud Util</label>
+    <tabSettings>
+        <tab>Data_Cloud_Utility</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
 </PermissionSet>

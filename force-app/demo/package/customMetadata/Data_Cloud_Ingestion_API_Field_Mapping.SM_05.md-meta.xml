@@ -3,8 +3,12 @@
     <label>Timestamp__c</label>
     <protected>false</protected>
     <values>
+        <field>Data_Cloud_Field_Type__c</field>
+        <value xsi:type="xsd:string">dateTimeField</value>
+    </values>
+    <values>
         <field>Data_Cloud_Ingestion_API_Configuration__c</field>
-        <value xsi:type="xsd:string">Smart_Device_Event_Configuration</value>
+        <value xsi:type="xsd:string">Smart_Device_Event_Streaming</value>
     </values>
     <values>
         <field>Source__c</field>

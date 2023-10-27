@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#6B01FE</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <description>Lightweight - Data Cloud Util Ingestion API Utility Package</description>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>true</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <label>Data Cloud Utility</label>
+    <navType>Standard</navType>
+    <tabs>Data_Cloud_Utility</tabs>
+    <uiType>Lightning</uiType>
+    <utilityBar>Data_Cloud_Utility_UtilityBar</utilityBar>
+</CustomApplication>

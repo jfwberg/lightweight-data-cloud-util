@@ -7,7 +7,7 @@ components:
         ReplayId:
           type: string
         EventUuid:
-          type: stringop
+          type: string
         Action:
           type: string
         Device_Type:
@@ -19,3 +19,6 @@ components:
         Timestamp:
           type: string
           format: date-time
+        Event_Date:
+          type: string
+          format: date

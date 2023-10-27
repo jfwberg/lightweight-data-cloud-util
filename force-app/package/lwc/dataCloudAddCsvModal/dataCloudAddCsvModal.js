@@ -1,8 +1,9 @@
 
-import { api }        from 'lwc';
-import LightningAlert from 'lightning/alert';
-import LightningModal from 'lightning/modal';
-import addCsv         from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.addCsv";
+import { api }           from 'lwc';
+import LightningAlert    from 'lightning/alert';
+import LightningModal    from 'lightning/modal';
+import addCsv            from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.addCsv";
+import getCsvPlaceholder from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getCsvPlaceholder";
 
 
 export default class DataCloudAddCsvModal extends LightningModal  {
@@ -15,6 +16,32 @@ export default class DataCloudAddCsvModal extends LightningModal  {
     // The CSV string that will be loaded
     csvData;
 
+
+    connectedCallback() {
+        try{
+            this.loading = true;
+
+            getCsvPlaceholder({
+                mdtConfigName : this.config.mdtConfigRecord
+            })
+            .then((result) => {
+                
+                this.csvData = result;
+            })
+            .catch((error) => {
+                this.handleError(error.body.message);
+                
+                // Disable buttons on fault state
+                this.mdtConfigSelected = false;
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
+            
+        }catch(error){
+            this.handleError(error.message);
+        }
+    }
 
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **

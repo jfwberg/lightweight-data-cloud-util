@@ -2,8 +2,9 @@ trigger SmartDeviceEventTrigger on Smart_Device_Event__e (after insert) {
     
     // Stream the data to data cloud
     utl.Dc.streamRecordsToDataCloudAsync(
-        JSON.serialize(trigger.new),
-        'Smart_Device_Event_Configuration'
+        'Smart_Device_Event_Configuration',
+        JSON.serialize(trigger.new)
+        
     );
 
     // This will create a copy in the local table so we can cross check

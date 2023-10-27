@@ -68,7 +68,7 @@ global with sharing class Dc {
         for(Data_Cloud_Ingestion_API_Configuration__mdt record : [
                                                                 SELECT
                                                                     DeveloperName, Ingestion_API_Connector_Name__c, Ingestion_API_Target_Object_Name__c, Named_Credential_Name__c,
-                                                                    (SELECT Source__c, Target__c FROM Data_Cloud_Ingestion_API_Field_Mappings__r)
+                                                                    (SELECT Source__c, Target__c, Data_Cloud_Field_Type__c FROM Data_Cloud_Ingestion_API_Field_Mappings__r ORDER BY DeveloperName)
                                                                 FROM
                                                                     Data_Cloud_Ingestion_API_Configuration__mdt
                                                                 WHERE
@@ -145,6 +145,10 @@ global with sharing class Dc {
         return output;
     }
 
+
+
+
+
     /** **************************************************************************************************** **
      **                                  GLOBAL STREAMING INGESTION METHODS                                  **
      ** **************************************************************************************************** **/
@@ -155,23 +159,23 @@ global with sharing class Dc {
      * @param  mdtConfigName    The API name of the metadata configuration record
      */
     @future(callout=true)
-    global static void streamRecordsToDataCloudAsync(String serializedRecords, String mdtConfigName){
+    global static void streamRecordsToDataCloudAsync(String mdtConfigName, String serializedRecords){
 
         // We need to rebuilt the records from the JSON
         streamRecordsToDataCloud(
-            (SObject[]) JSON.deserialize(serializedRecords, Type.forName('List<SObject>')),
-            mdtConfigName
+            mdtConfigName,    
+            (SObject[]) JSON.deserialize(serializedRecords, Type.forName('List<SObject>'))
         );
     }
 
 
     /**
      * @description Method to stream a list of records to data cloud based on a mtd configuration
-     * @param  records                The list of sObjects you want to stream
      * @param  mdtConfigName          The API name of the metadata configuration record
+     * @param  records                The list of sObjects you want to stream
      * @throws DataCloudUtilException In any unexpected event
      */
-    global static void streamRecordsToDataCloud(sObject[] records, String mdtConfigName){
+    global static void streamRecordsToDataCloud(String mdtConfigName, sObject[] records){
         try{
             // Get all record info
             Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
@@ -179,14 +183,37 @@ global with sharing class Dc {
             // Create the payload
             String payload = createIngestStreamPayload(
                 records,
-                createFieldMapping(config.Data_Cloud_Ingestion_API_Field_Mappings__r)
+                createFieldMapping(config.Data_Cloud_Ingestion_API_Field_Mappings__r),
+                false
             );
 
+            // Stream the data with the generated payload
+            streamDataToDataCloud(mdtConfigName, payload, false);
+
+        }catch(Exception e){
+            throw new DataCloudUtilException(String.format(CALLOUT_EXCEPTION_MSG, new String[]{e.getMessage()}));
+        }
+    }
+
+
+    /**
+     * @description Method to stream a list of records to data cloud based on a mtd configuration
+     * @param  mdtConfigName The API name of the metadata configuration record
+     * @param  payload       The streaming JSON payload
+     * @param  isTest        Indicator if the test endpoint needs to be called or the data needs to be send
+     * @throws DataCloudUtilException In any unexpected event
+     */
+    global static void streamDataToDataCloud(String mdtConfigName, String payload, Boolean isTest){
+        try{
+            // Get all record info
+            Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
+
             // Create the ingestion URL endpoint
-            String endpoint = String.format('/api/v1/ingest/sources/{0}/{1}',
+            String endpoint = String.format('/api/v1/ingest/sources/{0}/{1}{2}',
                 new String[]{
                     config.Ingestion_API_Connector_Name__c,
-                    config.Ingestion_API_Target_Object_Name__c
+                    config.Ingestion_API_Target_Object_Name__c,
+                    (isTest) ? '/actions/test' : ''
                 }
             );
 
@@ -208,6 +235,106 @@ global with sharing class Dc {
     }
 
 
+    /**
+     * @description Method to create a mapping between sObject and Data Ingestion Object
+     * @param  fieldMappingRecords List of Data_Cloud_Ingestion_API_Field_Mapping__c records
+     * @return A string string map with the mapping
+     */
+    global static Map<String,String> createFieldMapping(Data_Cloud_Ingestion_API_Field_Mapping__mdt[] fieldMappingRecords){
+
+        // Create the output map
+        Map<String,String> mapping = new Map<String,String>();
+
+        // Populate the mapping
+        if(fieldMappingRecords != null && !fieldMappingRecords.isEmpty()){
+            for (Integer i = 0, length=fieldMappingRecords.size(); i < length; i++) {
+                mapping.put(fieldMappingRecords[i].Source__c, fieldMappingRecords[i].Target__c);
+            }
+        }
+
+        // Return the populated mapping
+        return mapping;
+    }
+
+
+    /**
+     * @description Method to create an ingestion stream payload from records and
+     *              a field mapping
+     * @param  records      List of any sObject or Platform Event
+     * @param  fieldMapping Source field to target field mapping
+     * @return A JSON String with an ingest API payload format
+     */
+    global static String createIngestStreamPayload(sObject[] records, Map<String,String> fieldMapping, Boolean prettyPrint){
+
+        // Create the base payload ({"data" : [] })
+        Map<String,List<Map<String,Object>>> data = new Map<String,List<Map<String,Object>>>{
+            'data' => new List<Map<String,Object>>()
+        };
+
+        // Iterate all records, again, beware of the max payload size of 200kb
+        for (Integer i = 0, length=records.size(); i < length; i++) {
+
+            // A data item to add to the payload
+            Map<String,Object> dataItem = new Map<String,Object>();
+
+            // Populate the data item
+            for(String sourceField : fieldMapping.keyset()){
+
+                // populate target field / value
+                dataItem.put(
+                    fieldMapping.get(sourceField),
+                    records[i].get(sourceField)
+                );
+            }
+
+            // Add the data to the data items list
+            data.get('data').add(dataItem);
+        }
+
+        // return the JSON String
+        return prettyPrint ? JSON.serializePretty(data) : JSON.serialize(data);
+    }
+
+
+    /**
+     * @description Method to create an ingestion stream payload from records and
+     *              a field mapping. Overload method of the records object
+     * @param  records      List of any Object Maps for generating a payload
+     * @param  fieldMapping Source field to target field mapping
+     * @return A JSON String with an ingest API payload format
+     */
+    global static String createIngestStreamPayload(List<Map<String,Object>> records, Map<String,String> fieldMapping, Boolean prettyPrint){
+
+        // Create the base payload ({"data" : [] })
+        Map<String,List<Map<String,Object>>> data = new Map<String,List<Map<String,Object>>>{
+            'data' => new List<Map<String,Object>>()
+        };
+
+        // Iterate all records, again, beware of the max payload size of 200kb
+        for (Integer i = 0, length=records.size(); i < length; i++) {
+
+            // A data item to add to the payload
+            Map<String,Object> dataItem = new Map<String,Object>();
+
+            // Populate the data item
+            for(String sourceField : fieldMapping.keyset()){
+
+                // populate target field / value
+                dataItem.put(
+                    fieldMapping.get(sourceField),
+                    records[i].get(sourceField)
+                );
+            }
+
+            // Add the data to the data items list
+            data.get('data').add(dataItem);
+        }
+
+        // return the JSON String
+        return prettyPrint ? JSON.serializePretty(data) : JSON.serialize(data);
+    }
+
+    
     /** **************************************************************************************************** **
      **                                    GLOBAL BULK INGESTION METHODS                                     **
      ** **************************************************************************************************** **/
@@ -501,71 +628,7 @@ global with sharing class Dc {
         }
     }
 
-
-    /** **************************************************************************************************** **
-     **                                       PRIVATE SUPPORT METHODS                                        **
-     ** **************************************************************************************************** **/
-    /**
-     * @description Method to create a mapping between sObject and Data Ingestion Object
-     * @param  fieldMappingRecords List of Data_Cloud_Ingestion_API_Field_Mapping__c records
-     * @return      A string string map with the mapping
-     */
-    private static Map<String,String> createFieldMapping(Data_Cloud_Ingestion_API_Field_Mapping__mdt[] fieldMappingRecords){
-
-        // Create the output map
-        Map<String,String> mapping = new Map<String,String>();
-
-        // Populate the mapping
-        if(fieldMappingRecords != null && !fieldMappingRecords.isEmpty()){
-            for (Integer i = 0, length=fieldMappingRecords.size(); i < length; i++) {
-                mapping.put(fieldMappingRecords[i].Source__c, fieldMappingRecords[i].Target__c);
-            }
-        }
-
-        // Return the populated mapping
-        return mapping;
-    }
-
-
-    /**
-     * @description Method to create an ingestion stream payload from records and
-     *              a field mapping
-     * @param  records      List of any sObject or Platform Event
-     * @param  fieldMapping Source field to target field mapping
-     * @return A JSON String with an ingest API payload format
-     */
-    private static String createIngestStreamPayload(sObject[] records, Map<String,String> fieldMapping){
-
-        // Create the base payload ({"data" : [] })
-        Map<String,List<Map<String,Object>>> data = new Map<String,List<Map<String,Object>>>{
-            'data' => new List<Map<String,Object>>()
-        };
-
-        // Iterate all records, again, beware of the max payload size of 200kb
-        for (Integer i = 0, length=records.size(); i < length; i++) {
-
-            // A data item to add to the payload
-            Map<String,Object> dataItem = new Map<String,Object>();
-
-            // Populate the data item
-            for(String sourceField : fieldMapping.keyset()){
-
-                // populate target field / value
-                dataItem.put(
-                    fieldMapping.get(sourceField),
-                    records[i].get(sourceField)
-                );
-            }
-
-            // Add the data to the data items list
-            data.get('data').add(dataItem);
-        }
-
-        // return the JSON String
-        return JSON.serialize(data);
-    }
-
-
+    
     /** **************************************************************************************************** **
      **                                       GLOBAL EXCEPTION METHODS                                       **
      ** **************************************************************************************************** **/

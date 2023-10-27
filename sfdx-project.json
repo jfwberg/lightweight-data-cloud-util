@@ -2,9 +2,9 @@
   "packageDirectories": [
     {
       "path": "force-app/package",
-      "default": false,
+      "default": true,
       "package": "Lightweight - Data Cloud Util",
-      "versionName": "ver 0.1",
+      "versionName": "v59.0 - 0.1",
       "versionNumber": "0.1.0.NEXT",
       "versionDescription": "A lightweight set of Data Cloud API and mapping utilities for streaming and bulk data ingestion.",
       "dependencies": [
@@ -21,9 +21,9 @@
     },
     {
       "path": "force-app/package",
-      "default": true,
+      "default": false,
       "package": "Lightweight - Data Cloud Util (Unlocked)",
-      "versionName": "ver 0.1",
+      "versionName": "v59.0 - 0.",
       "versionNumber": "0.1.0.NEXT",
       "versionDescription": "A lightweight set of Data Cloud API and mapping utilities for streaming and bulk data ingestion.",
       "dependencies": [

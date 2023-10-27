@@ -1,11 +1,12 @@
 
 // Lightning stuff
-import { api }        from 'lwc';
-import LightningAlert from 'lightning/alert';
-import LightningModal from 'lightning/modal';
+import { api }         from 'lwc';
+import LightningAlert  from 'lightning/alert';
+import LightningModal  from 'lightning/modal';
 
 // Apex methods
-import getMetadataInfo     from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMetadataInfo";
+import getMetadataInfo from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMetadataInfo";
+
 
 // Columns for the bulk jobs
 const recordColumns = [
@@ -15,8 +16,9 @@ const recordColumns = [
 
 // Columns for the bulk jobs
 const mappingColumns = [
-    { label: 'Source field (Salesforce)', fieldName: 'source'  },
-    { label: 'Target field (Data Cloud)', fieldName: 'target'}
+    { label: 'Source field (Salesforce)', fieldName: 'source' },
+    { label: 'Target field (Data Cloud)', fieldName: 'target'},
+    { label: 'Data Cloud Field Type',     fieldName: 'ftype' }
 ];
 
 getMetadataInfo
