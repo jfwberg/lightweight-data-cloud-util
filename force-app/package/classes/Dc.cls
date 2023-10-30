@@ -12,7 +12,7 @@
  *                 should be made public or private in org based implementations or unlocked
  *                 packages
  */
-@SuppressWarnings('PMD.OneDeclarationPerLine, PMD.AvoidGlobalModifier')
+@SuppressWarnings('PMD.OneDeclarationPerLine, PMD.AvoidGlobalModifier, PMD.ExcessiveParameterList')
 global with sharing class Dc {
 
     /** **************************************************************************************************** **
@@ -145,7 +145,9 @@ global with sharing class Dc {
         return output;
     }
 
-
+    
+   
+    
 
 
 
@@ -628,7 +630,7 @@ global with sharing class Dc {
         }
     }
 
-    
+
     /** **************************************************************************************************** **
      **                                       GLOBAL EXCEPTION METHODS                                       **
      ** **************************************************************************************************** **/

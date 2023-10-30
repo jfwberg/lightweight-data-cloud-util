@@ -1,5 +1,25 @@
 public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
     
+    /** **************************************************************************************************** **
+     **                                          PRIVATE CONSTANTS                                           **
+     ** **************************************************************************************************** **/
+    // Mapping between field soap types and data cloud field types, used for YAML generation
+    private final static Map<Schema.SOAPType,String> SOAP_TYPE_DATA_CLOUD_DATA_TYPE_MAP = new Map<Schema.SOAPType,String>{
+        SOAPType.anytype      => 'textField',
+        SOAPType.base64binary => 'textField',
+        SOAPType.Boolean      => 'textField',
+        SOAPType.Date         => 'dateField',
+        SOAPType.DateTime     => 'dateTimeField',
+        SOAPType.Double       => 'numberField',
+        SOAPType.ID           => 'textField',
+        SOAPType.Integer      => 'numberField',
+        SOAPType.String       => 'textField',
+        SOAPType.Time         => 'textField',
+        SOAPType.Address     => 'textField'
+
+        
+    };
+
     @AuraEnabled
     public static List<Map<String,String>>  getConfigMetadataRecordsPicklistOptions(){
         try {            
@@ -236,5 +256,90 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
             throw new AuraHandledException(e.getMessage());
         }
     }
+    
+
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String,Object>>  getSObjectOptions(Boolean invertLabel){
+        try {            
+            
+            // List of select options
+            List< Map<String,Object>> options = new List< Map<String,Object> >();
+
+            /**
+             * This method will get all sObject that are not like a share or feed 
+             * and that are queryable
+             */
+            for(SObjectType result : Schema.getGlobalDescribe().values()){
+                
+                DescribeSObjectResult sdr = result.getDescribe(SObjectDescribeOptions.DEFERRED);
+                
+                if(sdr.associateEntityType == null && sdr.isQueryable()){
+                    options.add(new Map<String,Object>{
+                        'label' => (invertLabel) ? sdr.name + ' - (' + sdr.label +')' : sdr.label + ' - (' + sdr.name +')',
+                        'value' =>  sdr.name
+                    });
+                }
+            }
+
+            // Return a list of options
+            return options;
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static String getYamlInfo(String sObjectName){
+        try {
+            return sObjectName;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+         /**
+     * @description Method to get the metadata configuration labels and names in an LWC
+     *              picklist values.
+     * @return      An LWC ready to use set data set with source and target mappings
+     */
+    @AuraEnabled
+    public static List<Map<String,Object>> getSObjectFieldInfo(String sObjectName){
+        
+        // Input validation
+        if(Type.forName('Schema', sObjectName) == null){
+            throw new AuraHandledException(String.format('sObject of type "{0}" does not exist in the metadata', new String[]{sObjectName}));
+        }
+
+        // Table data map
+        List<Map<String,Object>> output = new List<Map<String,Object>>();
+
+        try {
+            // Get the describe for the fields
+            DescribeSObjectResult sdr = ((sObject) Type.forName('Schema', sObjectName).newInstance()).getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED);
+            
+            // Iterate the fields and add the results to an output table
+            for(SObjectField field : sdr.fields.getMap().values()){
+                
+                DescribeFieldResult sfr = field.getDescribe();
+
+                output.add(new Map<String,Object>{
+                    'source'  => sfr.name,
+                    'sfFtype' => String.valueOf(sfr.SoapType),
+                    'custom'  => sfr.custom,
+                    'target'  => (sfr.name.contains('__')) ? sfr.name.substringBeforeLast('__') : sfr.name,
+                    'dcFtype' => SOAP_TYPE_DATA_CLOUD_DATA_TYPE_MAP.get(sfr.SoapType)
+                });   
+            }
+            // Return the data
+            return output;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+
     
 }

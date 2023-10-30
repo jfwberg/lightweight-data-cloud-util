@@ -1,0 +1,17 @@
+<template>
+    <lightning-modal-header label="YAML Creation Result"></lightning-modal-header>
+    <lightning-modal-body>
+        
+        <div class="slds-var-p-bottom_medium">
+            <div class="slds-form-element">
+                <div class="slds-form-element__control">
+                    <textarea id="ta" class="slds-textarea ta" onchange={handleChangeYamlData}>{yamlData}</textarea>
+                </div>
+            </div>
+        </div>
+        
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button label="Close" onclick={handleClickClose}></lightning-button>
+    </lightning-modal-footer>
+</template>

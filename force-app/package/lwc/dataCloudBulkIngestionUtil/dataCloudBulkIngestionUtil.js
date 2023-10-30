@@ -105,9 +105,9 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                            APEX HANDLERS                                             **
      ** **************************************************************************************************** **/
-
     handleNew(){
         try{
+            this.loading = true;
             newJob( {mdtConfigName : this.mdtConfigRecord})
                 .then((result) => {
                     LightningAlert.open({
@@ -124,12 +124,14 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                 })
                 .finally(()=>{
                     this.mdtConfigOptionsLoaded = true;
+                    this.loading = false;
                 });
         }catch(error){
             this.handleError(error.message); 
         }
     }
     
+
     handleAbort(jobId){
         try{
             this.loading = true;
@@ -154,6 +156,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             this.handleError(error.message);
         }
     }
+
 
     handleDelete(jobId){
         try{
@@ -180,6 +183,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         }
     }
 
+
     handleComplete(jobId){
         try{
             this.loading = true;
@@ -205,6 +209,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         }
     }
     
+
     handleGetMdtOptions(){
         try{
             getMtdConfigOptions()
@@ -221,6 +226,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             this.handleError(error.message); 
         }
     }
+
 
     handleGetIngestionJobTable(){
         try{

@@ -25,7 +25,7 @@ private with sharing class DcTest {
      ** **************************************************************************************************** **/
     @IsTest
     static void testGetMetadataRecord(){
-        
+
         // Variable to hold the metadata config record
         Data_Cloud_Ingestion_API_Configuration__mdt mdtRecord;
 
@@ -63,7 +63,7 @@ private with sharing class DcTest {
 
     @IsTest
     static void testGetOrderedColumnNamesFromMetadata(){
-        
+
         // Columns to assert
         Set<String> columns;
 
@@ -93,7 +93,7 @@ private with sharing class DcTest {
 
             // Exception path
             try{
-                // Force exception 
+                // Force exception
                 utl.Tst.addForcedException('ORDER_COLUMNS');
                 Dc.getOrderedColumnNamesFromMetadata(new Map<String,Object>());
 
@@ -133,11 +133,11 @@ private with sharing class DcTest {
 
         // Run test
         Test.startTest();
-        
+
         System.runAs(TST_USER){
-            
+
             // Setup the callout response
-            utl.Mck.setResponse(202, '{"accepted" : true}');    
+            utl.Mck.setResponse(202, '{"accepted" : true}');
 
             Dc.streamRecordsToDataCloudAsync(
                 JSON.serialize([SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()]),
@@ -164,8 +164,8 @@ private with sharing class DcTest {
 
             // No exception should have been thrown
             Dc.streamRecordsToDataCloud(
-                [SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()],
-                'Apex_Unit_Test'
+                'Apex_Unit_Test',
+                [SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()]
             );
         }
         Test.stopTest();
@@ -190,8 +190,8 @@ private with sharing class DcTest {
 
                 // No exception should have been thrown
                 Dc.streamRecordsToDataCloud(
-                    [SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()],
-                    'Apex_Unit_Test'
+                    'Apex_Unit_Test',
+                    [SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()]
                 );
 
                 // This method will fail the test as it should not be reached
@@ -265,7 +265,7 @@ private with sharing class DcTest {
             }
         }
         Test.stopTest();
- 
+
         // Assert the add CSV error
         utl.Tst.assertExceptionMessage(Dc.ADD_CSV_ERROR_MSG, 'Bad Request :: Data Cloud Error Message Add CSV', addCsvException);
 
