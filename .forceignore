@@ -10,7 +10,7 @@
 **/externalCredentials/**
 **/flows/**
 **/authproviders/**
-**/customMetadata/**
+#**/customMetadata/**
 **/remoteSiteSettings/**
 
 

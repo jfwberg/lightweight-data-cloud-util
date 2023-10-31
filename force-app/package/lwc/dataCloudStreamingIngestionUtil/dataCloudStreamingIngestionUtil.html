@@ -1,11 +1,11 @@
 <template>
-    <lightning-spinner 
-        if:true={loading}
-        alternative-text="Loading" 
-        size="medium"
-        variant="base"
-    ></lightning-spinner>
     <lightning-card icon-name="standard:assigned_resource" variant="base">
+        <lightning-spinner 
+            if:true={loading}
+            alternative-text="Loading" 
+            size="medium"
+            variant="base"
+        ></lightning-spinner>
         <div slot="title">
             Data Cloud Streaming Ingestion Utility
         </div>

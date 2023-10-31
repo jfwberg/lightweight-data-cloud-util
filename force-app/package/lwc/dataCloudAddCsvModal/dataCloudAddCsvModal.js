@@ -1,11 +1,15 @@
-
+// Lightning stuff
 import { api }           from 'lwc';
-import LightningAlert    from 'lightning/alert';
 import LightningModal    from 'lightning/modal';
+
+// Custom Utils
+import {handleError}   from 'c/dataCloudUtils';
+
+// Apex methods
 import addCsv            from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.addCsv";
 import getCsvPlaceholder from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getCsvPlaceholder";
 
-
+// Main class
 export default class DataCloudAddCsvModal extends LightningModal  {
 
     @api config;
@@ -17,6 +21,9 @@ export default class DataCloudAddCsvModal extends LightningModal  {
     csvData;
 
 
+    /** **************************************************************************************************** **
+     **                                         LIFECYCLE HANDLERS                                           **
+     ** **************************************************************************************************** **/
     connectedCallback() {
         try{
             this.loading = true;
@@ -25,11 +32,11 @@ export default class DataCloudAddCsvModal extends LightningModal  {
                 mdtConfigName : this.config.mdtConfigRecord
             })
             .then((result) => {
-                
+
                 this.csvData = result;
             })
             .catch((error) => {
-                this.handleError(error.body.message);
+                handleError(error);
                 
                 // Disable buttons on fault state
                 this.mdtConfigSelected = false;
@@ -39,9 +46,11 @@ export default class DataCloudAddCsvModal extends LightningModal  {
             });
             
         }catch(error){
-            this.handleError(error.message);
+            handleError(error);
+            this.loading = false;
         }
     }
+
 
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
@@ -52,9 +61,9 @@ export default class DataCloudAddCsvModal extends LightningModal  {
 
 
     /** **************************************************************************************************** **
-     **                                        CLICK BUTTON HANDLERS                                         **
+     **                                            APEX HANDLERS                                             **
      ** **************************************************************************************************** **/
-    handleClickAddCsv() {
+     handleAddCsv() {
         try{
             this.loading = true;
 
@@ -64,11 +73,10 @@ export default class DataCloudAddCsvModal extends LightningModal  {
                 csvData       : this.csvData
             })
             .then((result) => {
-                
                 this.close('ok');
             })
             .catch((error) => {
-                this.handleError(error.body.message);
+                handleError(error);
                 
                 // Disable buttons on fault state
                 this.mdtConfigSelected = false;
@@ -78,22 +86,20 @@ export default class DataCloudAddCsvModal extends LightningModal  {
             });
             
         }catch(error){
-            this.handleError(error.message);
+            handleError(error);
+            this.loading = false;
         }
+    }
+
+
+    /** **************************************************************************************************** **
+     **                                        CLICK BUTTON HANDLERS                                         **
+     ** **************************************************************************************************** **/
+    handleClickAddCsv() {
+        this.handleAddCsv();
     }
 
     handleClickClose() {
         this.close();
-    }
-
-
-    handleError(msg){
-        LightningAlert.open({
-            message: 'An unexpected error occurred: ' + msg,
-            label: 'Error',
-            theme : 'error'
-        });
-        
-        this.loading = false; 
     }
 }

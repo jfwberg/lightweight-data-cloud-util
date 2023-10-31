@@ -1,0 +1,55 @@
+<template>
+    <lightning-card icon-name="standard:entitlement" variant="base">
+        <lightning-spinner 
+            if:true={loading}
+            alternative-text="Loading" 
+            size="medium"
+            variant="base"
+        ></lightning-spinner>
+        <div slot="title">
+            Data Cloud Query Utility
+        </div>
+        <div slot="actions">
+            <lightning-button
+            variant="neutral"
+            label="Execute Query" 
+            onclick={handleClickExecuteQuery}
+            disabled={actionDisabled}
+            ></lightning-button>
+        </div>
+        <div slot="footer">
+
+        </div>
+        <div class="slds-var-p-around_small">
+            <lightning-combobox
+                disabled={inputDisabled}
+                name="Metadata Configuration"
+                label="Metadata Configuration"
+                value={mdtConfigRecord}
+                placeholder="Select..."
+                options={mdtConfigOptions}
+                onchange={handleChangeMtdConfig}
+            ></lightning-combobox>
+            
+            <lightning-combobox
+                disabled={actionDisabled}
+                name="resultFormat"
+                label="Result Format"
+                value={resultFormat}
+                placeholder="Select..."
+                options={resultFormatOptions}
+                onchange={handlechangeResultFormat}
+            ></lightning-combobox>
+        
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="textarea-id-01">SQL Query</label>
+                <div class="slds-form-element__control">
+                    <textarea id="ta" class="slds-textarea ta" oninput={handleChangeQuery} disabled={actionDisabled}>{query}</textarea>
+                </div>
+            </div>
+        </div>
+    
+
+    </lightning-card>
+
+</template>

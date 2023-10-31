@@ -2,15 +2,19 @@
 import   LightningAlert        from 'lightning/alert';
 import { LightningElement }    from "lwc";
 
+// Custom Utils
+import {handleError}           from 'c/dataCloudUtils';
+
 // Modals
 import mappingModal            from 'c/dataCloudMappingModal';
 
 // Apex methods
-import getMtdConfigOptions     from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getConfigMetadataRecordsPicklistOptions";
+import getMtdConfigOptions     from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMtdConfigOptions";
 import getStreamingPlaceholder from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getStreamingPlaceholder";
 import sendDataStream          from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.sendDataStream";
 import testDataStream          from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.testDataStream";
 
+// Main class
 export default class DataCloudBulkIngestionUtil extends LightningElement {
 
     // Loading indicator for the spinner
@@ -52,13 +56,14 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                     this.mdtConfigOptions = result;
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.mdtConfigOptionsLoaded = true;
+                    this.loading = false;
                 });
         }catch(error){
-            this.handleError(error.message); 
+            handleError(error); 
         }
     }
 
@@ -69,13 +74,15 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                     this.payload = result;
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.mdtConfigOptionsLoaded = true;
+                    this.loading = false;
                 });
         }catch(error){
-            this.handleError(error.message); 
+            handleError(error);
+            this.loading = false;
         }
     }
     
@@ -93,14 +100,16 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                     }
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
+                    handleError(error);
+                    this.loading = false;
                 })
                 .finally(()=>{
                     this.mdtConfigOptionsLoaded = true;
                     this.loading = false;
                 });
         }catch(error){
-            this.handleError(error.message); 
+            handleError(error);
+            this.loading = false;
         }
     }
 
@@ -118,14 +127,15 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                     }
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.mdtConfigOptionsLoaded = true;
                     this.loading = false;
                 });
         }catch(error){
-            this.handleError(error.message); 
+            handleError(error);
+            this.loading = false;
         }
     }
 
@@ -171,19 +181,5 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         }).then((result) => {
             
         });
-    }
-
-
-
-    /** **************************************************************************************************** **
-     **                                           SUPPORT METHODS                                            **
-     ** **************************************************************************************************** **/
-    handleError(msg){
-        LightningAlert.open({
-            message: 'An unexpected error occurred: ' + msg,
-            label  : 'Error',
-            theme : 'error'
-        }); 
-        this.loading = false;
     }
 }

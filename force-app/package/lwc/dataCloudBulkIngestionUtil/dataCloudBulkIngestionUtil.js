@@ -2,13 +2,16 @@
 import   LightningAlert     from 'lightning/alert';
 import { LightningElement } from "lwc";
 
+// Custom Utils
+import {handleError}        from 'c/dataCloudUtils';
+
 // Modals
 import mappingModal         from 'c/dataCloudMappingModal';
 import jobDetailsModal      from 'c/dataCloudJobDetailsModal';
 import addCsvModal          from 'c/dataCloudAddCsvModal';
 
 // Apex methods
-import getMtdConfigOptions  from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getConfigMetadataRecordsPicklistOptions";
+import getMtdConfigOptions  from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMtdConfigOptions";
 import getIngestionJobTable from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getIngestionJobTable";
 import newJob               from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.newJob";
 import abortJob             from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.abortJob";
@@ -34,7 +37,7 @@ const columns = [
     { type: 'action', typeAttributes: { rowActions: actions, menuAlignment: 'auto' } }
 ];
 
-
+// Main class
 export default class DataCloudBulkIngestionUtil extends LightningElement {
 
     // Loading indicator for the spinner
@@ -94,7 +97,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             case 'abort':
                 this.handleAbort(row.id);
             break;
-            
+
             case 'delete':
                 this.handleDelete(row.id);
             break;
@@ -115,22 +118,23 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                         label: 'Success',
                         theme : 'success'
                     });
-                    
+
                     // Update the job table after creation
                     this.handleGetIngestionJobTable();
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.mdtConfigOptionsLoaded = true;
                     this.loading = false;
                 });
         }catch(error){
-            this.handleError(error.message); 
+            handleError(error);
+            this.loading = false;
         }
     }
-    
+
 
     handleAbort(jobId){
         try{
@@ -142,18 +146,19 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                         label: 'Success',
                         theme : 'success'
                     });
-                    
+
                     // Update the job table after creation
                     this.handleGetIngestionJobTable();
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.loading = false;
                 });
         }catch(error){
-            this.handleError(error.message);
+            handleError(error);
+            this.loading = false;
         }
     }
 
@@ -168,18 +173,19 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                         label: 'Success',
                         theme : 'success'
                     });
-                    
+
                     // Update the job table after creation
                     this.handleGetIngestionJobTable();
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.loading = false;
                 });
         }catch(error){
-            this.handleError(error.message);
+            handleError(error);
+            this.loading = false;
         }
     }
 
@@ -194,21 +200,22 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                         label: 'Success',
                         theme : 'success'
                     });
-                    
+
                     // Update the job table after creation
                     this.handleGetIngestionJobTable();
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.loading = false;
                 });
         }catch(error){
-            this.handleError(error.message);
+            handleError(error);
+            this.loading = false;
         }
     }
-    
+
 
     handleGetMdtOptions(){
         try{
@@ -217,13 +224,14 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                     this.mdtConfigOptions = result;
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.mdtConfigOptionsLoaded = true;
                 });
         }catch(error){
-            this.handleError(error.message); 
+            handleError(error);
+            this.loading = false;
         }
     }
 
@@ -237,8 +245,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                     console.log(this.jobTableData);
                 })
                 .catch((error) => {
-                    this.handleError(error.body.message);
-                    
+                    handleError(error);
+
                     // Disable buttons on fault state
                     this.mdtConfigSelected = false;
                 })
@@ -246,7 +254,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                     this.loading = false;
                 });
         }catch(error){
-            this.handleError(error.message);
+            handleError(error);
+            this.loading = false;
         }
     }
 
@@ -292,7 +301,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             config: config,
             size: 'small',
         }).then((result) => {
-            
+
         });
     }
 
@@ -305,7 +314,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             config: config,
             size: 'small',
         }).then((result) => {
-            
+
         });
     }
 
@@ -322,17 +331,5 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                 this.handleGetIngestionJobTable();
             }
         });
-    }
-
-
-    /** **************************************************************************************************** **
-     **                                           SUPPORT METHODS                                            **
-     ** **************************************************************************************************** **/
-    handleError(msg){
-        LightningAlert.open({
-            message: 'An unexpected error occurred: ' + msg,
-            label  : 'Error',
-            theme : 'error'
-        }); 
     }
 }

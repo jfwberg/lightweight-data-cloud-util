@@ -7,6 +7,12 @@
                 <identifier>utl_dataCloudBulkIngestionUtil</identifier>
             </componentInstance>
         </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentName>dataCloudQueryUtil</componentName>
+                <identifier>utl_dataCloudQueryUtil</identifier>
+            </componentInstance>
+        </itemInstances>
         <name>column1</name>
         <type>Region</type>
     </flexiPageRegions>
@@ -15,6 +21,12 @@
             <componentInstance>
                 <componentName>dataCloudStreamingIngestionUtil</componentName>
                 <identifier>utl_dataCloudStreamingIngestionUtil</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentName>dataCloudSObjectToYamlUtil</componentName>
+                <identifier>utl_dataCloudSObjectToYamlUtil</identifier>
             </componentInstance>
         </itemInstances>
         <name>column2</name>

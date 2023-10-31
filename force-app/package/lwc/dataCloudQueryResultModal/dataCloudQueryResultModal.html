@@ -1,0 +1,28 @@
+<template>
+    <lightning-spinner 
+        if:true={loading}
+        alternative-text="Loading" 
+        size="medium"
+        variant="base"
+    ></lightning-spinner>
+    <lightning-modal-header label="Data Cloud Query Result"></lightning-modal-header>
+        <lightning-modal-body>
+
+            <lightning-datatable
+                if:true={isTable}
+                key-field="key"
+                data={data}
+                columns={columns}
+                hide-checkbox-column
+            ></lightning-datatable>
+ 
+            <div class="slds-form-element__control" if:true={isCsv}>
+                <textarea  name="csvData" class="slds-textarea ta" >{csvData}</textarea>
+            </div>
+
+        </lightning-modal-body>
+    
+    <lightning-modal-footer>
+        <lightning-button label="Close" onclick={handleClickClose}></lightning-button>
+    </lightning-modal-footer>
+</template>

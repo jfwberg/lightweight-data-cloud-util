@@ -15,15 +15,31 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
         SOAPType.Integer      => 'numberField',
         SOAPType.String       => 'textField',
         SOAPType.Time         => 'textField',
-        SOAPType.Address     => 'textField'
-
-        
+        SOAPType.Address      => 'textField'
     };
 
+    // Mapping between field soap types and data cloud field types, used for YAML generation
+    private final static Map<String,String> CLOUD_DATA_TYPE_DATA_TABLE_TYPE_MAP = new Map<String,String>{
+        'CHAR'                          => 'text',
+        'VARCHAR'                       => 'text',
+        'STRING'                        => 'text',
+        'BLOB'                          => 'text',
+        'DATE'                          => 'date',
+        'DATE_TIME'                     => 'date',
+        'TIMESTAMP'                     => 'date',
+        'TIMESTAMP WITH TIME ZONE'      => 'date',
+        'TIMESTAMP WITH LOCAL TIME ZONE'=> 'date',
+        'DECIMAL'                       => 'number',
+        'NUMBER'                        => 'number',
+        'INT'                           => 'number',
+        'INTEGER'                       => 'number'
+    };
+
+
     @AuraEnabled
-    public static List<Map<String,String>>  getConfigMetadataRecordsPicklistOptions(){
-        try {            
-            return utl.Dc.getConfigMetadataRecordsPicklistOptions();
+    public static List<Map<String,String>>  getMtdConfigOptions(){
+        try {           
+           return utl.Dc.getConfigMetadataRecordsPicklistOptions();
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -339,6 +355,73 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
         }
     }
 
+
+    private static utl.JsnTbl executeQuery(String mdtConfigName, String query){
+
+        // Query the record
+        Data_Cloud_Ingestion_API_Configuration__mdt record = utl.Dc.getMetadataRecord(mdtConfigName);
+
+        // Sanatize the query as the api is very sensitive
+        query = query.replaceAll('\n', ' ');
+        query = query.replaceAll('\t', ' ');
+        query = query.trim();
+        
+        // Execute the query
+        utl.Rst callout = new utl.Rst(record.Named_Credential_Name__c, true)
+            .setHandleSfEndpoint(false)
+            .setEndpoint('/api/v2/query')
+            .setMethod('POST')
+            .setBody(JSON.serialize(new Map<String,String>{'sql'=>query}))
+            .call()
+        ;
+
+        // Cast the response as an object so we can get both the data and metadata
+        Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(callout.getResponse().getBody());
+
+        // Create a datatable
+        utl.JsnTbl table = new utl.JsnTbl()
+            .setAttributeFilter(new Set<String>{'startTime','endTime','rowCount','queryId','done','metadata','nextBatchId'})
+            .setListNameFilter(new Set<String>{'data'})
+            .create(utl.Jsn.getObjectList('data',response))
+            .updateColumnNames(Dc.getOrderedColumnNamesFromMetadata(utl.Jsn.getObjectMap('metadata', response)))
+        ;
+         
+        // Return the output as a CSV string
+        return table;
+    }
+
+
+    @AuraEnabled
+    public static String getDcQueryCsv(String mdtConfigName, String query){
+        try {
+            // Return the CSV string
+            return executeQuery(mdtConfigName, query).getCsvString();
+           
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static Map<String,Object> getDcQueryTable(String mdtConfigName, String query){
+        try {
+            // Execute the query
+            utl.JsnTbl table = executeQuery(mdtConfigName, query);
+            
+            // Return the columns and the data
+            return new Map<String,Object>{
+                'columns' => table.getColumnNames(),
+                'data'    => table.getKeyValueData()
+            };
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    
 
 
     

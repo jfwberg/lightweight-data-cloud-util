@@ -1,6 +1,8 @@
 // Lightning stuff
-import   LightningAlert     from 'lightning/alert';
 import { LightningElement } from "lwc";
+
+// Custom Utils
+import {handleError}        from 'c/dataCloudUtils';
 
 // Modals
 import yamlModal            from 'c/dataCloudYamlModal';
@@ -17,9 +19,8 @@ const columns = [
     { label: 'Data Cloud Field Type',     fieldName: 'dcFtype' }
 ];
 
-
-
-export default class DataCloudSObjectToYaml extends LightningElement {
+// Main class
+export default class DataCloudSObjectToYamlUtil extends LightningElement {
 
     // Loading indicator for the spinner
     loading = false;
@@ -81,42 +82,43 @@ export default class DataCloudSObjectToYaml extends LightningElement {
                     // Clone array
                     let ar = JSON.parse(JSON.stringify(result));
 
-                    // Sort the result by label, the results are an unsorted mess that come back from apex for some reason
+                    // Sort the result by label in JS,
+                    // The results are an unsorted mess that come back from apex for some reason
                     this.sObjectOptions = ar.sort(this.compare);
                 })
                 .catch((error) => {
-                    this.handleError(error.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.optionsLoaded = true;
                     this.loading=false;
                 });
         }catch(error){
-            this.handleError(error.message); 
+            handleError(error);
+            this.loading=false; 
         }
     }
+
 
     handleGetSObjectFieldInfo(){
         try{
             this.loading = true;
             getSObjectFieldInfo({sObjectName : this.sObjectName})
                 .then((result) => {
-                    
                     this.data = result;
-
                 })
                 .catch((error) => {
-                    this.handleError(error.message);
+                    handleError(error);
                 })
                 .finally(()=>{
                     this.optionsLoaded = true;
                     this.loading=false;
                 });
         }catch(error){
-            this.handleError(error.message); 
+            handleError(error);
+            this.loading=false; 
         }
     }
-
 
 
     /** **************************************************************************************************** **
@@ -171,21 +173,13 @@ export default class DataCloudSObjectToYaml extends LightningElement {
      **                                           SUPPORT METHODS                                            **
      ** **************************************************************************************************** **/
     // Sort by label
-    compare( a, b ) {
-        if ( a.label < b.label ){
+    compare(a,b) {
+        if (a.label < b.label){
             return -1;
         }
-        if ( a.label > b.label ){
+        if (a.label > b.label){
             return 1;
         }
         return 0;
-    }
-
-    handleError(msg){
-        LightningAlert.open({
-            message: 'An unexpected error occurred: ' + msg,
-            label  : 'Error',
-            theme : 'error'
-        }); 
     }
 }

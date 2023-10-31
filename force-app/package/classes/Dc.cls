@@ -93,7 +93,7 @@ global with sharing class Dc {
     global static Set<String> getOrderedColumnNamesFromMetadata( Map<String,Object> metadataMap){
         
         // Input validation for the columns
-        if(metadataMap == null || metadataMap.size() > 8){
+        if(metadataMap == null){
             throw new DataCloudUtilException(INVALID_MTD_INPUT_ERROR_MSG);
         }
 

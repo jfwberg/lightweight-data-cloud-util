@@ -1,8 +1,9 @@
-
 // Lightning stuff
 import { api }        from 'lwc';
-import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
+
+// Custom Utils
+import {handleError}   from 'c/dataCloudUtils';
 
 // Apex methods
 import getJobInfo     from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getJobInfo";
@@ -13,9 +14,9 @@ const columns = [
     { label: 'Value', fieldName: 'value'}
 ];
 
-
+// Main class
 export default class DataCloudJobDetailsModal extends LightningModal {
-    
+
     // Config
     @api config;
 
@@ -42,13 +43,14 @@ export default class DataCloudJobDetailsModal extends LightningModal {
                 this.data = result;
             })
             .catch((error) => {
-                this.handleError(error.body.message);
+                handleError(error);
             })
             .finally(()=>{
                 this.loading = false;
             });
         }catch(error){
-            this.handleError(error.message);
+            handleError(error);
+            this.loading = false;
         }
     }
 
@@ -58,14 +60,5 @@ export default class DataCloudJobDetailsModal extends LightningModal {
      ** **************************************************************************************************** **/
     handleClose(){
         this.close('ok');
-    }
-
-    handleError(msg){
-        LightningAlert.open({
-            message: 'An unexpected error occurred: ' + msg,
-            label: 'Error',
-            theme : 'error'
-        });
-        this.loading = false;
     }
 }
