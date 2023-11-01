@@ -1,20 +1,24 @@
 // Lightning stuff
-import { LightningElement }from "lwc";
+import { LightningElement } from "lwc";
 
 // Custom Utils
-import {handleError}       from 'c/dataCloudUtils';
+import {handleError}        from 'c/dataCloudUtils';
+import {openHelpModal}      from 'c/dataCloudUtils';
 
 // Modals
-import queryResultModal    from 'c/dataCloudQueryResultModal';
+import mappingModal         from 'c/dataCloudMappingModal';
+import previewModal         from 'c/dataCloudQueryPreviewModal';
+import csvResultModal       from 'c/dataCloudCsvResultModal';
 
 // Apex methods
 import getMtdConfigOptions from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMtdConfigOptions";
 
-// Main class
-export default class DataCloudQueryUtil extends LightningElement {
 
-    // The query
-    query = 'SELECT\n\tactivity_category__c,\n\tactivity_detail__c,\n\tactivity_duration__c,\n\tactivity_id__c,\n\tactivity_name__c,\n\tcategory__c,\n\tDataSource__c,\n\tDataSourceObject__c,\n\tdate__c,\n\tdateTime__c\nFROM\n\tAC_Demo_Web_Streaming_activity_796CF__dlm\nLIMIT 1';
+// Main class
+export default class DataCloudSObjectToCsvUtil extends LightningElement {
+
+    // Loading indicator for the spinner
+    loading = false;
 
     // Indicator to view the button
     mdtConfigOptionsLoaded = false;
@@ -22,26 +26,17 @@ export default class DataCloudQueryUtil extends LightningElement {
 
     // Config record picklist details
     mdtConfigRecord;
-    mdtConfigOptions;
+    mdtConfigOptions = [];
 
-    // Output as either csv or LWC data table
-    resultFormat = 'table';
-    resultFormatOptions = [
-        {label : 'Datatable', value:'table'},
-        {label : 'CSV',       value:'csv'}
-    ];
+    // The query we are going to test
+    query='SELECT Id FROM Account';
 
+    // Indicate this is a tooling query
+    tooling = false;
 
-    /** **************************************************************************************************** **
-     **                                            GETTER METHODS                                            **
-     ** **************************************************************************************************** **/
     // Disable buttons
-    get actionDisabled(){
+    get buttonsEnabled(){
         return !this.mdtConfigSelected;
-    }
-
-    get inputDisabled(){
-        return !this.mdtConfigOptionsLoaded;
     }
 
 
@@ -62,21 +57,20 @@ export default class DataCloudQueryUtil extends LightningElement {
             getMtdConfigOptions()
                 .then((result) => {
                     this.mdtConfigOptions = result;
-                    this.mdtConfigOptionsLoaded = true;
                 })
                 .catch((error) => {
                     handleError(error);
                 })
                 .finally(()=>{
-                    this.loading = false; 
+                    this.mdtConfigOptionsLoaded = true;
+                    this.loading = false;
                 });
         }catch(error){
-            handleError(error);
-            this.loading = false; 
+            handleError(error); 
         }
     }
 
-    
+   
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
@@ -84,39 +78,76 @@ export default class DataCloudQueryUtil extends LightningElement {
     handleChangeMtdConfig(event) {
         this.mdtConfigRecord = event.detail.value;
         this.mdtConfigSelected = true;
+        handleGenerateQueryFromMapping();
     }
 
     handleChangeQuery(){
         this.query = this.template.querySelector(".ta").value;
     }
 
-    handlechangeResultFormat(event) {
-        this.resultFormat = event.detail.value;
+    handleChangeTooling(event){
+        this.tooling = event.detail.checked;
     }
 
 
     /** **************************************************************************************************** **
      **                                        CLICK BUTTON HANDLERS                                         **
      ** **************************************************************************************************** **/
-    handleClickExecuteQuery(){
-        this.handleOpenQueryResultModal();
+    handleClickPreview(){
+        this.handleOpenQueryPreviewModal();
     }
 
+    handleClickGenerateCsv(){
+        this.handleOpenCsvResultModal();
+    }
+
+    handleClickShowMapping(){
+        this.handleOpenMappingModal({
+            mdtConfigRecord : this.mdtConfigRecord
+        });
+    }
+
+    handleClickHelp(){
+        openHelpModal(
+            'Data Cloud SObject To CSV Utility Help',
+            'Tool to generate a CSV from a query that allows from sub queries and parent relationships. When a metadata record is selected the mapping is used to update the column headers to the target column names.'
+        );
+    }
+
+
+    
 
     /** **************************************************************************************************** **
      **                                            MODAL METHODS                                             **
      ** **************************************************************************************************** **/
-    /**
-     * Open the Mapping Modal
-     */
-    async handleOpenQueryResultModal() {
-        queryResultModal.open({
+    async handleOpenCsvResultModal () {
+        csvResultModal.open({
             config: {
-                mdtConfigName : this.mdtConfigRecord,
-                resultFormat : this.resultFormat,
-                query : this.query
+                query   : this.query,
+                tooling : this.tooling
             },
             size: 'large',
+        }).then((result) => {
+            
+        });
+    }
+
+    async handleOpenQueryPreviewModal () {
+        previewModal.open({
+            config: {
+                query   : this.query,
+                tooling : this.tooling
+            },
+            size: 'large',
+        }).then((result) => {
+            
+        });
+    }
+
+    async handleOpenMappingModal (config) {
+        mappingModal.open({
+            config: config,
+            size: 'small',
         }).then((result) => {
             
         });

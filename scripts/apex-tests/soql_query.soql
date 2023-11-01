@@ -1,0 +1,41 @@
+SELECT
+    Id, Name, Owner.Name, Owner.Profile.Name,
+    (
+        SELECT
+            Id, AccountId, FirstName, LastName, Owner.Profile.Name 
+        FROM 
+            contacts
+        LIMIT 10
+    ),
+    (
+        SELECT
+            Id, AccountId, Name, StageName, CloseDate, Owner.Profile.Name 
+        FROM
+            opportunities
+        LIMIT 10
+    )
+FROM
+    Account
+WHERE
+    Name LIKE 'Demo Account - %' ORDER BY Name ASC
+LIMIT 10
+
+
+SELECT 
+    ExternalCredential.DeveloperName, 
+    ExternalCredential.MasterLabel,
+    ExternalCredential.Description,
+    ExternalCredential.AuthenticationProtocol,
+    SequenceNumber,
+    ParameterType,
+    ParameterName,
+    ParameterValue,
+Description,
+    Certificate.DeveloperName
+FROM
+    ExternalCredentialParameter 
+ORDER BY 
+    ExternalCredential.DeveloperName,
+    SequenceNumber,
+    ParameterType,
+    ParameterName

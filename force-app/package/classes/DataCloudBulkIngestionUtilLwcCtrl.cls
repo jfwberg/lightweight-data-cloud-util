@@ -137,7 +137,9 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
 
             // Add record details
             recordData.add(new Map<String,Object>{'key'  => 'Configuration Record Name',       'value'=> record.DeveloperName});
+            recordData.add(new Map<String,Object>{'key'  => 'Salesforce Named Credential',     'value'=> record.Salesforce_Named_Credential_Name__c});
             recordData.add(new Map<String,Object>{'key'  => 'Data Cloud Named Credential',     'value'=> record.Named_Credential_Name__c});
+            recordData.add(new Map<String,Object>{'key'  => 'Salesforce sObject Name',         'value'=> record.sObject_Name__c});
             recordData.add(new Map<String,Object>{'key'  => 'Ingestion API Connector Name',    'value'=> record.Ingestion_API_Connector_Name__c});
             recordData.add(new Map<String,Object>{'key'  => 'Ingestion API Target Object Name','value'=> record.Ingestion_API_Target_Object_Name__c});
 
@@ -421,8 +423,59 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
     }
 
 
-    
 
 
-    
+    private static utl.JsnTbl executeSoqlQuery(String query, Boolean tooling){
+
+        // Execute the query
+        utl.Rst callout = new utl.Rst(true)
+            .setEndpoint(((tooling) ? '/tooling/' : '' ) +  '/query?q=' + EncodingUtil.urlEncode(query,'UTF-8'))
+            .setMethod('GET')
+            .call()
+        ;
+
+        // Create a datatable
+        utl.JsnTbl table = new utl.JsnTbl()
+            .setAttributeFilter(new Set<String>{'attributes', 'done', 'totalSize'})
+            .setListNameFilter(new Set<String>{'records'})
+            .create(utl.Jsn.getObjectList('records',(Map<String,Object>)JSON.deserializeUntyped(callout.getResponse().getBody())))
+        ;
+         
+        // Return the output as a CSV string
+        return table;
+    }
+
+
+    @AuraEnabled
+    public static Map<String,Object> getSoqlQueryTable(String query, Boolean tooling){
+        try {
+            // Execute the query
+            utl.JsnTbl table = executeSoqlQuery(query,tooling);
+            
+            // Return the columns and the data
+            return new Map<String,Object>{
+                'columns' => table.getColumnNames(),
+                'data'    => table.getKeyValueData()
+            };
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static String getSoqlQueryCsv(String query, Boolean tooling){
+        try {
+            // Execute the query
+            utl.JsnTbl table = executeSoqlQuery(query,tooling);
+            
+            // Return the table as CSV
+            return table.getCsvString();
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
 }

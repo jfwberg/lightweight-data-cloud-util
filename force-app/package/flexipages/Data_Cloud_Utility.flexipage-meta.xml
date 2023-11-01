@@ -3,32 +3,14 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>dataCloudBulkIngestionUtil</componentName>
-                <identifier>utl_dataCloudBulkIngestionUtil</identifier>
-            </componentInstance>
-        </itemInstances>
-        <itemInstances>
-            <componentInstance>
-                <componentName>dataCloudQueryUtil</componentName>
-                <identifier>utl_dataCloudQueryUtil</identifier>
+                <componentName>dataCloudSObjectToCsvUtil</componentName>
+                <identifier>utl_dataCloudSObjectToCsvUtil</identifier>
             </componentInstance>
         </itemInstances>
         <name>column1</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
-        <itemInstances>
-            <componentInstance>
-                <componentName>dataCloudStreamingIngestionUtil</componentName>
-                <identifier>utl_dataCloudStreamingIngestionUtil</identifier>
-            </componentInstance>
-        </itemInstances>
-        <itemInstances>
-            <componentInstance>
-                <componentName>dataCloudSObjectToYamlUtil</componentName>
-                <identifier>utl_dataCloudSObjectToYamlUtil</identifier>
-            </componentInstance>
-        </itemInstances>
         <name>column2</name>
         <type>Region</type>
     </flexiPageRegions>

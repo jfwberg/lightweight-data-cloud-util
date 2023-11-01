@@ -1,0 +1,78 @@
+<template>
+    <lightning-card icon-name="standard:assigned_resource" variant="base">
+        <lightning-spinner 
+            if:true={loading}
+            alternative-text="Loading" 
+            size="medium"
+            variant="base"
+        ></lightning-spinner>
+        <div slot="title">
+            Data Cloud SObject to CSV Utility
+        </div>
+        <div slot="actions">
+            <lightning-button-group>
+                
+                <lightning-button 
+                    variant="neutral"
+                    label="Generate CSV" 
+                    onclick={handleClickGenerateCsv} 
+                ></lightning-button>
+
+                <lightning-button 
+                    variant="neutral"
+                    label="Preview" 
+                    onclick={handleClickPreview} 
+                ></lightning-button>
+            
+                <lightning-button
+                    variant="neutral"
+                    label="Show Mapping" 
+                    onclick={handleClickShowMapping} 
+                    disabled={buttonsEnabled}
+                ></lightning-button>
+
+                <lightning-button
+                    variant="neutral"
+                    onclick={handleClickHelp} 
+                    icon-name="utility:help"
+                    icon-position="right"
+                    alternative-text="Help"
+                ></lightning-button>
+
+            </lightning-button-group>
+        </div>
+        <div slot="footer">
+
+        </div>
+        <div class="slds-var-p-around_small">
+            <lightning-combobox
+                if:true={mdtConfigOptionsLoaded}
+                name="Metadata Configuration"
+                label="Metadata Configuration"
+                value={mdtConfigRecord}
+                placeholder="Select..."
+                options={mdtConfigOptions}
+                onchange={handleChangeMtdConfig}
+            ></lightning-combobox>
+           
+        
+        
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="textarea-id-01">SOQL Query</label>
+                <div class="slds-form-element__control">
+                    <textarea id="ta" class="slds-textarea ta" oninput={handleChangeQuery}>{query}</textarea>
+                </div>
+            </div>
+            <lightning-input 
+                type="checkbox"
+                label="Is Tooling Query"
+                name="tooling"
+                value={tooling}
+                onchange={handleChangeTooling}
+            ></lightning-input>
+        </div>
+        
+
+    </lightning-card>
+
+</template>

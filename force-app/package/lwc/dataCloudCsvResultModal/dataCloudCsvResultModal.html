@@ -1,0 +1,20 @@
+<template>
+    <lightning-spinner 
+        if:true={loading}
+        alternative-text="Loading" 
+        size="medium"
+        variant="base"
+    ></lightning-spinner>
+    <lightning-modal-header label="Data Cloud - SOQL Query to CSV Result"></lightning-modal-header>
+        <lightning-modal-body>
+            <div class="slds-box">
+                <pre class="csvData">
+                    {csvData}
+                </pre>
+            </div>
+        </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button label="Copy" onclick={handleClickCopy} variant={variant}></lightning-button>
+        <lightning-button label="Close" onclick={handleClickClose}></lightning-button>
+    </lightning-modal-footer>
+</template>
