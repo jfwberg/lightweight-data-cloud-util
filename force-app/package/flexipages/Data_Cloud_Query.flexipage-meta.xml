@@ -3,24 +3,18 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>dataCloudSObjectToCsvUtil</componentName>
-                <identifier>utl_dataCloudSObjectToCsvUtil</identifier>
+                <componentName>dataCloudQueryUtil</componentName>
+                <identifier>utl_dataCloudQueryUtil</identifier>
             </componentInstance>
         </itemInstances>
         <name>column1</name>
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
-        <itemInstances>
-            <componentInstance>
-                <componentName>dataCloudSObjectToYamlUtil</componentName>
-                <identifier>utl_dataCloudSObjectToYamlUtil</identifier>
-            </componentInstance>
-        </itemInstances>
         <name>column2</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>Data Cloud Utilities</masterLabel>
+    <masterLabel>Data Cloud Query</masterLabel>
     <template>
         <name>flexipage:appHomeTemplateTwoColumns</name>
     </template>

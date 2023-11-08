@@ -11,12 +11,12 @@ import jobDetailsModal      from 'c/dataCloudJobDetailsModal';
 import addCsvModal          from 'c/dataCloudAddCsvModal';
 
 // Apex methods
-import getMtdConfigOptions  from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMtdConfigOptions";
-import getIngestionJobTable from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getIngestionJobTable";
-import newJob               from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.newJob";
-import abortJob             from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.abortJob";
-import completeJob          from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.completeJob";
-import deleteJob            from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.deleteJob";
+import getMtdConfigOptions  from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getIngestionJobTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getIngestionJobTable";
+import newJob               from "@salesforce/apex/DataCloudUtilLwcCtrl.newJob";
+import abortJob             from "@salesforce/apex/DataCloudUtilLwcCtrl.abortJob";
+import completeJob          from "@salesforce/apex/DataCloudUtilLwcCtrl.completeJob";
+import deleteJob            from "@salesforce/apex/DataCloudUtilLwcCtrl.deleteJob";
 
 // Actions for the bulk jobs
 const actions = [

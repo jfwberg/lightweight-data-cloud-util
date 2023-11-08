@@ -6,8 +6,8 @@ import LightningModal  from 'lightning/modal';
 import {handleError}   from 'c/dataCloudUtils';
 
 // Apex methods
-import getDcQueryCsv   from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getDcQueryCsv";
-import getDcQueryTable from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getDcQueryTable";
+import getDcQueryCsv   from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryCsv";
+import getDcQueryTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryTable";
 
 
 // Main class
@@ -55,6 +55,7 @@ export default class DataCloudQueryResultModal extends LightningModal  {
         }catch(error){
             handleError(error);
             this.loading = false;
+            this.close();
         }
     }
 
@@ -82,6 +83,7 @@ export default class DataCloudQueryResultModal extends LightningModal  {
             })
             .catch((error) => {
                 handleError(error);
+                this.close();
             })
             .finally(()=>{
                 this.loading = false;
@@ -89,6 +91,7 @@ export default class DataCloudQueryResultModal extends LightningModal  {
         }catch(error){
             handleError(error);
             this.loading = false;
+            this.close();
         }
     }
 
@@ -112,13 +115,11 @@ export default class DataCloudQueryResultModal extends LightningModal  {
                     });
                 }
 
-                console.log(JSON.stringify(this.columns,null,4));
-                console.log(JSON.stringify(this.data,null,4));
-
                 
             })
             .catch((error) => {
                 handleError(error);
+                this.close();
             })
             .finally(()=>{
                 this.loading = false;
@@ -126,6 +127,7 @@ export default class DataCloudQueryResultModal extends LightningModal  {
         }catch(error){
             handleError(error);
             this.loading = false;
+            this.close();
         }
     }
 

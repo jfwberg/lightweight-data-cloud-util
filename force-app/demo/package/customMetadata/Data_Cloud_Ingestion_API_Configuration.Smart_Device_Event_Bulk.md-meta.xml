@@ -14,4 +14,12 @@
         <field>Named_Credential_Name__c</field>
         <value xsi:type="xsd:string">utl__DC_ORG_01</value>
     </values>
+    <values>
+        <field>Salesforce_Named_Credential_Name__c</field>
+        <value xsi:type="xsd:string">utl__SF_ORG_01</value>
+    </values>
+    <values>
+        <field>sObject_Name__c</field>
+        <value xsi:type="xsd:string">utl__Smart_Device_Event_History__c</value>
+    </values>
 </CustomMetadata>

@@ -7,7 +7,7 @@ import LightningModal  from 'lightning/modal';
 import {handleError}   from 'c/dataCloudUtils';
 
 // Apex methods
-import getMetadataInfo from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMetadataInfo";
+import getMetadataInfo from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
 
 // Columns for the bulk jobs
 const recordColumns = [

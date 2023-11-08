@@ -20,6 +20,14 @@
     <hasActivationRequired>false</hasActivationRequired>
     <label>Lightweight - Data Cloud Util</label>
     <tabSettings>
+        <tab>Data_Cloud_Ingestion</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Data_Cloud_Query</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
         <tab>Data_Cloud_Utility</tab>
         <visibility>Visible</visibility>
     </tabSettings>

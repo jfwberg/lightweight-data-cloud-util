@@ -11,7 +11,8 @@ import previewModal         from 'c/dataCloudQueryPreviewModal';
 import csvResultModal       from 'c/dataCloudCsvResultModal';
 
 // Apex methods
-import getMtdConfigOptions from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMtdConfigOptions";
+import getMtdConfigOptions      from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import generateQueryFromMapping from "@salesforce/apex/DataCloudUtilLwcCtrl.generateQueryFromMapping";
 
 
 // Main class
@@ -29,7 +30,7 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     mdtConfigOptions = [];
 
     // The query we are going to test
-    query='SELECT Id FROM Account';
+    query;
 
     // Indicate this is a tooling query
     tooling = false;
@@ -70,6 +71,26 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
         }
     }
 
+    handleGenerateQueryFromMapping(){
+        try{
+            generateQueryFromMapping({
+                mdtConfigName : this.mdtConfigRecord
+            })
+            .then((result) => {
+                this.query = result;
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.mdtConfigOptionsLoaded = true;
+                this.loading = false;
+            });
+        }catch(error){
+            handleError(error); 
+        }
+    }
+
    
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
@@ -78,7 +99,7 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     handleChangeMtdConfig(event) {
         this.mdtConfigRecord = event.detail.value;
         this.mdtConfigSelected = true;
-        handleGenerateQueryFromMapping();
+        this.handleGenerateQueryFromMapping();
     }
 
     handleChangeQuery(){
@@ -109,7 +130,7 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
 
     handleClickHelp(){
         openHelpModal(
-            'Data Cloud SObject To CSV Utility Help',
+            'Data Cloud SObject To CSV Utility',
             'Tool to generate a CSV from a query that allows from sub queries and parent relationships. When a metadata record is selected the mapping is used to update the column headers to the target column names.'
         );
     }
@@ -123,8 +144,9 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     async handleOpenCsvResultModal () {
         csvResultModal.open({
             config: {
-                query   : this.query,
-                tooling : this.tooling
+                mdtConfigName : this.mdtConfigRecord,
+                query         : this.query,
+                tooling       : this.tooling
             },
             size: 'large',
         }).then((result) => {
@@ -135,8 +157,9 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     async handleOpenQueryPreviewModal () {
         previewModal.open({
             config: {
-                query   : this.query,
-                tooling : this.tooling
+                mdtConfigName : this.mdtConfigRecord,
+                query         : this.query,
+                tooling       : this.tooling
             },
             size: 'large',
         }).then((result) => {

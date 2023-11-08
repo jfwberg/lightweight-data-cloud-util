@@ -1,4 +1,11 @@
-public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
+/**
+ * @author         Justus van den Berg (jfwberg@gmail.com)
+ * @date           August 2023
+ * @copyright      (c) 2023 Justus van den Berg
+ * @license        MIT (See LICENSE file in the project root)
+ * @description    Class that contains the Data Cloud Utilities
+ */
+public with sharing class DataCloudUtilLwcCtrl {
     
     /** **************************************************************************************************** **
      **                                          PRIVATE CONSTANTS                                           **
@@ -35,79 +42,88 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
         'INTEGER'                       => 'number'
     };
 
-
+    /** **************************************************************************************************** **
+     **                                         PUBLIC AURA METHODS                                          **
+     ** **************************************************************************************************** **/
     @AuraEnabled
     public static List<Map<String,String>>  getMtdConfigOptions(){
         try {           
-           return utl.Dc.getConfigMetadataRecordsPicklistOptions();
+           return Dc.getConfigMetadataRecordsPicklistOptions();
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
     
+
     @AuraEnabled
     public static List<Map<String,Object>> getIngestionJobTable(String mdtConfigName){
         try {
-            return utl.Dc.getBulkIngestionJobs(mdtConfigName);
+            return Dc.getBulkIngestionJobs(mdtConfigName);
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
 
     @AuraEnabled
     public static String newJob(String mdtConfigName){
         try {
-            return utl.Dc.createIngestionBulkJob(mdtConfigName, utl.Rst.guid(), 'upsert');
+            return Dc.createIngestionBulkJob(mdtConfigName, utl.Rst.guid(), 'upsert');
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
 
     @AuraEnabled
     public static Boolean abortJob(String mdtConfigName, String jobId){
         try {
-            utl.Dc.updateIngestionBulkJobState(mdtConfigName, utl.Rst.guid(), jobId, 'Aborted');
+            Dc.updateIngestionBulkJobState(mdtConfigName, utl.Rst.guid(), jobId, 'Aborted');
             return true;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
 
     @AuraEnabled
     public static Boolean completeJob(String mdtConfigName, String jobId){
         try {
-            utl.Dc.updateIngestionBulkJobState(mdtConfigName, utl.Rst.guid(), jobId, 'UploadComplete');
+            Dc.updateIngestionBulkJobState(mdtConfigName, utl.Rst.guid(), jobId, 'UploadComplete');
             return true;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
 
     @AuraEnabled
     public static Boolean deleteJob(String mdtConfigName, String jobId){
         try {
-            utl.Dc.deleteIngestionBulkJob(mdtConfigName, utl.Rst.guid(), jobId);
+            Dc.deleteIngestionBulkJob(mdtConfigName, utl.Rst.guid(), jobId);
             return true;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
 
+
     @AuraEnabled
     public static Boolean addCsv(String mdtConfigName, String jobId, String csvData){
         try {
-            utl.Dc.addCsvToIngestionBulkJob(mdtConfigName, jobId, jobId, csvData);
+            Dc.addCsvToIngestionBulkJob(mdtConfigName, jobId, jobId, csvData);
             return true;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
 
     @AuraEnabled
     public static List<Map<String,Object>> getJobInfo(String mdtConfigName, String jobId){
         try {
             
-            Map<String,Object> jobInfo = utl.Dc.getBulkIngestionJobDetails(mdtConfigName,jobId);
+            Map<String,Object> jobInfo = Dc.getBulkIngestionJobDetails(mdtConfigName,jobId);
 
             List<Map<String,Object>> output = new List<Map<String,Object>>();
 
@@ -133,7 +149,7 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
             List<Map<String,Object>> mappingData = new List<Map<String,Object>>();
 
             // Query the record
-            Data_Cloud_Ingestion_API_Configuration__mdt record = utl.Dc.getMetadataRecord(mdtConfigName);
+            Data_Cloud_Ingestion_API_Configuration__mdt record = Dc.getMetadataRecord(mdtConfigName);
 
             // Add record details
             recordData.add(new Map<String,Object>{'key'  => 'Configuration Record Name',       'value'=> record.DeveloperName});
@@ -163,11 +179,12 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
         }
     }
 
+
     @AuraEnabled
     public static String getCsvPlaceholder(String mdtConfigName){
         try{
             // Query the record
-            Data_Cloud_Ingestion_API_Configuration__mdt record = utl.Dc.getMetadataRecord(mdtConfigName);
+            Data_Cloud_Ingestion_API_Configuration__mdt record = Dc.getMetadataRecord(mdtConfigName);
 
             // Dummy data place holder
             String placeholder = '';
@@ -220,11 +237,12 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
         }
     }
 
+
     @AuraEnabled
     public static String getStreamingPlaceholder(String mdtConfigName){
         try{
             // Query the record
-            Data_Cloud_Ingestion_API_Configuration__mdt record = utl.Dc.getMetadataRecord(mdtConfigName);
+            Data_Cloud_Ingestion_API_Configuration__mdt record = Dc.getMetadataRecord(mdtConfigName);
 
             // Dummy data place holder
             Map<String,Object> placeholder = new Map<String,Object>();
@@ -255,6 +273,7 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
         }
     }
     
+
     @AuraEnabled
     public static Boolean sendDataStream(String mdtConfigName, String payload){
         try {
@@ -264,6 +283,7 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
             throw new AuraHandledException(e.getMessage());
         }
     } 
+
 
     @AuraEnabled
     public static Boolean testDataStream(String mdtConfigName, String payload){
@@ -307,6 +327,7 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
         }
     }
 
+
     @AuraEnabled
     public static String getYamlInfo(String sObjectName){
         try {
@@ -315,13 +336,8 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
             throw new AuraHandledException(e.getMessage());
         }
     }
+    
 
-
-         /**
-     * @description Method to get the metadata configuration labels and names in an LWC
-     *              picklist values.
-     * @return      An LWC ready to use set data set with source and target mappings
-     */
     @AuraEnabled
     public static List<Map<String,Object>> getSObjectFieldInfo(String sObjectName){
         
@@ -346,7 +362,7 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
                     'source'  => sfr.name,
                     'sfFtype' => String.valueOf(sfr.SoapType),
                     'custom'  => sfr.custom,
-                    'target'  => (sfr.name.contains('__')) ? sfr.name.substringBeforeLast('__') : sfr.name,
+                    'target'  => sfr.name,
                     'dcFtype' => SOAP_TYPE_DATA_CLOUD_DATA_TYPE_MAP.get(sfr.SoapType)
                 });   
             }
@@ -358,46 +374,11 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
     }
 
 
-    private static utl.JsnTbl executeQuery(String mdtConfigName, String query){
-
-        // Query the record
-        Data_Cloud_Ingestion_API_Configuration__mdt record = utl.Dc.getMetadataRecord(mdtConfigName);
-
-        // Sanatize the query as the api is very sensitive
-        query = query.replaceAll('\n', ' ');
-        query = query.replaceAll('\t', ' ');
-        query = query.trim();
-        
-        // Execute the query
-        utl.Rst callout = new utl.Rst(record.Named_Credential_Name__c, true)
-            .setHandleSfEndpoint(false)
-            .setEndpoint('/api/v2/query')
-            .setMethod('POST')
-            .setBody(JSON.serialize(new Map<String,String>{'sql'=>query}))
-            .call()
-        ;
-
-        // Cast the response as an object so we can get both the data and metadata
-        Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(callout.getResponse().getBody());
-
-        // Create a datatable
-        utl.JsnTbl table = new utl.JsnTbl()
-            .setAttributeFilter(new Set<String>{'startTime','endTime','rowCount','queryId','done','metadata','nextBatchId'})
-            .setListNameFilter(new Set<String>{'data'})
-            .create(utl.Jsn.getObjectList('data',response))
-            .updateColumnNames(Dc.getOrderedColumnNamesFromMetadata(utl.Jsn.getObjectMap('metadata', response)))
-        ;
-         
-        // Return the output as a CSV string
-        return table;
-    }
-
-
     @AuraEnabled
     public static String getDcQueryCsv(String mdtConfigName, String query){
         try {
             // Return the CSV string
-            return executeQuery(mdtConfigName, query).getCsvString();
+            return getQueryTable(mdtConfigName, query).getCsvString();
            
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -409,7 +390,7 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
     public static Map<String,Object> getDcQueryTable(String mdtConfigName, String query){
         try {
             // Execute the query
-            utl.JsnTbl table = executeQuery(mdtConfigName, query);
+            utl.JsnTbl table = getQueryTable(mdtConfigName, query);
             
             // Return the columns and the data
             return new Map<String,Object>{
@@ -423,9 +404,122 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
     }
 
 
+    @AuraEnabled
+    public static Map<String,Object> getSoqlQueryTable(String mdtConfigName, String query, Boolean tooling){
+        
+        try {
+            // Map to hold the mappings
+            Map<String,String> mapping = new Map<String,String>();
+
+            // Create a mapping between label and field name (not ideal, but just how the )
+            List<Map<String,String>> columnDetailsList = new List<Map<String,String>>();
+
+            // Execute the query
+            utl.JsnTbl table = executeSoqlQuery(query, tooling);
+            
+            // Create the mapping
+            if(mdtConfigName != null){
+                mapping = Dc.createFieldMapping(Dc.getMetadataRecord(mdtConfigName).Data_Cloud_Ingestion_API_Field_Mappings__r);
+            }
+
+            // Set the column names
+            for(String columnName : table.getColumnNames()){
+                columnDetailsList.add( new Map<String,String>{
+                    'columnName' => columnName,
+                    'columnLabel'=> (mapping.containsKey(columnName)) ? mapping.get(columnName) : columnName
+                });
+            }
+            
+            // Update the columns in the table
+            table.updateColumnNames(mapping);
+           
+            // Return the columns and the data
+            return new Map<String,Object>{
+                'columns'      => columnDetailsList,
+                'data'         => table.getKeyValueData()
+            };
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static String getSoqlQueryCsv(String mdtConfigName, String query, Boolean tooling){
+        try {
+            // Map to hold the mappings
+            Map<String,String> mapping = new Map<String,String>();
+
+            if(mdtConfigName != null){
+                // Create the mapping
+                mapping = Dc.createFieldMapping(Dc.getMetadataRecord(mdtConfigName).Data_Cloud_Ingestion_API_Field_Mappings__r);
+            }
+
+            // Execute the query
+            utl.JsnTbl table = executeSoqlQuery(query, tooling);
+            table.updateColumnNames(mapping);
+            
+            // Return the table as CSV
+            return table.getCsvString();
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static String generateQueryFromMapping(String mdtConfigName){
+        try {
+            // Query the record
+            Data_Cloud_Ingestion_API_Configuration__mdt record = Dc.getMetadataRecord(mdtConfigName);
+
+            // Return the query string
+            String query = 'SELECT ';
+                   query+= String.join(Dc.createFieldMapping(record.Data_Cloud_Ingestion_API_Field_Mappings__r).keySet(),', ');
+                   query+= ' FROM ' + record.sObject_Name__c + ' ORDER BY CreatedDate DESC LIMIT 2000';
+
+            // Return the query string
+            return query;
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    /** **************************************************************************************************** **
+     **                                       PRIVATE SUPPORT METHODS                                        **
+     ** **************************************************************************************************** **/
+    private static utl.JsnTbl getQueryTable(String mdtConfigName, String query){
+
+        // Cast the response as an object so we can get both the data and metadata
+        Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(
+            Dc.executeQuery(mdtConfigName, query)
+                .getResponse()
+                .getBody()
+        );
+
+        // Create a datatable
+        utl.JsnTbl table = new utl.JsnTbl()
+            .setAttributeFilter(new Set<String>{'startTime','endTime','rowCount','queryId','done','metadata','nextBatchId'})
+            .setListNameFilter(new Set<String>{'data'})
+            .create(utl.Jsn.getObjectList('data',response))
+            .updateColumnNames(Dc.getOrderedColumnNamesFromMetadata(utl.Jsn.getObjectMap('metadata', response)))
+        ;
+      
+        // Return the output as a CSV string
+        return table;
+    }
 
 
     private static utl.JsnTbl executeSoqlQuery(String query, Boolean tooling){
+
+        // Input validation
+        if(String.isBlank(query)){
+            throw new Dc.DataCloudUtilException('SOQL Query cannot be empty');
+        }
 
         // Execute the query
         utl.Rst callout = new utl.Rst(true)
@@ -444,38 +538,4 @@ public with sharing class DataCloudBulkIngestionUtilLwcCtrl {
         // Return the output as a CSV string
         return table;
     }
-
-
-    @AuraEnabled
-    public static Map<String,Object> getSoqlQueryTable(String query, Boolean tooling){
-        try {
-            // Execute the query
-            utl.JsnTbl table = executeSoqlQuery(query,tooling);
-            
-            // Return the columns and the data
-            return new Map<String,Object>{
-                'columns' => table.getColumnNames(),
-                'data'    => table.getKeyValueData()
-            };
-
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
-    }
-
-
-    @AuraEnabled
-    public static String getSoqlQueryCsv(String query, Boolean tooling){
-        try {
-            // Execute the query
-            utl.JsnTbl table = executeSoqlQuery(query,tooling);
-            
-            // Return the table as CSV
-            return table.getCsvString();
-
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
-    }
-
 }

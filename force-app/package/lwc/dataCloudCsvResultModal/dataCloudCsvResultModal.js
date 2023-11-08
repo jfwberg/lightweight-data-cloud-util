@@ -7,7 +7,7 @@ import {handleError}         from 'c/dataCloudUtils';
 import {copyTextToClipboard} from 'c/dataCloudUtils';
 
 // Apex methods
-import getSoqlQueryCsv       from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getSoqlQueryCsv";
+import getSoqlQueryCsv       from "@salesforce/apex/DataCloudUtilLwcCtrl.getSoqlQueryCsv";
 
 
 // Main class
@@ -44,12 +44,13 @@ export default class DataCloudCsvResultModal extends LightningModal  {
     /** **************************************************************************************************** **
      **                                            APEX HANDLERS                                             **
      ** **************************************************************************************************** **/
-     handleGetSoqlQueryCsv(){
+    handleGetSoqlQueryCsv(){
         try{
             this.loading = true;
             getSoqlQueryCsv({
-                query   : this.config.query,
-                tooling : this.config.tooling
+                mdtConfigName : this.config.mdtConfigName,
+                query         : this.config.query,
+                tooling       : this.config.tooling
             })
             .then((result) => {
                 this.csvData = result;

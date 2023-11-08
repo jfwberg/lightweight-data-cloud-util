@@ -25,6 +25,10 @@ global with sharing class Dc {
     /** **************************************************************************************************** **
      **                                          PRIVATE CONSTANTS                                           **
      ** **************************************************************************************************** **/
+    // Query (Error) Messages
+    @TestVisible private final static String QUERY_CANNOT_BE_BLANK_MSG  = 'The input query cannot be empty';
+    @TestVisible private final static String QUERY_EXCEPTION_MSG        = 'Something when wrong whilst executing the Data Cloud Query: {0}';
+
     // Streaming Ingestion (Error) Messages
     @TestVisible private static final String NO_MDT_RECORD_FOUND_MSG    = 'No Data_Cloud_Ingestion_API_Configuration__mdt record with the name "{0}" exists.';
     @TestVisible private static final String CALLOUT_EXCEPTION_MSG      = 'Something went wrong during the callout to the Ingest API endpoint: {0}';
@@ -137,7 +141,10 @@ global with sharing class Dc {
      */
     global static List<Map<String,String>> getConfigMetadataRecordsPicklistOptions(){
         List<Map<String,String>> output = new List<Map<String,String>>();
-        for(Data_Cloud_Ingestion_API_Configuration__mdt record : [SELECT Label,DeveloperName FROM Data_Cloud_Ingestion_API_Configuration__mdt WITH USER_MODE ORDER BY Label LIMIT 1000]){
+        for(Data_Cloud_Ingestion_API_Configuration__mdt record : [  SELECT Label,DeveloperName 
+                                                                    FROM Data_Cloud_Ingestion_API_Configuration__mdt
+                                                                    WHERE (NOT DeveloperName LIKE 'Apex_Unit_Test') 
+                                                                    WITH USER_MODE ORDER BY Label LIMIT 1000]){
             output.add(new Map<String,String>{
                 'label' => record.Label,
                 'value' => record.DeveloperName
@@ -147,10 +154,44 @@ global with sharing class Dc {
     }
 
     
+    /** **************************************************************************************************** **
+     **                                         GLOBAL QUERY METHODS                                         **
+     ** **************************************************************************************************** **/
+    /**
+     * @description Method to execute a query against data cloud
+     * @param  mdtRecordName The Developer Name of the metadata record
+     * @param  query         The SQL query to run against Data Cloud
+     * @return The execution result of the Rest Execution  (utl.Rst)
+     */
+    global static utl.Rst executeQuery(String mdtConfigName, String query){
+
+        // Input validation
+        if(String.isBlank(query)){
+            throw new DataCloudUtilException(QUERY_CANNOT_BE_BLANK_MSG);
+        }
+
+        try{
+            // Query the record
+            Data_Cloud_Ingestion_API_Configuration__mdt record = utl.Dc.getMetadataRecord(mdtConfigName);
+
+            // Sanatize the query as the api is very sensitive to line breaks and tabs for some reason
+            query = query.replaceAll('\n', ' ');
+            query = query.replaceAll('\t', ' ');
+            query = query.trim();
+            
+            // Execute the query
+            return new utl.Rst(record.Named_Credential_Name__c, true)
+                .setHandleSfEndpoint(false)
+                .setEndpoint('/api/v2/query')
+                .setMethod('POST')
+                .setBody(JSON.serialize(new Map<String,String>{'sql'=>query}))
+                .call()
+            ;
+        }catch(Exception e){
+            throw new DataCloudUtilException(String.format(QUERY_EXCEPTION_MSG, new String[]{e.getMessage()}));
+        }
+    }
    
-    
-
-
 
     /** **************************************************************************************************** **
      **                                  GLOBAL STREAMING INGESTION METHODS                                  **
@@ -387,6 +428,11 @@ global with sharing class Dc {
     }
 
 
+    /**
+     * @description Method to add a CSV file (from data) to a Ingestion Job
+     * @param mdtConfigName The name of the metadata configuration record
+     * @return A list of key value maps with the job details for all jobs
+     */
     global static List<Map<String,Object>> getBulkIngestionJobs(String mdtConfigName){
         try{
             // Output of lists
@@ -418,7 +464,13 @@ global with sharing class Dc {
         }
     }
 
-    
+
+    /**
+     * @description Method to add a CSV file (from data) to a Ingestion Job
+     * @param mdtConfigName The name of the metadata configuration record
+     * @param jobId         The Id for the bulk job
+     * @return A key value map with the job details
+     */
     global static Map<String,Object> getBulkIngestionJobDetails(String mdtConfigName, String jobId){
         try{
             // Get all record info
@@ -438,7 +490,6 @@ global with sharing class Dc {
             throw new DataCloudUtilException(String.format(BULK_JOB_DETAILS_ERROR_MSG, new String[]{e.getMessage()}));
         }
     }
-
 
 
     /**

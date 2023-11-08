@@ -7,7 +7,7 @@
 Not really mandatory, but advised to populate.</inlineHelpText>
     <label>sObject Name</label>
     <length>80</length>
-    <required>true</required>
+    <required>false</required>
     <type>Text</type>
     <unique>false</unique>
 </CustomField>

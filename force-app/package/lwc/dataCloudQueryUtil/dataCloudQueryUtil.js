@@ -8,7 +8,7 @@ import {handleError}       from 'c/dataCloudUtils';
 import queryResultModal    from 'c/dataCloudQueryResultModal';
 
 // Apex methods
-import getMtdConfigOptions from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMtdConfigOptions";
+import getMtdConfigOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
 
 // Main class
 export default class DataCloudQueryUtil extends LightningElement {

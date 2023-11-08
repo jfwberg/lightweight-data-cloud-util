@@ -8,8 +8,8 @@ import {handleError}        from 'c/dataCloudUtils';
 import yamlModal            from 'c/dataCloudYamlModal';
 
 // Apex methods
-import getSObjectOptions    from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getSObjectOptions";
-import getSObjectFieldInfo  from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getSObjectFieldInfo";
+import getSObjectOptions    from "@salesforce/apex/DataCloudUtilLwcCtrl.getSObjectOptions";
+import getSObjectFieldInfo  from "@salesforce/apex/DataCloudUtilLwcCtrl.getSObjectFieldInfo";
 
 const columns = [
     { label: 'Source field (Salesforce)', fieldName: 'source'  },

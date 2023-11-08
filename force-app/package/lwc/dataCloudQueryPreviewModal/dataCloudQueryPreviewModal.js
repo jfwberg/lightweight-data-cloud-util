@@ -6,7 +6,7 @@ import LightningModal  from 'lightning/modal';
 import {handleError}   from 'c/dataCloudUtils';
 
 // Apex methods
-import getSoqlQueryTable from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getSoqlQueryTable";
+import getSoqlQueryTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getSoqlQueryTable";
 
 
 // Main class
@@ -49,16 +49,17 @@ export default class DataCloudQueryPreviewModal extends LightningModal  {
         try{
             this.loading = true;
             getSoqlQueryTable({
-                query   : this.config.query,
-                tooling : this.config.tooling
+                mdtConfigName : this.config.mdtConfigName,
+                query         : this.config.query,
+                tooling       : this.config.tooling
             })
             .then((result) => {
                 this.data = result.data;
                 for (let index = 0; index < result.columns.length; index++){
                     this.columns.push({ 
-                        label        : result.columns[index],
-                        fieldName    : result.columns[index],
-                        initialWidth : result.columns[index].length < 10 ? 120 : (result.columns[index].length * 12)
+                        label        : result.columns[index].columnLabel,
+                        fieldName    : result.columns[index].columnName,
+                        initialWidth : result.columns[index].columnLabel.length < 10 ? 120 : (result.columns[index].columnLabel.length * 12)
                     });
                 }
             })

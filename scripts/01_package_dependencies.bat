@@ -44,8 +44,10 @@ REM --------------------------------------------------------
 call sf org assign permset --name "Lightweight_Apex_Unit_Test_Util_v2"
 call sf org assign permset --name "Lightweight_REST_Util"
 call sf org assign permset --name "Lightweight_JSON_Util"
+
 call sf org assign permset --name "Lightweight_Data_Cloud_Auth_Provider"
 call sf org assign permset --name "Lightweight_Auth_Provider_Util_Admin"
+
 call sf org assign permset --name "Lightweight_Data_Cloud_Util"
 
 

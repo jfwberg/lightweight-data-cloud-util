@@ -9,10 +9,10 @@ import {handleError}           from 'c/dataCloudUtils';
 import mappingModal            from 'c/dataCloudMappingModal';
 
 // Apex methods
-import getMtdConfigOptions     from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getMtdConfigOptions";
-import getStreamingPlaceholder from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getStreamingPlaceholder";
-import sendDataStream          from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.sendDataStream";
-import testDataStream          from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.testDataStream";
+import getMtdConfigOptions     from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getStreamingPlaceholder from "@salesforce/apex/DataCloudUtilLwcCtrl.getStreamingPlaceholder";
+import sendDataStream          from "@salesforce/apex/DataCloudUtilLwcCtrl.sendDataStream";
+import testDataStream          from "@salesforce/apex/DataCloudUtilLwcCtrl.testDataStream";
 
 // Main class
 export default class DataCloudBulkIngestionUtil extends LightningElement {

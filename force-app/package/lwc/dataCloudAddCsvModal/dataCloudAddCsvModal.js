@@ -6,8 +6,8 @@ import LightningModal    from 'lightning/modal';
 import {handleError}   from 'c/dataCloudUtils';
 
 // Apex methods
-import addCsv            from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.addCsv";
-import getCsvPlaceholder from "@salesforce/apex/DataCloudBulkIngestionUtilLwcCtrl.getCsvPlaceholder";
+import addCsv            from "@salesforce/apex/DataCloudUtilLwcCtrl.addCsv";
+import getCsvPlaceholder from "@salesforce/apex/DataCloudUtilLwcCtrl.getCsvPlaceholder";
 
 // Main class
 export default class DataCloudAddCsvModal extends LightningModal  {

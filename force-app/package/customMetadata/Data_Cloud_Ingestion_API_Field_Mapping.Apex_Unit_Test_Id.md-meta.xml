@@ -10,7 +10,7 @@
         <field>Data_Cloud_Ingestion_API_Configuration__c</field>
         <value xsi:type="xsd:string">Apex_Unit_Test</value>
     </values>
-    <values>
+     <values>
         <field>Source__c</field>
         <value xsi:type="xsd:string">Id</value>
     </values>

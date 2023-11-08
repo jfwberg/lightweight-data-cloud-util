@@ -21,6 +21,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Smart_Device_Event_History__c.Event_Date__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>Smart_Device_Event_History__c.ReplayId__c</field>
         <readable>true</readable>
     </fieldPermissions>
