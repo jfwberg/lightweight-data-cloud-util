@@ -125,6 +125,86 @@ private with sharing class DcTest {
 
     }
 
+
+    @IsTest
+    static void getConfigMetadataRecordsPicklistOptions(){
+
+        // Variables to assert
+        List<Map<String,String>> response;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            response = Dc.getConfigMetadataRecordsPicklistOptions();
+        }
+        Test.stopTest();
+
+        // Validate
+        Assert.areEqual('Apex Unit Test', response[0].get('label'), 'Unexpected label');
+        Assert.areEqual('Apex_Unit_Test', response[0].get('value'), 'Unexpected value');
+    }
+
+    /** **************************************************************************************************** **
+     **                                         GLOBAL QUERY METHODS                                         **
+     ** **************************************************************************************************** **/
+    @IsTest
+    static void testExecuteQuery(){
+        // Variable to hold the test Exceptions
+        Exception generalException;
+        Exception validationException;
+        utl.Rst result;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Setup the callout response
+            utl.Mck.setResponse(200, '[query data]');
+
+            // happy path
+            result = Dc.executeQuery('Apex_Unit_Test', 'SELECT 1');
+
+            // Validation error path
+            try{
+                Dc.executeQuery( 'Apex_Unit_Test', null);
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                validationException = e;
+            }
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('DC_QUERY');
+
+                // No errors
+                Dc.executeQuery('Apex_Unit_Test', 'SELECT 1');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                generalException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Validate response
+        Assert.areEqual('{"sql":"SELECT 1"}', result.getRequest().getBody(), 'Unexpected query request body');
+        Assert.areEqual('[query data]',       result.getResponse().getBody(),'Unexpected query response body');
+
+        // Validate exception
+        utl.Tst.assertExceptionMessage(Dc.QUERY_CANNOT_BE_BLANK_MSG,validationException);
+
+        // Assert the general exception message
+        utl.Tst.assertExceptionMessage(Dc.QUERY_EXCEPTION_MSG, utl.Tst.getForcedExceptionMessage(), generalException);
+    }
+
+
     /** **************************************************************************************************** **
      **                                  GLOBAL STREAMING INGESTION METHODS                                  **
      ** **************************************************************************************************** **/
@@ -140,8 +220,8 @@ private with sharing class DcTest {
             utl.Mck.setResponse(202, '{"accepted" : true}');
 
             Dc.streamRecordsToDataCloudAsync(
-                JSON.serialize([SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()]),
-                'Apex_Unit_Test'
+                'Apex_Unit_Test',
+                JSON.serialize([SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()])
             );
         }
         Test.stopTest();
@@ -167,6 +247,17 @@ private with sharing class DcTest {
                 'Apex_Unit_Test',
                 [SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()]
             );
+
+            // Create an object list to test the overload method
+            Object[] ol = (Object[]) JSON.deserializeUntyped(JSON.serialize([SELECT Id, Username From User WHERE Id=:UserInfo.getUserId()]));
+
+            // No exception should have been thrown
+            Dc.streamRecordsToDataCloud(
+                'Apex_Unit_Test',
+                new List<Map<String,Object>>{(Map<String,Object>) ol[0]}
+            );
+
+
         }
         Test.stopTest();
 
@@ -271,6 +362,95 @@ private with sharing class DcTest {
 
         // Assert the add CSV error
         utl.Tst.assertExceptionMessage(Dc.UPDATE_STATE_ERROR_MSG, 'Bad Request :: Data Cloud Error Message Update', closeException);
+    }
+
+
+    @IsTest
+    static void testGetBulkIngestionJobs(){
+
+        // Jobs to assert
+        List<Map<String,Object>> jobs;
+
+        // Variable to hold the test Exception
+        Exception generalException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Setup the callout responses
+            utl.Mck.setResponse('{ "data": [ { "id": "4d5a4477-e27f-4bc1-a219-31e79407eade" }, { "id": "9d5a4477-e27f-4bc1-a219-31e79407eade" } ] }');
+
+            // Happy path
+            jobs = Dc.getBulkIngestionJobs( 'Apex_Unit_Test');
+
+            // Error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('LIST_BULK_JOBS');
+
+                // Now we have a fail
+                jobs = Dc.getBulkIngestionJobs( 'Apex_Unit_Test');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                generalException = e;
+            }
+        }
+        Test.stopTest();
+
+        // This test validates all calls run correctly
+        Assert.areEqual('4d5a4477-e27f-4bc1-a219-31e79407eade', (String) jobs[0].get('id'), 'Unexpected jobId');
+        Assert.areEqual('9d5a4477-e27f-4bc1-a219-31e79407eade', (String) jobs[1].get('id'), 'Unexpected jobId');
+
+        // Assert the general exception message
+        utl.Tst.assertExceptionMessage(Dc.LIST_BULK_JOBS_ERROR_MSG, utl.Tst.getForcedExceptionMessage(), generalException);
+    }
+
+
+    @IsTest
+    static void testGetBulkIngestionJobDetails(){
+
+        // Jobs to assert
+        Map<String,Object> jobInfo;
+
+        // Variable to hold the test Exception
+        Exception generalException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Setup the callout responses
+            utl.Mck.setResponse('{ "id": "4d5a4477-e27f-4bc1-a219-31e79407eade" }');
+
+            // Happy path
+            jobInfo = Dc.getBulkIngestionJobDetails( 'Apex_Unit_Test','4d5a4477-e27f-4bc1-a219-31e79407eade');
+
+            // Error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('BULK_JOB_DETAILS');
+
+                // Now we have a fail
+                jobInfo = Dc.getBulkIngestionJobDetails( 'Apex_Unit_Test','4d5a4477-e27f-4bc1-a219-31e79407eade');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                generalException = e;
+            }
+        }
+        Test.stopTest();
+
+        // This test validates all calls run correctly
+        Assert.areEqual('4d5a4477-e27f-4bc1-a219-31e79407eade', (String) jobInfo.get('id'), 'Unexpected jobId');
+
+        // Assert the general exception message
+        utl.Tst.assertExceptionMessage(Dc.BULK_JOB_DETAILS_ERROR_MSG, utl.Tst.getForcedExceptionMessage(), generalException);
     }
 
 

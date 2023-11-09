@@ -49,5 +49,6 @@ call sf org assign permset --name "Lightweight_Data_Cloud_Auth_Provider"
 call sf org assign permset --name "Lightweight_Auth_Provider_Util_Admin"
 
 call sf org assign permset --name "Lightweight_Data_Cloud_Util"
+call sf org assign permset --name "Lightweight_Data_Cloud_Util_UI"
 
 

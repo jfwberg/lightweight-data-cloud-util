@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <applicationVisibilities>
+        <application>Data_Cloud_Util</application>
+        <visible>true</visible>
+    </applicationVisibilities>
+    <classAccesses>
+        <apexClass>DataCloudUtilLwcCtrl</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <description>Access required to the "Lightweight - Data Cloud Util" UI functions</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Lightweight - Data Cloud Util - UI</label>
+    <tabSettings>
+        <tab>Data_Cloud_Ingestion</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Data_Cloud_Query</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Data_Cloud_Utility</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+</PermissionSet>

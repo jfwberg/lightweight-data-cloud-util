@@ -32,32 +32,32 @@ global with sharing class Dc {
     // Streaming Ingestion (Error) Messages
     @TestVisible private static final String NO_MDT_RECORD_FOUND_MSG    = 'No Data_Cloud_Ingestion_API_Configuration__mdt record with the name "{0}" exists.';
     @TestVisible private static final String CALLOUT_EXCEPTION_MSG      = 'Something went wrong during the callout to the Ingest API endpoint: {0}';
-    
+
     // Get ordered colum names (Error) Messages
     @TestVisible private static final String INVALID_MTD_JSON_ERROR_MSG = 'Something went wrong extracting the column data from the metadata JSON Object: {0}';
     @TestVisible private static final String INVALID_MTD_INPUT_ERROR_MSG= 'The input metadata map cannot be empty';
-    
+
     // Bulk Ingestion Utils (Error) Messages
     @TestVisible private static final String CSV_LIST_INPUT_ERROR_MSG   = 'There should be at least 1 CSV file and no more than 8 csv files in a synchronous transaction';
     @TestVisible private static final String LIST_BULK_JOBS_ERROR_MSG   = 'Something went wrong whilst fetching the list of ingestion API Bulk Jobs: {0}';
     @TestVisible private static final String BULK_JOB_DETAILS_ERROR_MSG = 'Something went wrong whilst fetching the details for the ingestion API Bulk Job: {0}';
-    
+
     // Create Bulk Job (Error) Messages
     @TestVisible private static final String INVALID_OPERATION_ERROR_MSG= 'Invalid operation type for the bulk ingestion job. "{0}". Valid values are "upsert" or "delete" (case sensitive)';
     @TestVisible private static final String CREATE_BULK_JOB_ERROR_MSG  = 'There was an error creating the Bulk Ingestion Job: {0}';
-    
+
     // Add CSV to Bulk Job (Error) Messages
     @TestVisible private static final String INVALID_CSV_ERROR_MSG      = 'You cannot add a blank CSV file to the Ingestion Job';
     @TestVisible private static final String ADD_CSV_ERROR_MSG          = 'There was an error whilst adding CSV Data to the Bulk Ingestion Job: {0}';
-    
+
     // Add CSV to Bulk Job (Error) Messages
     @TestVisible private static final String INVALID_STATE_ERROR_MSG    = 'Invalid state type for the bulk ingestion job. "{0}". Valid values are "UploadComplete" or "Aborted" (case sensitive)';
     @TestVisible private static final String UPDATE_STATE_ERROR_MSG     = 'There was an error whilst updating the state of the Bulk Ingestion Job: {0}';
 
     // Delete Bulk Job (Error) Messages
     @TestVisible private static final String DELETE_ERROR_MSG           = 'There was an error whilst updating the state of the Bulk Ingestion Job: {0}';
-    
-    
+
+
     /** **************************************************************************************************** **
      **                                        GLOBAL SUPPORT METHODS                                        **
      ** **************************************************************************************************** **/
@@ -71,7 +71,7 @@ global with sharing class Dc {
     global static Data_Cloud_Ingestion_API_Configuration__mdt getMetadataRecord(String mdtRecordName){
         for(Data_Cloud_Ingestion_API_Configuration__mdt record : [
                                                                 SELECT
-                                                                    DeveloperName, Ingestion_API_Connector_Name__c, Ingestion_API_Target_Object_Name__c, 
+                                                                    DeveloperName, Ingestion_API_Connector_Name__c, Ingestion_API_Target_Object_Name__c,
                                                                     Named_Credential_Name__c, Salesforce_Named_Credential_Name__c, sObject_Name__c,
                                                                     (SELECT Source__c, Target__c, Data_Cloud_Field_Type__c FROM Data_Cloud_Ingestion_API_Field_Mappings__r ORDER BY DeveloperName)
                                                                 FROM
@@ -96,7 +96,7 @@ global with sharing class Dc {
      * @return A set of column names in the correct order
      */
     global static Set<String> getOrderedColumnNamesFromMetadata( Map<String,Object> metadataMap){
-        
+
         // Input validation for the columns
         if(metadataMap == null){
             throw new DataCloudUtilException(INVALID_MTD_INPUT_ERROR_MSG);
@@ -140,10 +140,14 @@ global with sharing class Dc {
      * @return      An LWC ready to use set of picklist values
      */
     global static List<Map<String,String>> getConfigMetadataRecordsPicklistOptions(){
+
+        // Filter out the test metadata, except whilst testing
+        Set<String> testFilter = (!Test.isRunningTest()) ? new Set<String>{'Apex_Unit_Test'} : new Set<String>();
+
         List<Map<String,String>> output = new List<Map<String,String>>();
-        for(Data_Cloud_Ingestion_API_Configuration__mdt record : [  SELECT Label,DeveloperName 
+        for(Data_Cloud_Ingestion_API_Configuration__mdt record : [  SELECT Label,DeveloperName
                                                                     FROM Data_Cloud_Ingestion_API_Configuration__mdt
-                                                                    WHERE (NOT DeveloperName LIKE 'Apex_Unit_Test') 
+                                                                    WHERE (NOT DeveloperName IN :testFilter)
                                                                     WITH USER_MODE ORDER BY Label LIMIT 1000]){
             output.add(new Map<String,String>{
                 'label' => record.Label,
@@ -153,7 +157,7 @@ global with sharing class Dc {
         return output;
     }
 
-    
+
     /** **************************************************************************************************** **
      **                                         GLOBAL QUERY METHODS                                         **
      ** **************************************************************************************************** **/
@@ -171,14 +175,18 @@ global with sharing class Dc {
         }
 
         try{
+
+            // Force an exception for testing purposes
+            utl.Tst.forceException('DC_QUERY');
+
             // Query the record
-            Data_Cloud_Ingestion_API_Configuration__mdt record = utl.Dc.getMetadataRecord(mdtConfigName);
+            Data_Cloud_Ingestion_API_Configuration__mdt record = getMetadataRecord(mdtConfigName);
 
             // Sanatize the query as the api is very sensitive to line breaks and tabs for some reason
             query = query.replaceAll('\n', ' ');
             query = query.replaceAll('\t', ' ');
             query = query.trim();
-            
+
             // Execute the query
             return new utl.Rst(record.Named_Credential_Name__c, true)
                 .setHandleSfEndpoint(false)
@@ -191,7 +199,7 @@ global with sharing class Dc {
             throw new DataCloudUtilException(String.format(QUERY_EXCEPTION_MSG, new String[]{e.getMessage()}));
         }
     }
-   
+
 
     /** **************************************************************************************************** **
      **                                  GLOBAL STREAMING INGESTION METHODS                                  **
@@ -207,7 +215,7 @@ global with sharing class Dc {
 
         // We need to rebuilt the records from the JSON
         streamRecordsToDataCloud(
-            mdtConfigName,    
+            mdtConfigName,
             (SObject[]) JSON.deserialize(serializedRecords, Type.forName('List<SObject>'))
         );
     }
@@ -220,23 +228,42 @@ global with sharing class Dc {
      * @throws DataCloudUtilException In any unexpected event
      */
     global static void streamRecordsToDataCloud(String mdtConfigName, sObject[] records){
-        try{
-            // Get all record info
-            Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
 
-            // Create the payload
-            String payload = createIngestStreamPayload(
-                records,
-                createFieldMapping(config.Data_Cloud_Ingestion_API_Field_Mappings__r),
-                false
-            );
+        // Get all record info
+        Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
 
-            // Stream the data with the generated payload
-            streamDataToDataCloud(mdtConfigName, payload, false);
+        // Create the payload
+        String payload = createIngestStreamPayload(
+            records,
+            createFieldMapping(config.Data_Cloud_Ingestion_API_Field_Mappings__r),
+            false
+        );
 
-        }catch(Exception e){
-            throw new DataCloudUtilException(String.format(CALLOUT_EXCEPTION_MSG, new String[]{e.getMessage()}));
-        }
+        // Stream the data with the generated payload
+        streamDataToDataCloud(mdtConfigName, payload, false);
+    }
+
+
+    /**
+     * @description Method to stream a list of records to data cloud based on a mtd configuration
+     * @param  mdtConfigName          The API name of the metadata configuration record
+     * @param  records                The list of Object maps you want to stream
+     * @throws DataCloudUtilException In any unexpected event
+     */
+    global static void streamRecordsToDataCloud(String mdtConfigName, List<Map<String,Object>> records){
+
+        // Get all record info
+        Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
+
+        // Create the payload
+        String payload = createIngestStreamPayload(
+            records,
+            createFieldMapping(config.Data_Cloud_Ingestion_API_Field_Mappings__r),
+            false
+        );
+
+        // Stream the data with the generated payload
+        streamDataToDataCloud(mdtConfigName, payload, false);
     }
 
 
@@ -340,6 +367,7 @@ global with sharing class Dc {
     }
 
 
+
     /**
      * @description Method to create an ingestion stream payload from records and
      *              a field mapping. Overload method of the records object
@@ -378,7 +406,7 @@ global with sharing class Dc {
         return prettyPrint ? JSON.serializePretty(data) : JSON.serialize(data);
     }
 
-    
+
     /** **************************************************************************************************** **
      **                                    GLOBAL BULK INGESTION METHODS                                     **
      ** **************************************************************************************************** **/
@@ -435,6 +463,9 @@ global with sharing class Dc {
      */
     global static List<Map<String,Object>> getBulkIngestionJobs(String mdtConfigName){
         try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('LIST_BULK_JOBS');
+
             // Output of lists
             List<Map<String,Object>> output = new List<Map<String,Object>>();
 
@@ -473,6 +504,9 @@ global with sharing class Dc {
      */
     global static Map<String,Object> getBulkIngestionJobDetails(String mdtConfigName, String jobId){
         try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('BULK_JOB_DETAILS');
+
             // Get all record info
             Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
 
@@ -528,7 +562,7 @@ global with sharing class Dc {
 
             // Execute the call out for a specific named credential
             utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
-                .setMockResponseIdentifier('CREATE_BULK_JOB')    
+                .setMockResponseIdentifier('CREATE_BULK_JOB')
                 .setCorrelationIdHeader(correlationId)
                 .setHandleSfEndpoint(false)
                 .setRequestIdHeader(null)
@@ -536,8 +570,6 @@ global with sharing class Dc {
                 .setMethod('POST')
                 .setBody(body)
                 .call();
-
-            System.debug(callout.getResponse().getBody());
 
             // Set the callout during tests, so it can be asserted
             if(Test.isRunningTest()){testCallout = callout;}
@@ -550,7 +582,7 @@ global with sharing class Dc {
         }
     }
 
-    
+
     /**
      * @description Method to add a CSV file (from data) to a Ingestion Job
      * @param mdtConfigName The name of the metadata configuration record
@@ -574,7 +606,7 @@ global with sharing class Dc {
 
             // Execute the call out for a specific named credential
             utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
-                .setMockResponseIdentifier('ADD_CSV_TO_BULK_JOB')    
+                .setMockResponseIdentifier('ADD_CSV_TO_BULK_JOB')
                 .setCorrelationIdHeader(correlationId)
                 .setHandleSfEndpoint(false)
                 .setRequestIdHeader(null)
@@ -628,7 +660,7 @@ global with sharing class Dc {
 
             // Execute the call out for a specific named credential
             utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
-                .setMockResponseIdentifier('UPDATE_BULK_JOB')    
+                .setMockResponseIdentifier('UPDATE_BULK_JOB')
                 .setCorrelationIdHeader(correlationId)
                 .setHandleSfEndpoint(false)
                 .setRequestIdHeader(null)
@@ -664,7 +696,7 @@ global with sharing class Dc {
 
             // Execute the call out for a specific named credential
             utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
-                .setMockResponseIdentifier('DELETE_BULK_JOB')    
+                .setMockResponseIdentifier('DELETE_BULK_JOB')
                 .setCorrelationIdHeader(correlationId)
                 .setHandleSfEndpoint(false)
                 .setRequestIdHeader(null)
