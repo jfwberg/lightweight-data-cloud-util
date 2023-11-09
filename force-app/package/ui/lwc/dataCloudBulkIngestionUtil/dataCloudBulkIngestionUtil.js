@@ -4,6 +4,7 @@ import { LightningElement } from "lwc";
 
 // Custom Utils
 import {handleError}        from 'c/dataCloudUtils';
+import {openHelpModal}      from 'c/dataCloudUtils';
 
 // Modals
 import mappingModal         from 'c/dataCloudMappingModal';
@@ -111,10 +112,44 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleNew(){
         try{
             this.loading = true;
-            newJob( {mdtConfigName : this.mdtConfigRecord})
+            newJob( {
+                mdtConfigName : this.mdtConfigRecord,
+                jobType       : 'upsert'
+            })
                 .then((result) => {
                     LightningAlert.open({
-                        message: 'Succesfully created a new bulk job with Id : "' + result +'"',
+                        message: 'Succesfully created a new bulk UPSERT job with Id : "' + result +'"',
+                        label: 'Success',
+                        theme : 'success'
+                    });
+
+                    // Update the job table after creation
+                    this.handleGetIngestionJobTable();
+                })
+                .catch((error) => {
+                    handleError(error);
+                })
+                .finally(()=>{
+                    this.mdtConfigOptionsLoaded = true;
+                    this.loading = false;
+                });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
+        }
+    }
+
+
+    handleNewDelete(){
+        try{
+            this.loading = true;
+            newJob( {
+                mdtConfigName : this.mdtConfigRecord,
+                jobType       : 'delete'
+            })
+                .then((result) => {
+                    LightningAlert.open({
+                        message: 'Succesfully created a new bulk DELETE job with Id : "' + result +'"',
                         label: 'Success',
                         theme : 'success'
                     });
@@ -242,7 +277,6 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             getIngestionJobTable({mdtConfigName : this.mdtConfigRecord})
                 .then((result) => {
                     this.jobTableData = result;
-                    console.log(this.jobTableData);
                 })
                 .catch((error) => {
                     handleError(error);
@@ -279,6 +313,10 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         this.handleNew();
     }
 
+    handleClickNewDelete(){
+        this.handleNewDelete();
+    }
+
     handleClickRefresh(){
         this.handleGetIngestionJobTable();
     }
@@ -287,6 +325,20 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         this.handleOpenMappingModal({
             mdtConfigRecord : this.mdtConfigRecord
         });
+    }
+
+    handleClickHelp(){
+        openHelpModal(
+            'Tool to manage Bulk ingestion jobs based on a metadata configuration. Note that CSVs need to include all headers even if they are not used or it will result in an error.' +
+            '<br/> Add CSV will generate a sample file based on the target mapping.<br/>' +
+            '<ul>'+
+            '<li>Press <i>complete</i> to start the job when you have added all your CSVs</li>'+
+            '<li>You can only have 1 open or in progress job at a time: No matter if it is an upsert or delete operation</li>'+
+            '<li>You can only delete Aborted or Completed jobs</li>'+
+            '<li>You can only abort open jobs, once started you cannot abort the job</li>'+
+            '<li>Breaking any of these job status rules will all give the same error message: <li>"The request conflicts with current state of the target resource"</li> This is just the API so be aware of the different rules regarding the job states</li>' +
+            '</ul>'
+        );
     }
 
 

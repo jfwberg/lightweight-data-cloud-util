@@ -1,6 +1,22 @@
 {
   "packageDirectories": [
     {
+        "path": "force-app/connection",
+        "default": false,
+        "package": "Lightweight - Data Cloud Util - Smart Device Demo",
+        "versionName": "v59.0 - 0.1",
+        "versionNumber": "0.1.0.NEXT",
+        "versionDescription": "A demo using the Data Cloud Utility"  
+    },
+    {
+        "path": "force-app/demo",
+        "default": false,
+        "package": "Lightweight - Data Cloud Util - Smart Device Demo",
+        "versionName": "v59.0 - 0.1",
+        "versionNumber": "0.1.0.NEXT",
+        "versionDescription": "A demo using the Data Cloud Utility"  
+    },
+    {
       "path": "force-app/package",
       "default": true,
       "package": "Lightweight - Data Cloud Util",

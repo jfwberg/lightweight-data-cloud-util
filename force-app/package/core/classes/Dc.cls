@@ -616,8 +616,6 @@ global with sharing class Dc {
                 .setBody(csvData)
                 .call();
 
-                System.debug('Add CSV: ' + callout.getResponse().getBody());
-
             // Set the callout during tests, so it can be asserted
             if(Test.isRunningTest()){testCallout = callout;}
 
@@ -672,8 +670,6 @@ global with sharing class Dc {
             // Set the callout during tests, so it can be asserted
             if(Test.isRunningTest()){testCallout = callout;}
 
-            System.debug('State: ' + callout.getResponse().getBody());
-
         }catch(Exception e){
             throw new DataCloudUtilException(String.format(UPDATE_STATE_ERROR_MSG, new String[]{e.getMessage()}));
         }
@@ -706,8 +702,6 @@ global with sharing class Dc {
 
             // Set the callout during tests, so it can be asserted
             if(Test.isRunningTest()){testCallout = callout;}
-
-            System.debug('Delete: ' + callout.getResponse().getBody());
 
         }catch(Exception e){
             throw new DataCloudUtilException(String.format(DELETE_ERROR_MSG, new String[]{e.getMessage()}));

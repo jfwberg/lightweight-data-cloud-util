@@ -16,6 +16,10 @@
         </div>
     </lightning-modal-body>
     <lightning-modal-footer>
-        <lightning-button label="Close" onclick={handleClickClose}></lightning-button>
+        <lightning-button-group>
+            <lightning-button label="Download" onclick={handleClickDownload} variant={downloadVariant}></lightning-button>
+            <lightning-button label="Copy"     onclick={handleClickCopy}     variant={variant}></lightning-button>
+            <lightning-button label="Close"    onclick={handleClickClose}></lightning-button>
+        </lightning-button-group>
     </lightning-modal-footer>
 </template>

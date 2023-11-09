@@ -6,6 +6,7 @@ public with sharing class SmartDeviceEventDemoLwcCtrl {
             // Create a new platform event
             EventBus.publish(new Smart_Device_Event__e(
                 Action__c        = 'Switch State',
+                Event_Date__c    = Date.today(),
                 Device_Type__c   = Device,
                 Status_Code__c   = (action == 'on') ? 1 : 0,
                 Status_Reason__c = 'Switched device "'+device+'" to state "'+action+'"',
@@ -14,6 +15,7 @@ public with sharing class SmartDeviceEventDemoLwcCtrl {
 
             // Return the success message
             return 'Successfully updated the state for device "'+device+'" to "'+action+'"';
+            
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }

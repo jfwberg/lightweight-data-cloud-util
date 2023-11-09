@@ -4,6 +4,7 @@ import { LightningElement }    from "lwc";
 
 // Custom Utils
 import {handleError}           from 'c/dataCloudUtils';
+import {openHelpModal}         from 'c/dataCloudUtils';
 
 // Modals
 import mappingModal            from 'c/dataCloudMappingModal';
@@ -165,6 +166,12 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         this.handleOpenMappingModal({
             mdtConfigRecord : this.mdtConfigRecord
         });
+    }
+
+    handleClickHelp(){
+        openHelpModal(
+            'Tool to send an ingestion streaming payload to Data Cloud. Based on the Metadata Configuration a sample payload is automatically generated based on the target fields in the mapping.'
+        );
     }
 
 

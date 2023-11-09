@@ -3,7 +3,7 @@
 # For useful gitignore templates see: https://github.com/github/gitignore
 
 #Demo data for my own tests so api keys wont go public, even though they are dummy ones
-force-demo-data/
+force-app/connection/
 
 # Salesforce cache
 .sf/

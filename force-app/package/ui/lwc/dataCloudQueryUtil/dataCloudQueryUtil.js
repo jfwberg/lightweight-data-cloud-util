@@ -1,8 +1,9 @@
 // Lightning stuff
-import { LightningElement }from "lwc";
+import {LightningElement}  from "lwc";
 
 // Custom Utils
 import {handleError}       from 'c/dataCloudUtils';
+import {openHelpModal}     from 'c/dataCloudUtils';
 
 // Modals
 import queryResultModal    from 'c/dataCloudQueryResultModal';
@@ -14,7 +15,7 @@ import getMtdConfigOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdCon
 export default class DataCloudQueryUtil extends LightningElement {
 
     // The query
-    query = 'SELECT\n\tactivity_category__c,\n\tactivity_detail__c,\n\tactivity_duration__c,\n\tactivity_id__c,\n\tactivity_name__c,\n\tcategory__c,\n\tDataSource__c,\n\tDataSourceObject__c,\n\tdate__c,\n\tdateTime__c\nFROM\n\tAC_Demo_Web_Streaming_activity_796CF__dlm\nLIMIT 1';
+    query = 'SELECT 1';
 
     // Indicator to view the button
     mdtConfigOptionsLoaded = false;
@@ -100,6 +101,12 @@ export default class DataCloudQueryUtil extends LightningElement {
      ** **************************************************************************************************** **/
     handleClickExecuteQuery(){
         this.handleOpenQueryResultModal();
+    }
+
+    handleClickHelp(){
+        openHelpModal(
+            'Tool to generate a table view or CSV from a Data Cloud SQL Query. The query is executed against the Data Cloud named credential as specified in the metadata configuration that is selected.'
+        );
     }
 
 

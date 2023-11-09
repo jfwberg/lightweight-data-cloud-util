@@ -202,12 +202,12 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static String newJob(String mdtConfigName){
+    public static String newJob(String mdtConfigName, String jobType){
         try{
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
 
-            return Dc.createIngestionBulkJob(mdtConfigName, utl.Rst.guid(), 'upsert');
+            return Dc.createIngestionBulkJob(mdtConfigName, utl.Rst.guid(), jobType);
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -220,7 +220,7 @@ public with sharing class DataCloudUtilLwcCtrl {
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
 
-            Dc.updateIngestionBulkJobState(mdtConfigName, utl.Rst.guid(), jobId, 'Aborted');
+            Dc.updateIngestionBulkJobState(mdtConfigName, jobId, jobId, 'Aborted');
             return true;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -234,7 +234,7 @@ public with sharing class DataCloudUtilLwcCtrl {
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
 
-            Dc.updateIngestionBulkJobState(mdtConfigName, utl.Rst.guid(), jobId, 'UploadComplete');
+            Dc.updateIngestionBulkJobState(mdtConfigName, jobId, jobId, 'UploadComplete');
             return true;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -248,7 +248,7 @@ public with sharing class DataCloudUtilLwcCtrl {
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
 
-            Dc.deleteIngestionBulkJob(mdtConfigName, utl.Rst.guid(), jobId);
+            Dc.deleteIngestionBulkJob(mdtConfigName, jobId, jobId);
             return true;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());

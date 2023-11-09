@@ -6,6 +6,7 @@
  * @description    Test Class for the Data Cloud LWC Controller Methods
  */
 @IsTest
+@SuppressWarnings('PMD.ApexUnitTestClassShouldHaveAsserts')
 private with sharing class DataCloudUtilLwcCtrlTest {
 
     /** **************************************************************************************************** **
@@ -208,7 +209,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         System.runAs(TST_USER){
             // Happy Path
             utl.Mck.addResponse('CREATE_BULK_JOB', 202, CREATE_BULK_JOB_RESPONSE);
-            DataCloudUtilLwcCtrl.newJob('Apex_Unit_Test');
+            DataCloudUtilLwcCtrl.newJob('Apex_Unit_Test','delete');
 
             // Forced error path
             try{
@@ -216,7 +217,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
                 utl.Tst.addForcedException('AURA_EXCEPTION');
 
                 // Execute method
-                DataCloudUtilLwcCtrl.newJob('Apex_Unit_Test');
+                DataCloudUtilLwcCtrl.newJob('Apex_Unit_Test','upsert');
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();

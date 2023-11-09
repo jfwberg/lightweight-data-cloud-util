@@ -130,13 +130,10 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
 
     handleClickHelp(){
         openHelpModal(
-            'Data Cloud SObject To CSV Utility',
             'Tool to generate a CSV from a query that allows from sub queries and parent relationships. When a metadata record is selected the mapping is used to update the column headers to the target column names.'
         );
     }
 
-
-    
 
     /** **************************************************************************************************** **
      **                                            MODAL METHODS                                             **

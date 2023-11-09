@@ -6,13 +6,14 @@
 **/appMenus/**
 **/objectTranslations/**
 **/connectedApps/**
+**/flows/**
+#**/customMetadata/**
+
+# Comment when deploying the connection
 **/namedCredentials/**
 **/externalCredentials/**
-**/flows/**
 **/authproviders/**
-#**/customMetadata/**
 **/remoteSiteSettings/**
-
 
 # LWC configuration files
 **/jsconfig.json

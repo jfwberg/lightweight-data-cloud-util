@@ -1,5 +1,5 @@
 <template>
-    <lightning-card icon-name="standard:entitlement" variant="base">
+    <lightning-card icon-name="standard:sales_value" variant="base">
         <lightning-spinner 
             if:true={loading}
             alternative-text="Loading" 
@@ -10,12 +10,23 @@
             Data Cloud Query Utility
         </div>
         <div slot="actions">
-            <lightning-button
-            variant="neutral"
-            label="Execute Query" 
-            onclick={handleClickExecuteQuery}
-            disabled={actionDisabled}
-            ></lightning-button>
+            <lightning-button-group>
+                <lightning-button
+                    variant="neutral"
+                    label="Execute Query" 
+                    onclick={handleClickExecuteQuery}
+                    disabled={actionDisabled}
+                ></lightning-button>
+            
+                <lightning-button
+                    variant="neutral"
+                    onclick={handleClickHelp} 
+                    icon-name="utility:help"
+                    icon-position="right"
+                    alternative-text="Help"
+                ></lightning-button>
+            </lightning-button-group>
+
         </div>
         <div slot="footer">
 

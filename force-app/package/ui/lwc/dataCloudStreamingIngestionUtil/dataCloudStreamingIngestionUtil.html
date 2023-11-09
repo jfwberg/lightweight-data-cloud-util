@@ -1,5 +1,5 @@
 <template>
-    <lightning-card icon-name="standard:assigned_resource" variant="base">
+    <lightning-card icon-name="standard:code_set" variant="base">
         <lightning-spinner 
             if:true={loading}
             alternative-text="Loading" 
@@ -12,24 +12,32 @@
         <div slot="actions">
             <lightning-button-group>
                 <lightning-button 
-                variant="neutral"
-                label="Send" 
-                onclick={handleClickSend} 
-                disabled={buttonsEnabled}
+                    variant="neutral"
+                    label="Send" 
+                    onclick={handleClickSend} 
+                    disabled={buttonsEnabled}
                 ></lightning-button>
                 
                 <lightning-button 
-                variant="neutral"
-                label="Test" 
-                onclick={handleClickTest} 
-                disabled={buttonsEnabled}
-            ></lightning-button>
+                    variant="neutral"
+                    label="Test" 
+                    onclick={handleClickTest} 
+                    disabled={buttonsEnabled}
+                ></lightning-button>
             
                 <lightning-button
-                variant="neutral"
-                label="Show Mapping" 
-                onclick={handleClickShowMapping} 
-                disabled={buttonsEnabled}
+                    variant="neutral"
+                    label="Show Mapping" 
+                    onclick={handleClickShowMapping} 
+                    disabled={buttonsEnabled}
+                ></lightning-button>
+
+                <lightning-button
+                    variant="neutral"
+                    onclick={handleClickHelp} 
+                    icon-name="utility:help"
+                    icon-position="right"
+                    alternative-text="Help"
                 ></lightning-button>
             </lightning-button-group>
         </div>

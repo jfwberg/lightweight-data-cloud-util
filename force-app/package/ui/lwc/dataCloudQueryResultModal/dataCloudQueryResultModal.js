@@ -1,13 +1,15 @@
 // Lightning stuff
-import { api }         from 'lwc';
-import LightningModal  from 'lightning/modal';
+import { api }               from 'lwc';
+import LightningModal        from 'lightning/modal';
 
 // Custom Utils
-import {handleError}   from 'c/dataCloudUtils';
+import {handleError}         from 'c/dataCloudUtils';
+import {handleDownload}      from 'c/dataCloudUtils';
+import {copyTextToClipboard} from 'c/dataCloudUtils';
 
 // Apex methods
-import getDcQueryCsv   from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryCsv";
-import getDcQueryTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryTable";
+import getDcQueryCsv         from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryCsv";
+import getDcQueryTable       from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryTable";
 
 
 // Main class
@@ -18,6 +20,10 @@ export default class DataCloudQueryResultModal extends LightningModal  {
     
     // Loading indicator for the spinner
     loading = false;
+
+    // Copy button style
+    variant         = 'brand';
+    downloadVariant = 'brand';
     
     // The CSV string that will be loaded
     csvData;
@@ -137,5 +143,46 @@ export default class DataCloudQueryResultModal extends LightningModal  {
      ** **************************************************************************************************** **/
     handleClickClose() {
         this.close();
+    }
+
+
+    handleClickCopy(){
+        try{
+            // Execute copy
+            copyTextToClipboard(this.csvData);
+
+            // Change color to green
+            this.variant = 'success';
+        }catch(error){
+            // Change color to red
+            this.variant = 'destructive';
+            handleError(error);
+        }
+    }
+
+    handleClickDownload() {
+        try{
+            this.loading = true;
+
+            handleDownload(
+                this.template,
+                'Data_Cloud_Query',
+                '.csv',
+                'text/csv; charset=utf-8;',
+                this.csvData,
+                true
+            );
+
+            // change button color to green
+            this.downloadVariant = 'success';
+
+        }catch(error){
+            // Change color to red
+            this.variant = 'destructive';
+            handleError(error);
+
+        }finally{
+            this.loading = false;
+        }
     }
 }

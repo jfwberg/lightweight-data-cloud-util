@@ -114,13 +114,18 @@ utl.Rst callout = utl.Dc.executeQuery(String mdtConfigName, String query);
 /**
  * STREAMING INGESTION API METHODS
  */
-// Method to synchronously call the ingest API with the records and the config from the metadata record
-utl.Dc.streamRecordsToDataCloud(String mdtConfigName, sObject[] records);
-
 // Method to asynchronously call the ingest API, in this case due to the "future" nature of callout
 // we are required to serialize the sObjects using JSON.serialize(sObject[] records)
 // Use this on (platform event) triggers
 utl.Dc.streamRecordsToDataCloudAsync(String mdtConfigName, String serializedRecords);
+
+
+// Method to synchronously call the ingest API with the records and the config from the metadata record
+utl.Dc.streamRecordsToDataCloud(String mdtConfigName, sObject[] records);
+
+// Method to synchronously call the ingest API with the records and the config from the metadata record
+// This method takes a list of object maps as the record parameter
+utl.Dc.streamRecordsToDataCloud(String mdtConfigName, List<Map<String,Object>> records);
 
 // Method to call the ingestion API with a custom generated payload and the option to test the payload
 // against the payload validation endpoint

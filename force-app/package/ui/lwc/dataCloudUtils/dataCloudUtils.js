@@ -7,9 +7,8 @@ import helpModal            from 'c/dataCloudHelpModal';
 /** **************************************************************************************************** **
  **                                            MODAL METHODS                                             **
  ** **************************************************************************************************** **/
-export function openHelpModal(header, content){
+export function openHelpModal(content){
     helpModal.open({
-        header : header,
         content: content,
         size: 'small',
     }).then((result) => {
@@ -71,4 +70,22 @@ export function copyTextToClipboard(content){
 
 	// Remove the temporary element from the DOM as it is no longer needed
 	tempTextAreaField.remove();
+}
+
+
+/**
+ * Method to download a specific file
+ */
+export function handleDownload(template, fileName, fileExtension, mimeType, content, addTimestamp){
+
+    // Setup download link
+    let a = document.createElement('a');
+    a.style.display = 'none';  
+    a.setAttribute('download', fileName + ((addTimestamp) ? ('_' + new Date().toISOString().replace(/(\.\d{3})|[^\d]/g,''))  : '') + fileExtension);
+    a.setAttribute('href', 'data:' + mimeType + ',' + encodeURIComponent(content));
+    
+    // Add, execute and remove from DOM
+    template.appendChild(a);
+    a.click();
+    template.removeChild(a);
 }

@@ -1,5 +1,5 @@
 <template>
-    <lightning-card icon-name="standard:entitlement" variant="base">
+    <lightning-card icon-name="standard:code_playground" variant="base">
         <lightning-spinner 
             if:true={loading}
             alternative-text="Loading" 
@@ -11,12 +11,23 @@
             Create Data Cloud Ingestion API YAML from SObject
         </div>
         <div slot="actions">
-            <lightning-button 
-            variant="neutral"
-            label="Create YAML" 
-            onclick={handleClickCreateYaml} 
-            disabled={actionsEnabled}
-            ></lightning-button>
+            <lightning-button-group>
+                
+                <lightning-button 
+                    variant="neutral"
+                    label="Create YAML" 
+                    onclick={handleClickCreateYaml} 
+                    disabled={actionsEnabled}
+                ></lightning-button>
+
+                <lightning-button
+                    variant="neutral"
+                    onclick={handleClickHelp} 
+                    icon-name="utility:help"
+                    icon-position="right"
+                    alternative-text="Help"
+                 ></lightning-button>
+            </lightning-button-group>
 
         </div>
         <div slot="footer">

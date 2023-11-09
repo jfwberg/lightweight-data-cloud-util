@@ -4,6 +4,7 @@ import LightningModal        from 'lightning/modal';
 
 // Custom Utils
 import {handleError}         from 'c/dataCloudUtils';
+import {handleDownload}      from 'c/dataCloudUtils';
 import {copyTextToClipboard} from 'c/dataCloudUtils';
 
 // Apex methods
@@ -20,7 +21,8 @@ export default class DataCloudCsvResultModal extends LightningModal  {
     loading = false;
 
     // Copy button style
-    variant = 'brand';
+    variant         = 'brand';
+    downloadVariant = 'brand';
     
     // Visibility getter
     get csvVisible(){
@@ -88,6 +90,32 @@ export default class DataCloudCsvResultModal extends LightningModal  {
             // Change color to red
             this.variant = 'destructive';
             handleError(error);
+        }
+    }
+
+    handleClickDownload() {
+        try{
+            this.loading = true;
+
+            handleDownload(
+                this.template,
+                'Soql_Query',
+                '.csv',
+                'text/csv; charset=utf-8;',
+                this.template.querySelector('.csvData').innerHTML,
+                true
+            );
+
+            // change button color to green
+            this.downloadVariant = 'success';
+
+        }catch(error){
+            // Change color to red
+            this.variant = 'destructive';
+            handleError(error);
+
+        }finally{
+            this.loading = false;
         }
     }
 }

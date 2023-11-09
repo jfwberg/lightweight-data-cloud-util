@@ -1,10 +1,12 @@
 // Lightning stuff
-import { api }         from 'lwc';
-import LightningAlert  from 'lightning/alert';
-import LightningModal  from 'lightning/modal';
+import { api }               from 'lwc';
+import LightningModal        from 'lightning/modal';
 
 // Custom Utils
-import {handleError}   from 'c/dataCloudUtils';
+import {handleError}         from 'c/dataCloudUtils';
+import {handleDownload}      from 'c/dataCloudUtils';
+import {copyTextToClipboard} from 'c/dataCloudUtils';
+
 
 // Mapping for the YAML
 const fieldTypeMapping = {
@@ -16,6 +18,12 @@ const fieldTypeMapping = {
 
 // Main class
 export default class DataCloudYamlModal extends LightningModal {
+
+    loading = false;
+
+    // Copy button style
+    variant         = 'brand';
+    downloadVariant = 'brand';
 
     // Config
     @api sObjectName;
@@ -52,6 +60,52 @@ export default class DataCloudYamlModal extends LightningModal {
 
     handleClickClose() {
         this.close();
+    }
+
+
+    handleClickCopy() {
+        try{
+            this.loading = true;
+
+            copyTextToClipboard(this.yamlData);
+            
+            // Change color to green
+            this.variant = 'success';
+
+        }catch(error){
+            // Change color to red
+            this.variant = 'destructive';
+            handleError(error);
+        }finally{
+            this.loading = false;
+        }
+    }
+
+
+    handleClickDownload() {
+        try{
+            this.loading = true;
+
+            handleDownload(
+                this.template,
+                this.sObjectName,
+                '.yaml',
+                'text/x-yaml; charset=utf-8;',
+                this.yamlData,
+                true
+            );
+
+            // change button color to green
+            this.downloadVariant = 'success';
+
+        }catch(error){
+            // Change color to red
+            this.variant = 'destructive';
+            handleError(error);
+
+        }finally{
+            this.loading = false;
+        }
     }
 
 

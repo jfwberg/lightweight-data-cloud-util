@@ -3,6 +3,7 @@ import { LightningElement } from "lwc";
 
 // Custom Utils
 import {handleError}        from 'c/dataCloudUtils';
+import {openHelpModal}      from 'c/dataCloudUtils';
 
 // Modals
 import yamlModal            from 'c/dataCloudYamlModal';
@@ -149,6 +150,12 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
      ** **************************************************************************************************** **/
     handleClickCreateYaml(){
         this.handleOpenYamlModal();
+    }
+    
+    handleClickHelp(){
+        openHelpModal(
+            'Tool to generate a YAML file based on an sObject and selected number of fields. This YAML can be used to create a new ingestion API Connector in the Data Cloud Setup.'
+        );
     }
 
 
