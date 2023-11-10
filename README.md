@@ -25,7 +25,7 @@ If you use the *managed package* you need to installed the managed package depen
 |Version|0.4.0-1|
 |Managed Installation URL | */packaging/installPackage.apexp?p0=04tP30000008cL3IAI*
 |Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP30000008cMfIAI*
-|Github URL | https://github.com/jfwberg/lightweight-apex-json-util 
+|Github URL | https://github.com/jfwberg/lightweight-json-util 
 
 ## Optional Dependencies (!! Still recommended !!)
 This package is built to be used with a custom Data Cloud Auth Provider. The auth provider utility is highly recommended for error handling.
