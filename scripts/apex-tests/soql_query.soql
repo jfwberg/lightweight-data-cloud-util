@@ -16,8 +16,6 @@ SELECT
     )
 FROM
     Account
-WHERE
-    Name LIKE 'Demo Account - %' ORDER BY Name ASC
 LIMIT 10
 
 

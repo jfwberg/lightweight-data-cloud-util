@@ -1,20 +1,20 @@
 {
   "packageDirectories": [
     {
-        "path": "force-app/connection",
-        "default": false,
-        "package": "Lightweight - Data Cloud Util - Smart Device Demo",
-        "versionName": "v59.0 - 0.1",
-        "versionNumber": "0.1.0.NEXT",
-        "versionDescription": "A demo using the Data Cloud Utility"  
+      "path": "force-app/connection",
+      "default": false,
+      "package": "Lightweight - Data Cloud Util - Smart Device Demo",
+      "versionName": "v59.0 - 0.1",
+      "versionNumber": "0.1.0.NEXT",
+      "versionDescription": "A demo using the Data Cloud Utility"
     },
     {
-        "path": "force-app/demo",
-        "default": false,
-        "package": "Lightweight - Data Cloud Util - Smart Device Demo",
-        "versionName": "v59.0 - 0.1",
-        "versionNumber": "0.1.0.NEXT",
-        "versionDescription": "A demo using the Data Cloud Utility"  
+      "path": "force-app/demo",
+      "default": false,
+      "package": "Lightweight - Data Cloud Util - Smart Device Demo",
+      "versionName": "v59.0 - 0.1",
+      "versionNumber": "0.1.0.NEXT",
+      "versionDescription": "A demo using the Data Cloud Utility"
     },
     {
       "path": "force-app/package",
@@ -67,6 +67,8 @@
     "Lightweight - JSON Util@0.4.0-1": "04tP30000008cL3IAI",
     "Lightweight - JSON Util (Unlocked)@0.4.0-1": "04tP30000008cMfIAI",
     "Lightweight - Data Cloud Util": "0HoP300000000BJKAY",
-    "Lightweight - Data Cloud Util (Unlocked)": "0HoP300000000CvKAI"
+    "Lightweight - Data Cloud Util (Unlocked)": "0HoP300000000CvKAI",
+    "Lightweight - Data Cloud Util@0.1.0-1": "04tP3000000AIoTIAW",
+    "Lightweight - Data Cloud Util (Unlocked)@0.1.0-1": "04tP3000000AIq5IAG"
   }
 }

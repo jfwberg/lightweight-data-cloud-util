@@ -7,9 +7,9 @@
 **/objectTranslations/**
 **/connectedApps/**
 **/flows/**
-#**/customMetadata/**
 
 # Comment when deploying the connection
+#**/customMetadata/**
 **/namedCredentials/**
 **/externalCredentials/**
 **/authproviders/**

@@ -1,3 +1,10 @@
+/**
+ * @author         Justus van den Berg (jfwberg@gmail.com)
+ * @date           October 2023
+ * @copyright      (c) 2023 Justus van den Berg
+ * @license        MIT (See LICENSE file in the project root)
+ * @description    LWC JS Class
+ */
 // Lightning stuff
 import   LightningAlert     from 'lightning/alert';
 import { LightningElement } from "lwc";
@@ -21,11 +28,12 @@ import deleteJob            from "@salesforce/apex/DataCloudUtilLwcCtrl.deleteJo
 
 // Actions for the bulk jobs
 const actions = [
-    { label: 'Details', name: 'details' },
-    { label: 'Add CSV', name: 'csv'     },
-    { label: 'Complete',name: 'complete'},
-    { label: 'Abort',   name: 'abort'   },
-    { label: 'Delete',  name: 'delete'  }
+    { label: 'Details',      name: 'details'  },
+    { label: 'Add CSV Data', name: 'csv'      },
+    { label: 'Upload CSV',   name: 'uploadCsv'},
+    { label: 'Complete',     name: 'complete' },
+    { label: 'Abort',        name: 'abort'    },
+    { label: 'Delete',       name: 'delete'   }
 ];
 
 // Columns for the bulk jobs
@@ -87,9 +95,21 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             case 'csv':
                 this.handleOpenAddCsvModal({
                         mdtConfigRecord : this.mdtConfigRecord,
-                        jobId : row.id
+                        jobId : row.id,
+                        isUpload : false
                     });
             break;
+
+            case 'uploadCsv':
+                this.handleOpenAddCsvModal({
+                        mdtConfigRecord : this.mdtConfigRecord,
+                        jobId : row.id,
+                        isUpload : true
+                    });
+            break;
+
+
+            
 
             case 'complete':
                 this.handleComplete(row.id);
@@ -175,7 +195,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         try{
             this.loading = true;
             abortJob({mdtConfigName : this.mdtConfigRecord, jobId : jobId})
-                .then((result) => {
+                .then(() => {
                     LightningAlert.open({
                         message: 'Succesfully ABORTED the a bulk job with Id : "' + jobId +'"',
                         label: 'Success',
@@ -202,7 +222,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         try{
             this.loading = true;
             deleteJob({mdtConfigName : this.mdtConfigRecord, jobId : jobId})
-                .then((result) => {
+                .then(() => {
                     LightningAlert.open({
                         message: 'Succesfully DELETED the a bulk job with Id : "' + jobId +'"',
                         label: 'Success',
@@ -229,7 +249,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         try{
             this.loading = true;
             completeJob({mdtConfigName : this.mdtConfigRecord, jobId : jobId})
-                .then((result) => {
+                .then(() => {
                     LightningAlert.open({
                         message: 'Succesfully COMPLETED the a bulk job with Id : "' + jobId +'"',
                         label: 'Success',
@@ -337,6 +357,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             '<li>You can only delete Aborted or Completed jobs</li>'+
             '<li>You can only abort open jobs, once started you cannot abort the job</li>'+
             '<li>Breaking any of these job status rules will all give the same error message: <li>"The request conflicts with current state of the target resource"</li> This is just the API so be aware of the different rules regarding the job states</li>' +
+            '<li>This app is built on Apex and all Governor limits are in place. Any CSV file over about 5MB will fail due to the callout limit.</li>' +
             '</ul>'
         );
     }
@@ -352,8 +373,6 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         mappingModal.open({
             config: config,
             size: 'small',
-        }).then((result) => {
-
         });
     }
 
@@ -365,8 +384,6 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         jobDetailsModal.open({
             config: config,
             size: 'small',
-        }).then((result) => {
-
         });
     }
 

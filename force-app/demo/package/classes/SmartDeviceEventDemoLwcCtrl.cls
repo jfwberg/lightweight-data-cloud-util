@@ -1,3 +1,4 @@
+@SuppressWarnings('PMD.ApexDoc')
 public with sharing class SmartDeviceEventDemoLwcCtrl {
 
     @AuraEnabled
@@ -19,5 +20,26 @@ public with sharing class SmartDeviceEventDemoLwcCtrl {
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
+    }
+
+    @SuppressWarnings('PMD.ApexCRUDViolation')
+    public static void createHistoryRecordsFromEvent(Smart_Device_Event__e[] records){
+        
+        // This will create a copy in the local table so we can cross check
+        Smart_Device_Event_History__c[] historyRecords = new Smart_Device_Event_History__c[]{};
+
+        for(Smart_Device_Event__e record : records){
+            historyRecords.add(new Smart_Device_Event_History__c(
+                Action__c       = record.Action__c,
+                Event_Date__c   = record.Event_Date__c,
+                Device_Type__c  = record.Device_Type__c,
+                Status_Code__c  = record.Status_Code__c,
+                Status_Reason__c= record.Status_Reason__c,
+                Timestamp__c    = record.Timestamp__c,
+                EventUuid__c    = record.EventUuid,
+                ReplayId__c     = record.ReplayId
+            ));
+        }
+        insert historyRecords;
     }
 }

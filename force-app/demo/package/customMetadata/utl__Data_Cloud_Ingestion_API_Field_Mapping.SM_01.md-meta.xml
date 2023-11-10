@@ -3,19 +3,19 @@
     <label>Action__c</label>
     <protected>false</protected>
     <values>
-        <field>Data_Cloud_Field_Type__c</field>
+        <field>utl__Data_Cloud_Field_Type__c</field>
         <value xsi:type="xsd:string">textField</value>
     </values>
     <values>
-        <field>Data_Cloud_Ingestion_API_Configuration__c</field>
+        <field>utl__Data_Cloud_Ingestion_API_Configuration__c</field>
         <value xsi:type="xsd:string">Smart_Device_Event_Streaming</value>
     </values>
     <values>
-        <field>Source__c</field>
+        <field>utl__Source__c</field>
         <value xsi:type="xsd:string">Action__c</value>
     </values>
     <values>
-        <field>Target__c</field>
+        <field>utl__Target__c</field>
         <value xsi:type="xsd:string">Action</value>
     </values>
 </CustomMetadata>

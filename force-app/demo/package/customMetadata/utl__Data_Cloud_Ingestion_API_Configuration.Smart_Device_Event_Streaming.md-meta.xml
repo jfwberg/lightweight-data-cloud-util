@@ -3,23 +3,23 @@
     <label>Smart Device Event (Streaming)</label>
     <protected>false</protected>
     <values>
-        <field>Ingestion_API_Connector_Name__c</field>
+        <field>utl__Ingestion_API_Connector_Name__c</field>
         <value xsi:type="xsd:string">Smart_Device_Connector</value>
     </values>
     <values>
-        <field>Ingestion_API_Target_Object_Name__c</field>
+        <field>utl__Ingestion_API_Target_Object_Name__c</field>
         <value xsi:type="xsd:string">Smart_Device_Event</value>
     </values>
     <values>
-        <field>Named_Credential_Name__c</field>
-        <value xsi:type="xsd:string">utl__DC_ORG_01</value>
+        <field>utl__Named_Credential_Name__c</field>
+        <value xsi:type="xsd:string">DC_ORG_01</value>
     </values>
     <values>
-        <field>Salesforce_Named_Credential_Name__c</field>
-        <value xsi:type="xsd:string">utl__SF_ORG_01</value>
+        <field>utl__Salesforce_Named_Credential_Name__c</field>
+        <value xsi:type="xsd:string">SF_ORG_01</value>
     </values>
     <values>
-        <field>sObject_Name__c</field>
-        <value xsi:type="xsd:string">utl__Smart_Device_Event__e</value>
+        <field>utl__sObject_Name__c</field>
+        <value xsi:type="xsd:string">Smart_Device_Event__e</value>
     </values>
 </CustomMetadata>

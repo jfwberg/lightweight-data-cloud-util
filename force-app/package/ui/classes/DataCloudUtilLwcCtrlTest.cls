@@ -6,7 +6,7 @@
  * @description    Test Class for the Data Cloud LWC Controller Methods
  */
 @IsTest
-@SuppressWarnings('PMD.ApexUnitTestClassShouldHaveAsserts')
+@SuppressWarnings('PMD.ApexUnitTestClassShouldHaveAsserts, PMD.CyclomaticComplexity, PMD.ApexDoc')
 private with sharing class DataCloudUtilLwcCtrlTest {
 
     /** **************************************************************************************************** **
@@ -363,6 +363,103 @@ private with sharing class DataCloudUtilLwcCtrlTest {
             }
         }
         Test.stopTest();
+
+        // Assert exception message
+        Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+
+
+    @IsTest
+    static void testAddCsvFromFile(){
+        // Variable to hold the test Exceptions
+        Exception auraException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+            // Happy Path
+            utl.Mck.addResponse('ADD_CSV_TO_BULK_JOB', 202, INGESTION_RESPONSE);
+
+            // Create a test document
+            ContentVersion cv = new ContentVersion(
+                    Title          = 'data',
+                    PathOnClient   = 'data.csv',
+                    VersionData    = Blob.valueOf('data'),
+                    IsMajorVersion = true
+            );
+            insert cv;
+
+            // Get the document Id
+            String contentDocumentId = [SELECT ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id]?.ContentDocumentId;
+            
+            // Execute happy path
+            DataCloudUtilLwcCtrl.addCsvFromFile('Apex_Unit_Test','4d5a4477-e27f-4bc1-a219-31e79407eade', ContentDocumentId,  cv.Id);
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('AURA_EXCEPTION');
+
+                // Execute method
+                DataCloudUtilLwcCtrl.addCsvFromFile('Apex_Unit_Test','4d5a4477-e27f-4bc1-a219-31e79407eade', ContentDocumentId,  cv.Id);
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert exception message
+        Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+
+
+    @IsTest
+    static void testDeleteDocument(){
+        // Variable to hold the test Exceptions
+        Exception auraException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+            
+            // Create a test document
+            ContentVersion cv = new ContentVersion(
+                    Title          = 'data',
+                    PathOnClient   = 'data.csv',
+                    VersionData    = Blob.valueOf('data'),
+                    IsMajorVersion = true
+            );
+            insert cv;
+
+            // Get the document Id
+            String contentDocumentId = [SELECT ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id]?.ContentDocumentId;
+            
+            // Execute happy path
+            DataCloudUtilLwcCtrl.deleteDocument(ContentDocumentId);
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('AURA_EXCEPTION');
+
+                // Execute method
+                DataCloudUtilLwcCtrl.deleteDocument(ContentDocumentId);
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Test happy path
+        Assert.areEqual(0, [SELECT COUNT() FROM ContentVersion], 'Expected document to have been deleted');
 
         // Assert exception message
         Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');

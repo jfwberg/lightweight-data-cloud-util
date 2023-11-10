@@ -1,3 +1,10 @@
+/**
+ * @author         Justus van den Berg (jfwberg@gmail.com)
+ * @date           October 2023
+ * @copyright      (c) 2023 Justus van den Berg
+ * @license        MIT (See LICENSE file in the project root)
+ * @description    LWC JS Class
+ */
 // Lightning stuff
 import   LightningAlert     from 'lightning/alert';
 
@@ -11,8 +18,6 @@ export function openHelpModal(content){
     helpModal.open({
         content: content,
         size: 'small',
-    }).then((result) => {
-        
     });
 }
 

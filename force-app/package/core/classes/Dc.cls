@@ -12,7 +12,7 @@
  *                 should be made public or private in org based implementations or unlocked
  *                 packages
  */
-@SuppressWarnings('PMD.OneDeclarationPerLine, PMD.AvoidGlobalModifier, PMD.ExcessiveParameterList')
+@SuppressWarnings('PMD.OneDeclarationPerLine, PMD.AvoidGlobalModifier, PMD.ExcessiveParameterList, PMD.CyclomaticComplexity')
 global with sharing class Dc {
 
     /** **************************************************************************************************** **
@@ -163,7 +163,7 @@ global with sharing class Dc {
      ** **************************************************************************************************** **/
     /**
      * @description Method to execute a query against data cloud
-     * @param  mdtRecordName The Developer Name of the metadata record
+     * @param  mdtConfigName The Developer Name of the metadata record
      * @param  query         The SQL query to run against Data Cloud
      * @return The execution result of the Rest Execution  (utl.Rst)
      */
@@ -206,9 +206,9 @@ global with sharing class Dc {
      ** **************************************************************************************************** **/
     /**
      * @description Method to stream records to data cloud Asynchrounously
+     * @param  mdtConfigName    The API name of the metadata configuration record
      * @param serializedRecords The JSON.serialize(records) version of the records to
      *                          be streamed to data cloud
-     * @param  mdtConfigName    The API name of the metadata configuration record
      */
     @future(callout=true)
     global static void streamRecordsToDataCloudAsync(String mdtConfigName, String serializedRecords){
@@ -333,6 +333,7 @@ global with sharing class Dc {
      *              a field mapping
      * @param  records      List of any sObject or Platform Event
      * @param  fieldMapping Source field to target field mapping
+     * @param  prettyPrint  Indicator if the payload should be serialized pretty
      * @return A JSON String with an ingest API payload format
      */
     global static String createIngestStreamPayload(sObject[] records, Map<String,String> fieldMapping, Boolean prettyPrint){
@@ -373,7 +374,8 @@ global with sharing class Dc {
      *              a field mapping. Overload method of the records object
      * @param  records      List of any Object Maps for generating a payload
      * @param  fieldMapping Source field to target field mapping
-     * @return A JSON String with an ingest API payload format
+     * @param  prettyPrint  Indicator if the payload should be serialized pretty
+     * @return      A JSON String with an ingest API payload format
      */
     global static String createIngestStreamPayload(List<Map<String,Object>> records, Map<String,String> fieldMapping, Boolean prettyPrint){
 
@@ -413,8 +415,9 @@ global with sharing class Dc {
     /**
      * @description Method that orchestrates the creation of a bulk API in a single synchronous operation.
      *              !! This is mainly for testing and should be used with caution and small data sets only !!
-     * @param operation Either upsert or delete
-     * @param csvFiles  A list of CSV Files to upload to Data Cloud
+     * @param mdtConfigName The metadata configuration record name
+     * @param operation     Either upsert or delete
+     * @param csvFiles      A list of CSV Files to upload to Data Cloud
      */
     global static void ingestBulkCsvDataInDataCloud(String mdtConfigName, String operation, String[] csvFiles){
 
@@ -530,8 +533,7 @@ global with sharing class Dc {
      * @description Method to add a CSV file (from data) to a Ingestion Job
      * @param mdtConfigName The name of the metadata configuration record
      * @param correlationId The correlation Id for the API calls
-     * @param jobId         The Id for the bulk job
-     * @param csvData       The Raw CSV data
+     * @param operation     The type of operation, either: "upsert" or "delete"
      * @return The Id of the ingestion job
      */
     global static String createIngestionBulkJob(String mdtConfigName, String correlationId, String operation){

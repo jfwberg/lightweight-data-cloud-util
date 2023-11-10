@@ -4,8 +4,11 @@
  * @copyright      (c) 2023 Justus van den Berg
  * @license        MIT (See LICENSE file in the project root)
  * @description    Test class for the "Dc" Apex Class
+ * @note           Some asserts are done using a utility method hence
+ *                 the ApexUnitTestClassShouldHaveAsserts is a false positive
  */
 @IsTest
+@SuppressWarnings('PMD.ApexUnitTestClassShouldHaveAsserts, PMD.ApexDoc')
 private with sharing class DcTest {
 
     /** **************************************************************************************************** **
@@ -686,7 +689,8 @@ private with sharing class DcTest {
         // Assert the status code
         Assert.areEqual(
             Dc.testCallout.getRequest().getBody(),
-            '{"data":[{"Target_Username":"'+TST_USER.Username+'","Target_Id":"'+TST_USER.Id+'"}]}'
+            '{"data":[{"Target_Username":"'+TST_USER.Username+'","Target_Id":"'+TST_USER.Id+'"}]}',
+            'Unexpected callout response'
         );
     }
 

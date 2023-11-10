@@ -1,4 +1,4 @@
-import { LightningElement, api } from "lwc";
+import { LightningElement} from "lwc";
 import createSmartEvent from "@salesforce/apex/SmartDeviceEventDemoLwcCtrl.createSmartEvent";
 import LightningAlert from 'lightning/alert';
 
@@ -31,7 +31,7 @@ export default class SmartDeviceEventDemo extends LightningElement {
         this.device = event.detail.value;
     }
 
-    handleClickCreate(event) {
+    handleClickCreate() {
         try{
             createSmartEvent({ device: this.device, action:this.action})
                 .then((result) => {

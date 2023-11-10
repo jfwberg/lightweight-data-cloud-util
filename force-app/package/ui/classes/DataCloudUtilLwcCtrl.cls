@@ -5,6 +5,7 @@
  * @license        MIT (See LICENSE file in the project root)
  * @description    Class that contains the Data Cloud LWC Controller Methods
  */
+@SuppressWarnings('PMD.ExcessivePublicCount, PMD.CyclomaticComplexity, PMD.ApexDoc')
 public with sharing class DataCloudUtilLwcCtrl {
 
     /** **************************************************************************************************** **
@@ -112,9 +113,6 @@ public with sharing class DataCloudUtilLwcCtrl {
             // Query the record
             Data_Cloud_Ingestion_API_Configuration__mdt record = Dc.getMetadataRecord(mdtConfigName);
 
-            // Dummy data place holder
-            String placeholder = '';
-
             // Sample data
             String header = '';
             String data   = '';
@@ -128,9 +126,6 @@ public with sharing class DataCloudUtilLwcCtrl {
 
             // Add mapping details
             for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
-
-                String value='';
-
                 switch on mapping.Data_Cloud_Field_Type__c{
                     when 'textField' {
                         data+=',' + String.valueOf(EncodingUtil.base64encode(crypto.generateAesKey(192)).substring(0,15)).escapeCsv();
@@ -268,6 +263,48 @@ public with sharing class DataCloudUtilLwcCtrl {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
+
+    @AuraEnabled
+    public static Boolean addCsvFromFile(String mdtConfigName, String jobId, String documentId, String contentVersionId){
+        try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
+
+            // Send the file content to Data Cloud
+            Dc.addCsvToIngestionBulkJob(
+                mdtConfigName,
+                jobId,
+                jobId,
+                [SELECT VersionData FROM ContentVersion WHERE Id = :contentVersionId WITH USER_MODE LIMIT 1]?.VersionData?.toString()
+            );
+            
+            // return true when all is good
+            return true;
+
+        }catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static Boolean deleteDocument(String documentId){
+        try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
+
+            // Delete the uploaded document (finally doesnt work well with AuraHandled Exceptions)
+            delete as user [SELECT Id FROM ContentDocument WHERE Id = :documentId LIMIT 1];
+            
+            // return true when all is good
+            return true;
+
+        }catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+    
 
 
     /** **************************************************************************************************** **

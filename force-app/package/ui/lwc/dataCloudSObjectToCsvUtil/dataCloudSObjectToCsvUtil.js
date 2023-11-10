@@ -1,3 +1,10 @@
+/**
+ * @author         Justus van den Berg (jfwberg@gmail.com)
+ * @date           October 2023
+ * @copyright      (c) 2023 Justus van den Berg
+ * @license        MIT (See LICENSE file in the project root)
+ * @description    LWC JS Class
+ */
 // Lightning stuff
 import { LightningElement } from "lwc";
 
@@ -146,8 +153,6 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
                 tooling       : this.tooling
             },
             size: 'large',
-        }).then((result) => {
-            
         });
     }
 
@@ -159,8 +164,6 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
                 tooling       : this.tooling
             },
             size: 'large',
-        }).then((result) => {
-            
         });
     }
 
@@ -168,8 +171,6 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
         mappingModal.open({
             config: config,
             size: 'small',
-        }).then((result) => {
-            
         });
     }
 }
