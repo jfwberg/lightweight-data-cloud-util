@@ -52,3 +52,14 @@ call sf org assign permset --name "Lightweight_Data_Cloud_Util"
 call sf org assign permset --name "Lightweight_Data_Cloud_Util_UI"
 
 
+REM --------------- OPTIONAL / NEXT DEV --------------------
+
+REM Managed package - Lightweight - XML Util@0.2.0-1
+sf package install --package 04tP3000000BplZIAS --target-org ukta2023 --wait 30
+
+REM Lightweight - SOAP Util@0.1.0-1
+sf package install --package 04tP3000000C4e9IAC --target-org ukta2023 --wait 30
+
+sf org assign permset --name "Lightweight_XML_Util"  --target-org ukta2023 --on-behalf-of justus@ukta2023.demo
+sf org assign permset --name "Lightweight_SOAP_Util" --target-org ukta2023 --on-behalf-of justus@ukta2023.demo
+
