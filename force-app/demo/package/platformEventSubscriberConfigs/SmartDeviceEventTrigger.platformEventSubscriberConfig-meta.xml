@@ -3,6 +3,6 @@
     <platformEventConsumer>SmartDeviceEventTrigger</platformEventConsumer>
     <batchSize>100</batchSize>
     <masterLabel>SmartDeviceEventTriggerConfig</masterLabel>
-    <user>test-keu00hsu8net@example.com</user>
+    <user>test-o3df3wntgvdv@example.com</user>
     <isProtected>false</isProtected>
 </PlatformEventSubscriberConfig>

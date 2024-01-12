@@ -11,11 +11,14 @@ REM Managed package - Lightweight - JSON Util@0.4.0-1
 call sf package install --package 04tP30000008cL3IAI -w 30
 
 REM ----------------- OPTIONAL BUT ADVICED -----------------
-REM Managed package - Lightweight - Data Cloud Auth Provider@0.3.0-1
-call sf package install --package 04tP30000007slFIAQ -w 30
+REM Managed package - Lightweight - Auth Provider Util v2@0.10.0-1
+call sf package install --package 04tP3000000ET0XIAW -w 30
 
-REM Managed package - Lightweight - Auth Provider Util v2@0.6.0-1
-call sf package install --package 04tP30000007t1NIAQ -w 30
+REM Managed package - Lightweight - Data Cloud Auth Provider@0.4.0-1
+call sf package install --package 04tP3000000EUJBIA4 -w 30
+
+REM Unlocked package - Lightweight - Salesforce Auth Provider@0.1.0-1
+call sf package install --package 04tP3000000EardIAC -w 30
 
 
 REM --------------------------------------------------------
@@ -31,11 +34,16 @@ REM Managed package - Lightweight - JSON Util (Unlocked)@0.4.0-1
 sf package install --package 04tP30000008cMfIAI -w 30
 
 REM ----------------- OPTIONAL BUT ADVICED -----------------
-REM Unlocked package - Lightweight - Data Cloud Auth Provider (Unlocked)@0.3.0-1
-sf package install --package 04tP30000007stJIAQ -w 30
+REM Managed package - Lightweight - Auth Provider Util v2 (Unlocked)@0.10.0-1
+sf package install --package 04tP3000000ET6zIAG -w 30
 
-REM Managed package - Lightweight - Auth Provider Util v2 (Unlocked)@0.6.0-1
-sf package install --package 04tP30000007tB3IAI -w 30
+REM Unlocked package - Lightweight - Data Cloud Auth Provider (Unlocked)@0.4.0-1
+sf package install --package 04tP3000000EUUTIA4 -w 30
+
+REM Unlocked package - Lightweight - Salesforce Auth Provider (Unlocked)@0.1.0-1
+sf package install --package 04tP3000000EawTIAS -w 30
+
+
 
 
 REM --------------------------------------------------------
@@ -46,9 +54,11 @@ call sf org assign permset --name "Lightweight_REST_Util"
 call sf org assign permset --name "Lightweight_JSON_Util"
 
 call sf org assign permset --name "Lightweight_Data_Cloud_Auth_Provider"
-call sf org assign permset --name "Lightweight_Auth_Provider_Util_Admin"
+call sf org assign permset --name "Lightweight_Auth_Provider_Util"
 
 call sf org assign permset --name "Lightweight_Data_Cloud_Util"
 call sf org assign permset --name "Lightweight_Data_Cloud_Util_UI"
+call sf org assign permset --name "Smart_Device_Event_Demo"
+
 
 
