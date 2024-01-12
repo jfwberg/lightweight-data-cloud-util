@@ -17,7 +17,7 @@ If you use the *managed package* you need to installed the managed package depen
 | | |
 |Name|Lightweight - Apex REST Util|
 |Version|0.10.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP30000007FOvIAM*
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000ET0XIAW*
 |Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP30000007FVNIA2*
 |Github URL | https://github.com/jfwberg/lightweight-apex-rest-util 
 | | |
