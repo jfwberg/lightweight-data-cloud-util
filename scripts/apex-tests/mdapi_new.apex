@@ -1,27 +1,40 @@
-String ingestionApiName  = 'JST_Test_Ingestion_API_03';
-String ingestionApiLabel = 'JST Test Ingestion API 03';
+String ingestionApiName  = 'JST_Test_Ingestion_API_04';
+String ingestionApiLabel = 'JST Test Ingestion API 04';
 
-String connectorName     = 'JST_Test_Connector_03';
-String connectorLabel    = 'JST Test Connector 03';
-String connectorPrefix   = 'TC3';
+String connectorName     = 'JST_Test_Connector_04';
+String connectorLabel    = 'JST Test Connector 04';
+String connectorPrefix   = 'TC4';
 
-String objectName        = 'JST_Test_Object_03';
-String objectLabel       = 'JST Test Object 03';
+String objectName        = 'JST_Test_Object_04';
+String objectLabel       = 'JST Test Object 04';
 
 /**
- * 02) Create the DcMetadata.DataConnectorIngestApi object
+ * 01) Create the DcMetadata.DataConnectorIngestApi object
  */
 DcMetadata.DataConnectorIngestApi dataConnectorIngestApi = new DcMetadata.DataConnectorIngestApi(ingestionApiName, ingestionApiLabel);
-
 
 /**
  * 02) Create the DcMetadata.DataSource object
  */
 DcMetadata.DataSource dataSource = new DcMetadata.DataSource(connectorName, connectorLabel, connectorPrefix);
 
+/**
+ * 03) Create the DcMetadata.ExternalDataConnector object with the
+ */
+DcMetadata.ExternalDataConnector externalDataConnector = new DcMetadata.ExternalDataConnector(ingestionApiName,connectorName,connectorLabel);
 
 /**
- * 02) Create the DcMetadata.ExternalDataConnector object with the 
+ * 04) Create the DcMetadata.MktDataTranObject object
+ */
+DcMetadata.MktDataTranObject mktDataTranObject = new DcMetadata.MktDataTranObject(objectName, objectLabel, connectorName)
+    .addField(new DcMetadata.MktDataTranField('Test_Text_Field',     'Test Text Field',       objectName, 'textField'     ))
+    .addField(new DcMetadata.MktDataTranField('Test_Number_Field',   'Test Number Field',     objectName, 'numberField'   ))
+    .addField(new DcMetadata.MktDataTranField('Test_Date_Field',     'Test Date Field',       objectName, 'dateField'     ))
+    .addField(new DcMetadata.MktDataTranField('Test_Date_Time_Field','Test Date Time_Field',  objectName, 'datetimeField' ))
+;
+
+/**
+ * 05) Create the DcMetadata.ExternalDataTranObject object
  */
 DcMetadata.ExternalDataTranObject externalDataTranObject = new DcMetadata.ExternalDataTranObject(objectName, objectLabel, connectorName)
     .addField(new DcMetadata.ExternalDataTranField('Test_Text_Field',     'Test_Text_Field',       objectName, 'textField',     connectorName ))
@@ -30,15 +43,13 @@ DcMetadata.ExternalDataTranObject externalDataTranObject = new DcMetadata.Extern
     .addField(new DcMetadata.ExternalDataTranField('Test_Date_Time_Field','Test_Date_Time_Field',  objectName, 'datetimeField', connectorName ))
 ;
 
-DcMetadata.ExternalDataConnector externalDataConnector = new DcMetadata.ExternalDataConnector(ingestionApiName,connectorName,connectorLabel);
-
+// 05) Create an external data connector with objects
 DcMetadata.ExternalDataConnector externalDataConnectorWithObjects = new DcMetadata.ExternalDataConnector(ingestionApiName,connectorName,connectorLabel)
     .addObject(externalDataTranObject)
 ;
 
-
 /**
- * 03) Create the DcMetadata.DataSourceObject object 
+ * 06) Create the DcMetadata.DataSourceObject object
  */
 DcMetadata.DataSourceObject dataSourceObject = new DcMetadata.DataSourceObject(objectName, objectLabel, connectorName)
     .addField(new DcMetadata.DataSourceField('Test_Text_Field',     'Test Text Field',       objectName, 'textField'     ))
@@ -49,18 +60,7 @@ DcMetadata.DataSourceObject dataSourceObject = new DcMetadata.DataSourceObject(o
 
 
 /**
- * 04) Create the DcMetadata.MktDataTranObject object 
- */
-DcMetadata.MktDataTranObject mktDataTranObject = new DcMetadata.MktDataTranObject(objectName, objectLabel, connectorName)
-    .addField(new DcMetadata.MktDataTranField('Test_Text_Field',     'Test Text Field',       objectName, 'textField'     ))
-    .addField(new DcMetadata.MktDataTranField('Test_Number_Field',   'Test Number Field',     objectName, 'numberField'   ))
-    .addField(new DcMetadata.MktDataTranField('Test_Date_Field',     'Test Date Field',       objectName, 'dateField'     ))
-    .addField(new DcMetadata.MktDataTranField('Test_Date_Time_Field','Test Date Time_Field',  objectName, 'datetimeField' ))
-;
-
-
-/**
- * 04) Create the DcMetadata.Custom object 
+ * 07) Create the DcMetadata.Custom object (Data Lake object)
  */
 DcMetadata.CustomObject dataLakeObject = new DcMetadata.CustomObject(objectName, objectLabel, connectorName)
     .addField(new DcMetadata.CustomField('Test_Text_Field',      'Test Text Field',       false, 'Text',     false, false ))
@@ -73,31 +73,83 @@ DcMetadata.CustomObject dataLakeObject = new DcMetadata.CustomObject(objectName,
 ;
 
 
+/**
+ * 08) fix this
+ */
 
-System.debug('----------- CREATE INGESTION API ---------');
-//System.debug(createIngestionApi(dataConnectorIngestApi).getResponse().getBody());
 
-System.debug('----------- CREATE DATA SOURCE ---------');
-//System.debug(createDataSource(dataSource).getResponse().getBody());
+/**
+ * 09) Create the ObjectSourceTargetMap
+ */
+DcMetadata.ObjectSourceTargetMap objectSourceTargetMap = new DcMetadata.ObjectSourceTargetMap(connectorName, objectName)
+    .addFieldMapping(new DcMetadata.FieldSourceTargetMap('Custom', false, connectorName+'_'+objectName, 'Test_Text_Field__c',      'Test_Text_Field'))
+    .addFieldMapping(new DcMetadata.FieldSourceTargetMap('Custom', false, connectorName+'_'+objectName, 'Test_Number_Field__c',    'Test_Number_Field'))
+    .addFieldMapping(new DcMetadata.FieldSourceTargetMap('Custom', false, connectorName+'_'+objectName, 'Test_Date_Field__c',      'Test_Date_Field'))
+    .addFieldMapping(new DcMetadata.FieldSourceTargetMap('Custom', false, connectorName+'_'+objectName, 'Test_Date_Time_Field__c', 'Test_Date_Time_Field'))
+;
 
-System.debug('----------- CREATE EXTERNAL DATA CONNECTOR API ---------');
-//System.debug(createExternalDataConnector(externalDataConnector).getResponse().getBody());
 
-System.debug('----------- CREATE MKT DATA TRAN OBJECT ---------');
-//System.debug(createMkDataTranObject(mktDataTranObject).getResponse().getBody());
+System.debug('----------- CREATE INGESTION API ---------\n');
+//System.debug('\n' + createIngestionApi(dataConnectorIngestApi).getRequest().getBody()+ '\n');
+System.debug('--------------------\n');
 
-System.debug('----------- CREATE EXTERNAL DATA TRAN OBJECT ---------');
-//System.debug(createExternalDataTranObject(externalDataConnectorWithObjects).getResponse().getBody());
 
-System.debug('----------- CREATE DATA SOURCE OBJECT ---------');
-//System.debug(createDataSourceObject(dataSourceObject).getResponse().getBody());
+System.debug('----------- CREATE DATA SOURCE ---------\n');
+//System.debug('\n' + createDataSource(dataSource).getRequest().getBody()+ '\n');
+System.debug('--------------------\n');
 
-System.debug('----------- CREATE DATA LAKE OBJECT ---------');
-//System.debug(createDataLakeObject(dataLakeObject).getResponse().getBody());
+
+System.debug('----------- CREATE EXTERNAL DATA CONNECTOR API ---------\n');
+//System.debug('\n' + createExternalDataConnector(externalDataConnector).getRequest().getBody()+ '\n');
+System.debug('--------------------\n');
+
+
+System.debug('----------- CREATE MKT DATA TRAN OBJECT ---------\n');
+//System.debug('\n' + createMkDataTranObject(mktDataTranObject).getRequest().getBody() + '\n');
+System.debug('--------------------\n');
+
+
+System.debug('----------- CREATE EXTERNAL DATA TRAN OBJECT ---------\n');
+//System.debug('\n' + createExternalDataTranObject(externalDataConnectorWithObjects).getRequest().getBody() + '\n');
+System.debug('--------------------\n');
+
+
+System.debug('----------- CREATE DATA SOURCE OBJECT ---------\n');
+//System.debug('\n' + createDataSourceObject(dataSourceObject).getRequest().getBody() + '\n');
+System.debug('--------------------\n');
+
+
+System.debug('----------- CREATE DATA LAKE OBJECT ---------\n');
+//System.debug('\n' + createDataLakeObject(dataLakeObject).getRequest().getBody() + '\n');
+System.debug('--------------------\n');
+
 
 System.debug('----------- CREATE DATA STREAM DEFINITION ---------');
-//System.debug(createDataStreamDefinition().getResponse().getBody());
-System.debug('--------------------');
+//System.debug('\n' + createDataStreamDefinition().getRequest().getBody() + '\n');
+System.debug('--------------------\n');
+
+
+System.debug('----------- CREATE OBJECT SOURCE TARGET MAP ---------');
+System.debug( '\n\n' + createObjectSourceTargetMap(objectSourceTargetMap).getRequest().getBody() + '\n');
+System.debug('--------------------\n');
+
+
+
+
+/**
+ * @description Method to create an ingestion API
+ */
+utl.Soap createObjectSourceTargetMap(DcMetadata.ObjectSourceTargetMap ostm){
+
+    return new utl.MdtWsdl('upsertMetadata')
+        .addCredMetadata(
+            ostm.getMdtName(),
+            ostm.getMdtMap()
+        )
+        .setupRequest()
+    ;
+}
+
 
 
 
@@ -105,13 +157,13 @@ System.debug('--------------------');
  * @description Method to create an ingestion API
  */
 utl.Soap createIngestionApi(DcMetadata.DataConnectorIngestApi dcia){
-    
+
     return new utl.MdtWsdl('upsertMetadata')
         .addCredMetadata(
             dcia.getMdtName(),
             dcia.getMdtMap()
         )
-        .call()
+        .setupRequest()
     ;
 }
 
@@ -119,23 +171,23 @@ utl.Soap createIngestionApi(DcMetadata.DataConnectorIngestApi dcia){
 /**
  * @description Method to create an ingestion API
  */
-utl.Soap createExternalDataConnector(DcMetadata.ExternalDataConnector edc){   
+utl.Soap createExternalDataConnector(DcMetadata.ExternalDataConnector edc){
     return new utl.MdtWsdl('upsertMetadata')
         .addCredMetadata(
             edc.getMdtName(),
             edc.getMdtMap()
         )
-        .call()
+        .setupRequest()
     ;
 }
 
-utl.Soap createExternalDataTranObject(DcMetadata.ExternalDataConnector edc){   
+utl.Soap createExternalDataTranObject(DcMetadata.ExternalDataConnector edc){
     return new utl.MdtWsdl('upsertMetadata')
         .addCredMetadata(
             edc.getMdtName(),
             edc.getMdtMap()
         )
-        .call()
+        .setupRequest()
     ;
 }
 
@@ -143,7 +195,7 @@ utl.Soap createExternalDataTranObject(DcMetadata.ExternalDataConnector edc){
 
 
 /**
- * @description 
+ * @description
  */
 utl.Soap createMkDataTranObject(DcMetadata.MktDataTranObject kdto){
     return new utl.MdtWsdl('upsertMetadata')
@@ -151,7 +203,7 @@ utl.Soap createMkDataTranObject(DcMetadata.MktDataTranObject kdto){
             kdto.getMdtName(),
             kdto.getMdtMap()
         )
-        .call()
+        .setupRequest()
     ;
 }
 
@@ -160,13 +212,13 @@ utl.Soap createMkDataTranObject(DcMetadata.MktDataTranObject kdto){
 /**
  * @description Method to create an Data Source
  */
-utl.Soap createDataSource(DcMetadata.DataSource ds){   
+utl.Soap createDataSource(DcMetadata.DataSource ds){
     return new utl.MdtWsdl('upsertMetadata')
         .addCredMetadata(
             ds.getMdtName(),
             ds.getMdtMap()
         )
-        .call()
+        .setupRequest()
     ;
 }
 
@@ -174,13 +226,13 @@ utl.Soap createDataSource(DcMetadata.DataSource ds){
 /**
  * @description Method to create an ingestion API
  */
-utl.Soap createDataSourceObject(DcMetadata.DataSourceObject dso){   
+utl.Soap createDataSourceObject(DcMetadata.DataSourceObject dso){
     return new utl.MdtWsdl('upsertMetadata')
         .addCredMetadata(
             dso.getMdtName(),
             dso.getMdtMap()
         )
-        .call()
+        .setupRequest()
     ;
 }
 
@@ -191,7 +243,7 @@ utl.Soap createDataLakeObject(DcMetadata.CustomObject dlo){
             dlo.getMdtName(),
             dlo.getMdtMap()
         )
-        .call()
+        .setupRequest()
     ;
 }
 
@@ -216,7 +268,7 @@ utl.Soap createDataStreamDefinition(){
                 'mktDataTranObject'           => connectorName  + '_' + objectName
             }
         )
-        .call()
+        .setupRequest()
     ;
 }
 

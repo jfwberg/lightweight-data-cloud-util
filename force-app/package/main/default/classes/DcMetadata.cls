@@ -81,7 +81,7 @@ public with sharing class DcMetadata {
             // Add each field map to the object map
             for(ExternalDataTranObject obj : this.objects){
                 ((List<Map<String,Object>>) outputMap.get('externalDataTranObjects')).add(obj.getMdtMap());
-            } 
+            }
 
             // return the map
             return outputMap;
@@ -116,7 +116,7 @@ public with sharing class DcMetadata {
 
         // Method to generate an object map
         public Map<String,Object> getMdtMap(){
-            
+
             // Create the object map
             Map<String,Object> outputMap = new Map<String,Object>{
                 'fullName'                => this.fullName,
@@ -131,9 +131,9 @@ public with sharing class DcMetadata {
             // Add each field map to the object map
             for(ExternalDataTranField field : this.fields){
                 ((List<Map<String,Object>>) outputMap.get('externalDataTranFields')).add(field.getMdtMap());
-            } 
+            }
 
-            return outputMap;  
+            return outputMap;
         }
     }
 
@@ -182,7 +182,7 @@ public with sharing class DcMetadata {
 
 
     public class DataSource implements IDataCloudMetadata{
-        
+
         // Private Variables
         private String fullName;
         private String masterLabel;
@@ -237,7 +237,7 @@ public with sharing class DcMetadata {
 
         // Method to generate an object map
         public Map<String,Object> getMdtMap(){
-            
+
             // Create the object map
             Map<String,Object> outputMap = new Map<String,Object>{
                 'fullName'                 => this.connectorName + '_' + this.fullName,
@@ -251,13 +251,13 @@ public with sharing class DcMetadata {
             for(DataSourceField field : this.fields){
                 ((List<Map<String,Object>>) outputMap.get('dataSourceFields')).add(field.getMdtMap());
             }
-            return outputMap;  
+            return outputMap;
         }
     }
 
 
     public class DataSourceField implements IDataCloudMetadata{
-        
+
         // Private Variables
         private String fullName;
         private String masterLabel;
@@ -329,7 +329,7 @@ public with sharing class DcMetadata {
 
         // Method to generate an object map
         public Map<String,Object> getMdtMap(){
-            
+
             // Create the object map
             Map<String,Object> outputMap = new Map<String,Object>{
                 'fullName'          => this.connectorName + '_' + this.fullName,
@@ -346,13 +346,13 @@ public with sharing class DcMetadata {
             for(MktDataTranField field : this.fields){
                 ((List<Map<String,Object>>) outputMap.get('mktDataTranFields')).add(field.getMdtMap());
             }
-            return outputMap;  
+            return outputMap;
         }
     }
 
 
     public class MktDataTranField implements IDataCloudMetadata{
-        
+
         // Private Variables
         private String fullName;
         private String masterLabel;
@@ -386,7 +386,7 @@ public with sharing class DcMetadata {
 
 
     public class CustomObject implements IDataCloudMetadata{
-        
+
         // Private Variables
         private String        fullName;
         private String        masterLabel;
@@ -398,7 +398,7 @@ public with sharing class DcMetadata {
             this.fullName      = fullName;
             this.masterLabel   = masterLabel;
             this.connectorName = connectorName;
-            
+
             // Create the fields required for each DLL
             this.createSystemFields();
         }
@@ -415,14 +415,14 @@ public with sharing class DcMetadata {
 
         // Method to generate an object map
         public Map<String,Object> getMdtMap(){
-            
+
             // Create a new map
             Map<String,Object> outputMap = new Map<String,Object>{
                 'fullName'      => this.connectorName + '_' + this.fullName + '__dll',
                 'label'         => this.masterLabel,
                 'fields'        => new List<Map<String,Object>>(),
                 'mktDataLakeAttributes' => new Map<String,Object>{
-                    'creationType'      => 'Custom', 
+                    'creationType'      => 'Custom',
                     'isEnabled'         => true,
                     'objectCategory'    => 'Salesforce_SFDCReferenceModel_0_93.Engagement'
                 }
@@ -432,7 +432,7 @@ public with sharing class DcMetadata {
             for(CustomField field : this.fields){
                 ((List<Map<String,Object>>) outputMap.get('fields')).add(field.getMdtMap());
             }
-            return outputMap;  
+            return outputMap;
         }
 
         // Each object requires the system fields to be added
@@ -447,7 +447,7 @@ public with sharing class DcMetadata {
 
 
     public class CustomField implements IDataCloudMetadata{
-        
+
         // Private Variables
         private String  fullName;
         private String  masterLabel;
@@ -473,7 +473,7 @@ public with sharing class DcMetadata {
 
         // Method to generate an object map
         public Map<String,Object> getMdtMap(){
-            
+
             Map<String,Object> outputMap = new Map<String,Object>{
                 'fullName'           => this.fullName + '__c',
                 'externalId'         => false,
@@ -512,6 +512,107 @@ public with sharing class DcMetadata {
 
             return outputMap;
         }
+    }
+
+
+    public class ObjectSourceTargetMap implements IDataCloudMetadata{
+
+        // Private Variables
+        private String fullName;
+        private String masterLabel;
+        private String creationType;
+        private String sourceObjectName;
+        private String targetObjectName;
+        FieldSourceTargetMap[] fieldSourceTargetMaps = new FieldSourceTargetMap[]{};
+
+        // Constructor
+        public ObjectSourceTargetMap(String connectorName, String targetObjectName){
+            this.sourceObjectName = connectorName + '_' + targetObjectName;
+            this.targetObjectName = connectorName + '_' + targetObjectName + '__dll';
+
+            this.fullName         = this.sourceObjectName + '_map_' + this.sourceObjectName;
+            this.masterLabel      = this.sourceObjectName + '_map_' + this.sourceObjectName;
+            this.creationType     = 'Custom';
+            
+            // move these fields to object constructor...
+            this.addFieldMapping(new FieldSourceTargetMap('System', true, this.sourceObjectName, 'cdp_sys_PartitionDate__c', 'if(ISEMPTY(formulaField[\'Timestamp\'])) { null; } else { DAYPRECISION(formulaField[\'Timestamp\']); }'));
+            this.addFieldMapping(new FieldSourceTargetMap('System', true, this.sourceObjectName, 'DataSource__c',            '\'' + connectorName         + '\'' ));
+            this.addFieldMapping(new FieldSourceTargetMap('System', true, this.sourceObjectName, 'DataSourceObject__c',      '\'' + this.sourceObjectName + '\''));
+        }
+
+        
+
+        // Method to add field mappings
+        public ObjectSourceTargetMap addFieldMapping(FieldSourceTargetMap fieldMapping){
+            this.fieldSourceTargetMaps.add(fieldMapping);
+            return this;
+        }
+
+        // Method to get the metadata name
+        public String getMdtName(){
+            return 'ObjectSourceTargetMap';
+        }
+
+        // Method to generate an object map
+        public Map<String,Object> getMdtMap(){
+
+            // Create the output map
+            Map<String,Object> outputMap = new Map<String,Object>{
+                'fullName'              => this.fullName,
+                'masterLabel'           => this.masterLabel,
+                'creationType'          => this.creationType,
+                'sourceObjectName'      => this.sourceObjectName,
+                'targetObjectName'      => this.targetObjectName,
+                'fieldSourceTargetMaps' => new List<Map<String,Object>>()
+            };
+
+            // Add child fields
+            for(Integer i=0,max=this.fieldSourceTargetMaps.size();i<max;i++){
+                ((List<Map<String,Object>>) outputMap.get('fieldSourceTargetMaps')).add(this.fieldSourceTargetMaps[i].getMdtMap());
+            }
+            return outputMap;
+        }
+    }
+
+
+
+    public class FieldSourceTargetMap implements IDataCloudMetadata{
+        
+        // Private variables
+        String  creationType;
+        Boolean isSourceFormula;
+        String  sourceField;
+        String  sourceFormula;
+        String  targetField;
+
+        // Constructor
+        public FieldSourceTargetMap(String creationType, Boolean isSourceFormula, String targetObjectName, String fieldName, String data){
+            this.creationType    = creationType;
+            this.isSourceFormula = isSourceFormula;
+            this.sourceField     = (isSourceFormula) ? null : targetObjectName + '.' + fieldName;
+            this.sourceFormula   = (isSourceFormula) ? data: null;
+            this.targetField     = targetObjectName + '__dll.' + fieldName;
+        }
+    
+        // Method to get the metadata name
+        public String getMdtName(){
+            return 'ObjectSourceTargetMap';
+        }
+
+        // Method to generate an object map
+        public Map<String,Object> getMdtMap(){
+
+            // Create the output map
+            Map<String,Object> outputMap = new Map<String,Object>{
+                'creationType'   => this.creationType,
+                'isSourceFormula'=> this.isSourceFormula,
+                'sourceField'    => this.sourceField,
+                'sourceFormula'  => this.sourceFormula,
+                'targetField'    => this.targetField
+            };
+            return outputMap;
+        }
+
     }
 
 

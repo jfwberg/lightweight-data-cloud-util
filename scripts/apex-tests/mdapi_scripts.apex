@@ -1,5 +1,5 @@
 utl.Soap lsAction = new utl.MdtWsdl('listMetadata')
-    .addListMetadata('DataStreamTemplate')
+    .addListMetadata('ObjectSourceTargetMap')
     .call()
 ;
 
@@ -18,6 +18,7 @@ for(String s : ingestionApiNames){
 	System.debug(s);		
 }
 
+Smart_Device_Connector_Smart_De_25D612EC_map_Smart_Device_Connector_Smart_De_25D612EC_1697147035167
 
 Data_Connector_Ingest_Api_02_Ex_681BDA0C__dll
 Data_Connector_Ingest_Api_02_Ex_new__dll
@@ -46,8 +47,8 @@ System.debug(dlAction.getResponse().getBody());
 
 
 utl.Soap rdAction = new utl.MdtWsdl('readMetadata')
-    .setItemMetadataType('CustomObject')
-    .addItemMetadataFullName('Test_Connector_01_Test_Object_01__dll')
+    .setItemMetadataType('ObjectSourceTargetMap')
+    .addItemMetadataFullName('JST_Test_Connector_03_JST_Test_Object_03_map_JST_Test_Connector_03_JST_Test_Object_03')
     .call() 
 ;
 
