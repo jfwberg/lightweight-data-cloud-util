@@ -17,8 +17,8 @@ If you use the *managed package* you need to installed the managed package depen
 | | |
 |Name|Lightweight - Apex REST Util|
 |Version|0.10.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000ET0XIAW*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP30000007FVNIA2*
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP30000007sN3IAI*
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP30000007sQHIAY*
 |Github URL | https://github.com/jfwberg/lightweight-apex-rest-util 
 | | |
 |Name|Lightweight - Apex JSON Util|
@@ -32,15 +32,15 @@ This package is built to be used with a custom Data Cloud Auth Provider. The aut
 | Info | Value |
 |---|---|
 |Name|Lightweight - Data Cloud Auth Provider|
-|Version|0.3.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP30000007slFIAQ*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP30000007stJIAQ*
+|Version|0.4.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000EUJBIA4*
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000EUUTIA4*
 |GIT URL                  | https://github.com/jfwberg/lightweight-data-cloud-auth-provider
 | | |
 |Name|Lightweight - Auth Provider Util v2|
-|Version|0.6.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP30000007t1NIAQ*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP30000007tB3IAI*
+|Version|0.10.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000ET0XIAW*
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000ET6zIAG*
 |GIT URL                  | https://github.com/jfwberg/lightweight-auth-provider-util
 
 ## Package Info
