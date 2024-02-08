@@ -72,7 +72,7 @@ global with sharing class Dc {
         for(Data_Cloud_Ingestion_API_Configuration__mdt record : [
                                                                 SELECT
                                                                     DeveloperName, Ingestion_API_Connector_Name__c, Ingestion_API_Target_Object_Name__c,
-                                                                    Named_Credential_Name__c, Salesforce_Named_Credential_Name__c, sObject_Name__c,
+                                                                    Named_Credential_Name__c, Salesforce_Named_Credential_Name__c, sObject_Name__c, Data_Lake_Object_Name__c,
                                                                     (SELECT Source__c, Target__c, Data_Cloud_Field_Type__c FROM Data_Cloud_Ingestion_API_Field_Mappings__r ORDER BY DeveloperName)
                                                                 FROM
                                                                     Data_Cloud_Ingestion_API_Configuration__mdt

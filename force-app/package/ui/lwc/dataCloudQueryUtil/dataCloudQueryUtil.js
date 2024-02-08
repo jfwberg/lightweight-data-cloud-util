@@ -17,12 +17,13 @@ import queryResultModal    from 'c/dataCloudQueryResultModal';
 
 // Apex methods
 import getMtdConfigOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getQueryPlaceholder from "@salesforce/apex/DataCloudUtilLwcCtrl.getQueryPlaceholder";
 
 // Main class
 export default class DataCloudQueryUtil extends LightningElement {
 
     // The query
-    query = 'SELECT 1';
+    query = '';
 
     // Indicator to view the button
     mdtConfigOptionsLoaded = false;
@@ -84,6 +85,25 @@ export default class DataCloudQueryUtil extends LightningElement {
         }
     }
 
+
+    handleGetQueryPlaceholder(){
+        try{
+            getQueryPlaceholder({mdtConfigName : this.mdtConfigRecord})
+                .then((result) => {
+                    this.query = result;
+                })
+                .catch((error) => {
+                    handleError(error);
+                })
+                .finally(()=>{
+                    this.loading = false; 
+                });
+        }catch(error){
+            handleError(error);
+            this.loading = false; 
+        }
+    }
+
     
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
@@ -92,6 +112,8 @@ export default class DataCloudQueryUtil extends LightningElement {
     handleChangeMtdConfig(event) {
         this.mdtConfigRecord = event.detail.value;
         this.mdtConfigSelected = true;
+
+        this.handleGetQueryPlaceholder();
     }
 
     handleChangeQuery(){

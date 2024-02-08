@@ -45,12 +45,12 @@ export default class DataCloudYamlModal extends LightningModal {
     connectedCallback(){
         try{
             // Set the base string for the yaml data
-            this.yamlData='openapi: 3.0.3\ncomponents:\n  schemas:\n    ' + this.sObjectName + ':\n      type: object\n      properties:\n';
+            this.yamlData='openapi: 3.0.3\ncomponents:\n  schemas:\n    ' + this.removePreAndPostFix(this.sObjectName) + ':\n      type: object\n      properties:\n';
 
             // Add the yaml field data, don't mess with the spaces :)
             for (let index = 0; index < this.currentlySelectedData.length; index++) {
                 const element = this.currentlySelectedData[index];
-                this.yamlData += '        '   + element.target + ':\n';
+                this.yamlData += '        '   + this.removePreAndPostFix(element.target) + ':\n';
                 this.yamlData += '          type: ' + fieldTypeMapping[element.dcFtype] + '\n';
             }
         }catch(error){
@@ -121,5 +121,26 @@ export default class DataCloudYamlModal extends LightningModal {
      ** **************************************************************************************************** **/
     handleClose(){
         this.close('ok');
+    }
+
+    /**
+     * Method to remove the namespace prefix and the __c or any type of the fields
+     * YAMLs do not support __ in the name or the YAML will be rejected
+     */
+    removePreAndPostFix(str){
+
+        const myArray = str.split("__");
+        
+        switch (myArray.length) {
+            case 2:{
+                return myArray[0];
+            }
+            case 3:{
+                return myArray[1];
+            }
+            default:{
+                return str;
+            }
+        }
     }
 }

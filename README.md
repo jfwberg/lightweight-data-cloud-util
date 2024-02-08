@@ -47,9 +47,9 @@ This package is built to be used with a custom Data Cloud Auth Provider. The aut
 | Info | Value |
 |---|---|
 |Name|Lightweight - Apex Data Cloud Util|
-|Version|0.1.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000AIoTIAW*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000AIq5IAG* 
+|Version|0.2.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000LqrdIAC*
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000LsBtIAK* 
 
 ## Custom Metadata Configuration
 In order to callout to the Data Cloud Ingestion API you will need to create a configuration record for each Ingestion API Connector you want to connect to.

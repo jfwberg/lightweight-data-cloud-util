@@ -22,4 +22,8 @@
         <field>sObject_Name__c</field>
         <value xsi:type="xsd:string">User</value>
     </values>
+    <values>
+        <field>Data_Lake_Object_Name__c</field>
+        <value xsi:type="xsd:string">Data_Lake_Object__dll</value>
+    </values>
 </CustomMetadata>

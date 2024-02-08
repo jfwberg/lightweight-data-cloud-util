@@ -709,6 +709,45 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
     }
 
+    @IsTest
+    static void testGetQueryPlaceholder(){
+        // Variable to hold the test Exceptions
+        Exception auraException;
+        
+        // The query that is generated
+        String query;
+
+       // Run test
+       Test.startTest();
+       System.runAs(TST_USER){
+            
+            // Generate the query
+            query = DataCloudUtilLwcCtrl.getQueryPlaceholder('Apex_Unit_Test');
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('AURA_EXCEPTION');
+
+                // Execute method
+                DataCloudUtilLwcCtrl.getQueryPlaceholder('Apex_Unit_Test');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert the generated query
+        Assert.areEqual('SELECT Target_Id__c, Target_Username__c FROM Data_Lake_Object__dll LIMIT 100', query, 'Unexpected Exception Message');
+
+        // Assert exception message
+        Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+
 
     /** **************************************************************************************************** **
      **                                      SOQL QUERY AURA METHODS                                         **

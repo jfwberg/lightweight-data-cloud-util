@@ -1,6 +1,6 @@
 # Project that even on false get automtically deployed, this should stop that
-#**/force-app/connection/**
-#**/force-app/demo/**
+**/force-app/connection/**
+**/force-app/demo/**
 
 # Common test files for connection testing
 **/contentassets/**

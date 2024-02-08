@@ -80,6 +80,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             getStreamingPlaceholder({ mdtConfigName : this.mdtConfigRecord})
                 .then((result) => {
                     this.payload = result;
+                    this.template.querySelector(".ta").value = result;
                 })
                 .catch((error) => {
                     handleError(error);
@@ -153,9 +154,24 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
      ** **************************************************************************************************** **/
     // Set the config record name and update the table
     handleChangeMtdConfig(event) {
-        this.mdtConfigRecord = event.detail.value;
-        this.mdtConfigSelected = true;
-        this.handleGetStreamingPlaceholder();
+        
+        console.log('changing...');
+
+        try{
+            this.mdtConfigRecord = event.detail.value;
+            this.mdtConfigSelected = true;
+            this.handleGetStreamingPlaceholder();
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+    handleChangePayload() {
+        try{
+            this.payload = this.template.querySelector(".ta").value;
+        }catch(error){
+            handleError(error);
+        }
     }
 
 

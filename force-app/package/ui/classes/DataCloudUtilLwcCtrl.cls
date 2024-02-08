@@ -79,6 +79,7 @@ public with sharing class DataCloudUtilLwcCtrl {
             recordData.add(new Map<String,Object>{'key'  => 'Salesforce sObject Name',         'value'=> record.sObject_Name__c});
             recordData.add(new Map<String,Object>{'key'  => 'Ingestion API Connector Name',    'value'=> record.Ingestion_API_Connector_Name__c});
             recordData.add(new Map<String,Object>{'key'  => 'Ingestion API Target Object Name','value'=> record.Ingestion_API_Target_Object_Name__c});
+            recordData.add(new Map<String,Object>{'key'  => 'Data Lake Object Name',            'value'=> record.Data_Lake_Object_Name__c});
 
             // Add mapping details
             for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
@@ -124,31 +125,18 @@ public with sharing class DataCloudUtilLwcCtrl {
             header+='\n';
             header = header.removeStart(',');
 
-            // Add mapping details
-            for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
-                switch on mapping.Data_Cloud_Field_Type__c{
-                    when 'textField' {
-                        data+=',' + String.valueOf(EncodingUtil.base64encode(crypto.generateAesKey(192)).substring(0,15)).escapeCsv();
-                    }
-                    when  'numberField'{
-                        data+=',' + String.valueOf(Integer.valueof((Math.random() * 10000))).escapeCsv();
-                    }
-                    when  'dateField'{
-                        data+=',' + String.valueOf(Date.today().addDays(Integer.valueof((Math.random() * 100)))).escapeCsv();
-                    }
-                    when  'dateTimeField'{
-                        data+=',' + String.valueOf(Datetime.now().addDays(Integer.valueof((Math.random() * 100)))).escapeCsv();
-                    }
-                    when  'uuidField'{
-                        data+=',' + String.valueOf(utl.Rst.guid()).escapeCsv();
-                    }
-                    when else{
-                        data+=',';
-                    }
-
+            // Create some sample data lines
+            for(Integer i=0;i<5;i++){
+                String line = '';
+                
+                // Add each fields
+                for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
+                    line += (String.isNotBlank(line) ? ',' : '' ) + generateSampleData(mapping.Data_Cloud_Field_Type__c);
                 }
+                
+                // Add the line to the data
+                data+= line + '\n';
             }
-            data = data.removeStart(',');
 
             // Use the utility to generate an ingestion stream payload
             return header + data;
@@ -163,7 +151,6 @@ public with sharing class DataCloudUtilLwcCtrl {
         try{
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
-
 
             Map<String,Object> jobInfo = Dc.getBulkIngestionJobDetails(mdtConfigName,jobId);
 
@@ -322,18 +309,11 @@ public with sharing class DataCloudUtilLwcCtrl {
             // Dummy data place holder
             Map<String,Object> placeholder = new Map<String,Object>();
 
-            // Types of dummy data
-            Map<String,Object> fieldTypeDemoData = new Map<String,Object>{
-                'textField'    => 'Text Value',
-                'numberField'  => Integer.valueof((Math.random() * 10000)),
-                'dateField'    => Date.today().addDays(Integer.valueof((Math.random() * 100))),
-                'dateTimeField'=> Datetime.now().addDays(Integer.valueof((Math.random() * 100))),
-                'uuidField'    => utl.Rst.guid()
-            };
+            
 
             // Add mapping details
             for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
-                placeholder.put(mapping.Source__c,fieldTypeDemoData.get(mapping.Data_Cloud_Field_Type__c));
+                placeholder.put(mapping.Source__c, generateSampleData(mapping.Data_Cloud_Field_Type__c));
             }
 
             // Use the utility to generate an ingestion stream payload
@@ -347,6 +327,8 @@ public with sharing class DataCloudUtilLwcCtrl {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
+
 
 
     @AuraEnabled
@@ -488,6 +470,31 @@ public with sharing class DataCloudUtilLwcCtrl {
                 'columns' => table.getColumnNames(),
                 'data'    => table.getKeyValueData()
             };
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static String getQueryPlaceholder(String mdtConfigName){
+        try{
+           // Force an exception for testing purposes
+           utl.Tst.forceException('AURA_EXCEPTION');
+
+            // Query the record
+            Data_Cloud_Ingestion_API_Configuration__mdt record = Dc.getMetadataRecord(mdtConfigName);
+
+            // Create a query 
+            String query = 'SELECT ';
+          
+            // Add mapping details
+            for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
+                query+=(query == 'SELECT ' ? '' : ', ') + mapping.Target__c + '__c';
+            }
+            
+            // Use the utility to generate a sample query
+            return query + ' FROM ' + record.Data_Lake_Object_Name__c + ' LIMIT 100';
 
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -640,5 +647,27 @@ public with sharing class DataCloudUtilLwcCtrl {
 
         // Return the output as a CSV string
         return table;
+    }
+
+
+    /**
+     * @description Method for generating sample data based on the data type
+     */
+    private static Object generateSampleData(String dataType){
+        switch on dataType {
+            when 'numberField' {
+                return Integer.valueof((Math.random() * 10000));
+            }
+            when 'dateField' {
+                return Date.today().addDays(Integer.valueof((Math.random() * 100)));
+            }
+            when 'dateTimeField' {
+                return Datetime.now().addDays(Integer.valueof((Math.random() * 100))).addHours(Integer.valueof((Math.random() * 100))).addMinutes(Integer.valueof((Math.random() * 100)));
+            }
+            when 'uuidField' {
+                return utl.Rst.guid();
+            }
+        }
+        return String.valueOf(EncodingUtil.convertToHex(crypto.generateAesKey(192)).substring(0,15)).escapeCsv();
     }
 }
