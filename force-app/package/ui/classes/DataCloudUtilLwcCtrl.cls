@@ -79,7 +79,7 @@ public with sharing class DataCloudUtilLwcCtrl {
             recordData.add(new Map<String,Object>{'key'  => 'Salesforce sObject Name',         'value'=> record.sObject_Name__c});
             recordData.add(new Map<String,Object>{'key'  => 'Ingestion API Connector Name',    'value'=> record.Ingestion_API_Connector_Name__c});
             recordData.add(new Map<String,Object>{'key'  => 'Ingestion API Target Object Name','value'=> record.Ingestion_API_Target_Object_Name__c});
-            recordData.add(new Map<String,Object>{'key'  => 'Data Lake Object Name',            'value'=> record.Data_Lake_Object_Name__c});
+            recordData.add(new Map<String,Object>{'key'  => 'Data Lake Object Name',           'value'=> record.Data_Lake_Object_Name__c});
 
             // Add mapping details
             for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
@@ -401,7 +401,7 @@ public with sharing class DataCloudUtilLwcCtrl {
     public static List<Map<String,Object>> getSObjectFieldInfo(String sObjectName){
 
         // Input validation
-        if(Type.forName('Schema', sObjectName) == null){
+        if(Type.forName('Schema.' + sObjectName) == null){
             throw new AuraHandledException(String.format('sObject of type "{0}" does not exist in the metadata', new String[]{sObjectName}));
         }
 
@@ -413,7 +413,7 @@ public with sharing class DataCloudUtilLwcCtrl {
            utl.Tst.forceException('AURA_EXCEPTION');
 
             // Get the describe for the fields
-            DescribeSObjectResult sdr = ((sObject) Type.forName('Schema', sObjectName).newInstance()).getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED);
+            DescribeSObjectResult sdr = ((sObject) Type.forName('Schema.' + sObjectName).newInstance()).getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED);
 
             // Iterate the fields and add the results to an output table
             for(SObjectField field : sdr.fields.getMap().values()){

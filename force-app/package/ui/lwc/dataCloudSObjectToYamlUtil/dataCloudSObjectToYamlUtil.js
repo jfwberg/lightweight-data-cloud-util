@@ -161,7 +161,7 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
     
     handleClickHelp(){
         openHelpModal(
-            'Tool to generate a YAML file based on an sObject and selected number of fields. This YAML can be used to create a new ingestion API Connector in the Data Cloud Setup.'
+            'Tool to generate a YAML file based on an sObject and selected number of fields. This YAML can be used to create a new ingestion API Connector in the Data Cloud Setup. Not that namespace prefixs and any postfixes like __c or __mdt will be removed from object and field names.'
         );
     }
 
