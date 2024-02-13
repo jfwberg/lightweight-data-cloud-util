@@ -32,17 +32,23 @@ If you use the *managed package* you need to installed the managed package depen
 This package is built to be used with a custom Data Cloud Auth Provider. The auth provider utility is highly recommended for error handling.
 | Info | Value |
 |---|---|
+|Name|Lightweight - Auth Provider Util v2|
+|Version|0.12.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000MVUzIAO*   |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000MW1FIAW*   |
+|GIT URL                  | https://github.com/jfwberg/lightweight-auth-provider-util |
+| | |
 |Name|Lightweight - Data Cloud Auth Provider|
 |Version|0.5.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6y1IAC*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6zdIAC*
-|GIT URL                  | https://github.com/jfwberg/lightweight-data-cloud-auth-provider
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6y1IAC*         |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6zdIAC*         |
+|GIT URL                  | https://github.com/jfwberg/lightweight-data-cloud-auth-provider |
 | | |
-|Name|Lightweight - Auth Provider Util v2|
-|Version|0.11.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M7FlIAK*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M7HNIA0*
-|GIT URL                  | https://github.com/jfwberg/lightweight-auth-provider-util
+|Name|Lightweight - Salesforce Auth Provider|
+|Version|0.3.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000MCLtIAO*         |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000MCNVIA4*         |
+|GIT URL                  | https://github.com/jfwberg/lightweight-salesforce-auth-provider |
 
 
 ## Package Info
