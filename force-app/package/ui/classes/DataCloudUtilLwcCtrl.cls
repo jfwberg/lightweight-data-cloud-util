@@ -87,7 +87,9 @@ public with sharing class DataCloudUtilLwcCtrl {
                     new Map<String,Object>{
                         'source' => mapping.Source__c,
                         'target' => mapping.Target__c,
-                        'ftype'  => mapping.Data_Cloud_Field_Type__c
+                        'ftype'  => mapping.Data_Cloud_Field_Type__c,
+                        'isPk'   => (Boolean) mapping.Is_Primary_Key__c,
+                        'isEt'   => (Boolean) mapping.Is_Event_Time_Field__c 
                     });
             }
 
@@ -448,7 +450,7 @@ public with sharing class DataCloudUtilLwcCtrl {
            utl.Tst.forceException('AURA_EXCEPTION');
 
             // Return the CSV string
-            return getQueryTable(mdtConfigName, query).getCsvString();
+            return getQueryTable(mdtConfigName, query, true).getCsvString();
 
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -463,7 +465,7 @@ public with sharing class DataCloudUtilLwcCtrl {
            utl.Tst.forceException('AURA_EXCEPTION');
 
             // Execute the query
-            utl.JsnTbl table = getQueryTable(mdtConfigName, query);
+            utl.JsnTbl table = getQueryTable(mdtConfigName, query, false);
 
             // Return the columns and the data
             return new Map<String,Object>{
@@ -602,7 +604,7 @@ public with sharing class DataCloudUtilLwcCtrl {
     /** **************************************************************************************************** **
      **                                       PRIVATE SUPPORT METHODS                                        **
      ** **************************************************************************************************** **/
-    private static utl.JsnTbl getQueryTable(String mdtConfigName, String query){
+    private static utl.JsnTbl getQueryTable(String mdtConfigName, String query, Boolean removePostfix){
 
         // Cast the response as an object so we can get both the data and metadata
         Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(
@@ -616,7 +618,12 @@ public with sharing class DataCloudUtilLwcCtrl {
             .setAttributeFilter(new Set<String>{'startTime','endTime','rowCount','queryId','done','metadata','nextBatchId'})
             .setListNameFilter(new Set<String>{'data'})
             .create(utl.Jsn.getObjectList('data',response))
-            .updateColumnNames(Dc.getOrderedColumnNamesFromMetadata(utl.Jsn.getObjectMap('metadata', response)))
+            .updateColumnNames(
+                Dc.getOrderedColumnNamesFromMetadata(
+                    utl.Jsn.getObjectMap('metadata', response),
+                    removePostfix
+                )
+            )
         ;
 
         // Return the output as a CSV string
@@ -656,7 +663,7 @@ public with sharing class DataCloudUtilLwcCtrl {
     private static Object generateSampleData(String dataType){
         switch on dataType {
             when 'numberField' {
-                return Integer.valueof((Math.random() * 10000));
+                return Integer.valueof((Math.random() * 1000000));
             }
             when 'dateField' {
                 return Date.today().addDays(Integer.valueof((Math.random() * 100)));
@@ -667,7 +674,23 @@ public with sharing class DataCloudUtilLwcCtrl {
             when 'uuidField' {
                 return utl.Rst.guid();
             }
+            when 'urlField' {
+                return 'https://' + (String.valueOf(EncodingUtil.convertToHex(crypto.generateAesKey(128)).substring(0,10)) + '.example.com') .escapeCsv();
+            }
+            when 'emailField' {
+                return (String.valueOf(EncodingUtil.convertToHex(crypto.generateAesKey(128)).substring(0,10)) + '@example.com').escapeCsv(); 
+            }
+            when 'phoneField' {
+                return '078-' + Integer.valueof((Math.random() * 10000));
+            }
+            when 'booleanField' {
+                return Math.mod(Integer.valueof((Math.random() * 10000)), 2) == 0 ? 'false' : 'true';
+            }
+            when 'percentField' {
+                return Decimal.valueof((Math.random() * 100000)).setScale(2);
+            }
         }
+        // Add return to please the compiler
         return String.valueOf(EncodingUtil.convertToHex(crypto.generateAesKey(192)).substring(0,15)).escapeCsv();
     }
 }

@@ -12,11 +12,11 @@
     </values>
     <values>
         <field>utl__Named_Credential_Name__c</field>
-        <value xsi:type="xsd:string">DC_ORG_01</value>
+        <value xsi:type="xsd:string">UKTA_DC_ORG</value>
     </values>
     <values>
         <field>utl__Salesforce_Named_Credential_Name__c</field>
-        <value xsi:type="xsd:string">SF_ORG_01</value>
+        <value xsi:type="xsd:string">UKTA_SF_ORG</value>
     </values>
     <values>
         <field>utl__sObject_Name__c</field>

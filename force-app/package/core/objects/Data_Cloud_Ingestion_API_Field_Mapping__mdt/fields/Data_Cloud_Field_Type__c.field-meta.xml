@@ -37,6 +37,32 @@
                 <default>false</default>
                 <label>uuidField</label>
             </value>
+
+            <value>
+                <fullName>emailField</fullName>
+                <default>false</default>
+                <label>emailField</label>
+            </value>
+            <value>
+                <fullName>urlField</fullName>
+                <default>false</default>
+                <label>urlField</label>
+            </value>
+            <value>
+                <fullName>phoneField</fullName>
+                <default>false</default>
+                <label>phoneField</label>
+            </value>
+            <value>
+                <fullName>percentField</fullName>
+                <default>false</default>
+                <label>percentField</label>
+            </value>
+            <value>
+                <fullName>booleantField</fullName>
+                <default>false</default>
+                <label>booleanField</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

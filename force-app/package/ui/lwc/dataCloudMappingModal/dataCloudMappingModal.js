@@ -22,10 +22,12 @@ const recordColumns = [
 ];
 
 // Columns for the bulk jobs
-const mappingColumns = [
+const mappingColumns = [ 
     { label: 'Source field (Salesforce)', fieldName: 'source' },
-    { label: 'Target field (Data Cloud)', fieldName: 'target'},
-    { label: 'Data Cloud Field Type',     fieldName: 'ftype' }
+    { label: 'Target field (Data Cloud)', fieldName: 'target' },
+    { label: 'Data Cloud Field Type',     fieldName: 'ftype'  },
+    { label: 'Is Primary Key',            fieldName: 'isPk', type: 'boolean' },
+    { label: 'Is Event Time Field',       fieldName: 'isEt', type: 'boolean' }
 ];
 
 // Main class

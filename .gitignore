@@ -4,6 +4,8 @@
 
 #Demo data for my own tests so api keys wont go public, even though they are dummy ones
 force-app/connection/
+force-app/tdx-demo/
+
 
 # Salesforce cache
 .sf/

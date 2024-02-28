@@ -7,6 +7,8 @@
     <columns>Source__c</columns>
     <columns>Target__c</columns>
     <columns>Data_Cloud_Field_Type__c</columns>
+    <columns>Is_Primary_Key__c</columns>
+    <columns>Is_Event_Time_Field__c</columns>
     <filterScope>Everything</filterScope>
     <label>All</label>
 </ListView>

@@ -33,7 +33,7 @@ REM Deploy the test connection (for security reasons not in the GIT Repo)
 sf project deploy start --source-dir ../force-app/connection --target-org %targetOrg%
 
 REM Assign the permission set for the connection
-sf org assign permset --name "DC_ORG_01" --target-org %targetOrg% --on-behalf-of %targetUser%
+sf org assign permset --name "UKTA_DC_ORG" --target-org %targetOrg% --on-behalf-of %targetUser%
 
 REM Deploy the sample data
 sf project deploy start --source-dir "../force-app/demo/package/custommetadata" --target-org %targetOrg%

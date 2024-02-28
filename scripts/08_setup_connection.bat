@@ -8,13 +8,14 @@ REM 03 - Update the force ignore file (Comment the connection section)
 REM 04 - Potentially remove or add the utl__ namespace in the permission set
 
 REM 05 - Deploy the custom implementation files
-sf project deploy start --source-dir force-app/connection/dc_org_01
+sf project deploy start --source-dir force-app/connection/ukta_dc_org
 sf project deploy start --source-dir force-app/connection/tdx_dc_org
 
 REM 06 - Assign the permission set
-sf org assign permset --name "DC_ORG_01"
-sf org assign permset --name "SF_ORG_01"
-
+sf org assign permset --name "UKTA_DC_ORG"
+sf org assign permset --name "UKTA_SF_ORG"
+sf org assign permset --name "TDX_DC_ORG"
+sf org assign permset --name "TDX_SF_ORG"
 
 REM 07 - Fix the force ignore again
 

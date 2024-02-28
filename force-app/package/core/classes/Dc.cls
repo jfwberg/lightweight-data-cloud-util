@@ -73,7 +73,10 @@ global with sharing class Dc {
                                                                 SELECT
                                                                     DeveloperName, Ingestion_API_Connector_Name__c, Ingestion_API_Target_Object_Name__c,
                                                                     Named_Credential_Name__c, Salesforce_Named_Credential_Name__c, sObject_Name__c, Data_Lake_Object_Name__c,
-                                                                    (SELECT Source__c, Target__c, Data_Cloud_Field_Type__c FROM Data_Cloud_Ingestion_API_Field_Mappings__r ORDER BY DeveloperName)
+                                                                    (   
+                                                                        SELECT Source__c, Target__c, Data_Cloud_Field_Type__c, Is_Primary_Key__c, Is_Event_Time_Field__c 
+                                                                        FROM Data_Cloud_Ingestion_API_Field_Mappings__r ORDER BY DeveloperName
+                                                                    )
                                                                 FROM
                                                                     Data_Cloud_Ingestion_API_Configuration__mdt
                                                                 WHERE
@@ -81,7 +84,7 @@ global with sharing class Dc {
                                                                 WITH USER_MODE
                                                                 LIMIT 1]){
             // When a record is found return the first record
-            return record;
+            return record; 
         }
 
         // If no records are found throw an eception
@@ -92,10 +95,11 @@ global with sharing class Dc {
     /**
      * @description Method to get a set of column names in the correct from a metadata
      *              response. This can be used to generate CSV or table headers
-     * @param metadataMap The parsed metadata response map from
-     * @return A set of column names in the correct order
+     * @param metadataMap   The parsed metadata response map from
+     * @param removePostfix Remove the __c postfix from the end of the column names
+     * @return      A set of column names in the correct order
      */
-    global static Set<String> getOrderedColumnNamesFromMetadata( Map<String,Object> metadataMap){
+    global static Set<String> getOrderedColumnNamesFromMetadata(Map<String,Object> metadataMap, Boolean removePostfix){
 
         // Input validation for the columns
         if(metadataMap == null){
@@ -116,7 +120,7 @@ global with sharing class Dc {
             for(String key : metadataMap.keySet()){
                 columnIndexMap.put(
                     (Integer) utl.Jsn.getObject('placeInOrder', (Map<String,Object>) metadataMap.get(key)),
-                    key
+                    (removePostfix) ? key?.removeEnd('__c') : key
                 );
             }
 
@@ -131,6 +135,17 @@ global with sharing class Dc {
         }catch(Exception e){
             throw new DataCloudUtilException(String.format(INVALID_MTD_JSON_ERROR_MSG, new String[]{e.getMessage()}));
         }
+    }
+
+
+    /**
+     * @description Overload method to get a set of column names in the correct from a metadata
+     *              response. This can be used to generate CSV or table headers
+     * @param metadataMap The parsed metadata response map from
+     * @return      A set of column names in the correct order
+     */
+    global static Set<String> getOrderedColumnNamesFromMetadata(Map<String,Object> metadataMap){
+        return getOrderedColumnNamesFromMetadata(metadataMap, false);
     }
 
 

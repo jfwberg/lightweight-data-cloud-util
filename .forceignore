@@ -1,6 +1,6 @@
 # Project that even on false get automtically deployed, this should stop that
-**/force-app/connection/**
 **/force-app/demo/**
+**/force-app/tdx-demo/**
 
 # Common test files for connection testing
 **/contentassets/**
@@ -11,13 +11,16 @@
 **/objectTranslations/**
 **/connectedApps/**
 **/flows/**
+**/customMetadata/**
+**/layouts/**
 
 
 # Comment when deploying the connection
-#**/namedCredentials/**
-#**/externalCredentials/**
-#**/authproviders/**
-#**/remoteSiteSettings/**
+**/force-app/connection/**
+**/namedCredentials/**
+**/externalCredentials/**
+**/authproviders/**
+**/remoteSiteSettings/**
 
 # LWC configuration files
 **/jsconfig.json
