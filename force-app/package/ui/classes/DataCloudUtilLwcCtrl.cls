@@ -173,12 +173,34 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static List<Map<String,Object>> getIngestionJobTable(String mdtConfigName){
+    public static utl.Ldt getIngestionJobTable(String mdtConfigName){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
-            return Dc.getBulkIngestionJobs(mdtConfigName);
+            // Create a lightning data table
+            return new utl.Ldt()
+                .addColumn(new Ldt.Col('Created Date',  'createdDate','date'))
+                .addColumn(new Ldt.Col('Job Id',        'id','text'))
+                .addColumn(new Ldt.Col('Operation',     'operation','text'))
+                .addColumn(new Ldt.Col('Object',        'object','text'))
+                .addColumn(new Ldt.Col('Job State',     'state','text'))
+                .addColumn(
+                    new utl.Ldt.Col(null, null)
+                        .setType('action')
+                        .setTypeAttributes(
+                            new utl.Ldt.TypeAttributes()
+                                .setMenuAlignment('auto')
+                                .addRowAction(new Ldt.RowAction('Details',      'details'   ))
+                                .addRowAction(new Ldt.RowAction('Add CSV Data', 'csv'       ))
+                                .addRowAction(new Ldt.RowAction('Upload CSV',   'uploadCsv' ))
+                                .addRowAction(new Ldt.RowAction('Complete',     'complete'  ))
+                                .addRowAction(new Ldt.RowAction('Abort',        'abort'     ))
+                                .addRowAction(new Ldt.RowAction('Delete',       'delete'    ))
+                        ) 
+                )
+                .setData(Dc.getBulkIngestionJobs(mdtConfigName))
+            ;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -683,8 +705,8 @@ public with sharing class DataCloudUtilLwcCtrl {
             when 'phoneField' {
                 return '078-' + Integer.valueof((Math.random() * 10000));
             }
-            when 'booleanField' {
-                return Math.mod(Integer.valueof((Math.random() * 10000)), 2) == 0 ? 'false' : 'true';
+            when 'booleantField'{
+                return (Math.mod(Integer.valueof((Math.random() * 10000)), 2) == 0) ? 'false' : 'true';
             }
             when 'percentField' {
                 return Decimal.valueof((Math.random() * 100000)).setScale(2);

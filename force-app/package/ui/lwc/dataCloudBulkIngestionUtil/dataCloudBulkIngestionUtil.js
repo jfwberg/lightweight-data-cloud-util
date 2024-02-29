@@ -10,8 +10,8 @@ import   LightningAlert     from 'lightning/alert';
 import { LightningElement } from "lwc";
 
 // Custom Utils
-import {handleError}        from 'c/dataCloudUtils';
-import {openHelpModal}      from 'c/dataCloudUtils';
+import {handleError}        from 'c/util';
+import textModal            from 'c/textModal';
 
 // Modals
 import mappingModal         from 'c/dataCloudMappingModal';
@@ -26,6 +26,7 @@ import abortJob             from "@salesforce/apex/DataCloudUtilLwcCtrl.abortJob
 import completeJob          from "@salesforce/apex/DataCloudUtilLwcCtrl.completeJob";
 import deleteJob            from "@salesforce/apex/DataCloudUtilLwcCtrl.deleteJob";
 
+/*
 // Actions for the bulk jobs
 const actions = [
     { label: 'Details',      name: 'details'  },
@@ -45,6 +46,7 @@ const columns = [
     { label: 'Job State',    fieldName: 'state' },
     { type: 'action', typeAttributes: { rowActions: actions, menuAlignment: 'auto' } }
 ];
+*/
 
 // Main class
 export default class DataCloudBulkIngestionUtil extends LightningElement {
@@ -52,10 +54,9 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     // Loading indicator for the spinner
     loading = false;
 
-    // Bulk job column details
-    jobTableData = [];
-    columns = columns;
-
+    // Bulk job datatable
+    ldt = {};
+    
     // Indicator to view the button
     mdtConfigOptionsLoaded = false;
     mdtConfigSelected      = false;
@@ -296,7 +297,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             this.loading = true;
             getIngestionJobTable({mdtConfigName : this.mdtConfigRecord})
                 .then((result) => {
-                    this.jobTableData = result;
+                    console.log(JSON.stringify(result,null,4));
+                    this.ldt = result;
                 })
                 .catch((error) => {
                     handleError(error);
@@ -348,18 +350,19 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     }
 
     handleClickHelp(){
-        openHelpModal(
-            'Tool to manage Bulk ingestion jobs based on a metadata configuration. Note that CSVs need to include all headers even if they are not used or it will result in an error.' +
-            '<br/> Add CSV will generate a sample file based on the target mapping.<br/>' +
-            '<ul>'+
-            '<li>Press <i>complete</i> to start the job when you have added all your CSVs</li>'+
-            '<li>You can only have 1 open or in progress job at a time: No matter if it is an upsert or delete operation</li>'+
-            '<li>You can only delete Aborted or Completed jobs</li>'+
-            '<li>You can only abort open jobs, once started you cannot abort the job</li>'+
-            '<li>Breaking any of these job status rules will all give the same error message: <li>"The request conflicts with current state of the target resource"</li> This is just the API so be aware of the different rules regarding the job states</li>' +
-            '<li>This app is built on Apex and all Governor limits are in place. Any CSV file over about 5MB will fail due to the callout limit.</li>' +
-            '</ul>'
-        );
+        textModal.open({
+            header : 'Data Cloud Bulk Ingestion Utility Help',
+            content:'Tool to manage Bulk ingestion jobs based on a metadata configuration. Note that CSVs need to include all headers even if they are not used or it will result in an error.' +
+                    '<br/> Add CSV will generate a sample file based on the target mapping.<br/>' +
+                    '<ul>'+
+                    '<li>Press <i>complete</i> to start the job when you have added all your CSVs</li>'+
+                    '<li>You can only have 1 open or in progress job at a time: No matter if it is an upsert or delete operation</li>'+
+                    '<li>You can only delete Aborted or Completed jobs</li>'+
+                    '<li>You can only abort open jobs, once started you cannot abort the job</li>'+
+                    '<li>Breaking any of these job status rules will all give the same error message: <li>"The request conflicts with current state of the target resource"</li> This is just the API so be aware of the different rules regarding the job states</li>' +
+                    '<li>This app is built on Apex and all Governor limits are in place. Any CSV file over about 5MB will fail due to the callout limit.</li>' +
+                    '</ul>'
+        });
     }
 
 

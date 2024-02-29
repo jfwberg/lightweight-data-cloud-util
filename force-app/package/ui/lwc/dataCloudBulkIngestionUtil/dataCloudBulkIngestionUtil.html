@@ -70,11 +70,12 @@
         
         <div class="slds-var-p-around_small ta">
             <lightning-datatable
-                key-field="id"
-                data={jobTableData}
-                columns={columns}
-                onrowaction={handleRowAction}
-                hide-checkbox-column
+                key-field               = {ldt.keyField} 
+                data                    = {ldt.data} 
+                columns                 = {ldt.columns}
+                hide-checkbox-column    = {ldt.hideCheckboxColumn}
+                show-row-number-column  = {ldt.showRowNumberColumn}
+                onrowaction             = {handleRowAction}
             ></lightning-datatable>
         </div>
     

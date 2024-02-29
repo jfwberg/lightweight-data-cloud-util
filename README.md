@@ -1,8 +1,16 @@
 # Lightweight - Data Cloud Util
 A lightweight set of Data Cloud utilities to ingest or query data directly from your Salesforce org.
 
-## Blog
-Platform Events (near Real-time event streaming) https://medium.com/@justusvandenberg/stream-platform-events-directly-from-salesforce-into-data-cloud-using-the-ingestion-api-7068f6787fde
+## Installation Instructions
+[Salesforce Data Cloud Utility and Ingestion API UI Setup Instructions](https://medium.com/@justusvandenberg/salesforce-data-cloud-utility-and-ingestion-api-ui-setup-instructions-c1aa8cd1c9a9)
+
+## Blogs
+[Building a Data Cloud Ingestion API Utility on the Salesforce Platform](https://medium.com/@justusvandenberg/building-a-data-cloud-ingestion-api-utility-on-the-salesforce-platform-0e754bea8385)
+
+
+[Stream platform events directly from Salesforce into Data Cloud using the Ingestion API](https://medium.com/@justusvandenberg/stream-platform-events-directly-from-salesforce-into-data-cloud-using-the-ingestion-api-7068f6787fde)
+
+
 
 ## Dependency - Package Info
 The following package need to be installed first before installing this package.
@@ -11,21 +19,27 @@ If you use the *managed package* you need to installed the managed package depen
 |---|---|
 |Name|Lightweight - Apex Unit Test Util v2|
 |Version|2.4.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6OXIA0*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6Q9IAK*
-|Github URL | https://github.com/jfwberg/lightweight-apex-unit-test-util-v2
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6OXIA0* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6Q9IAK* |
+|Github URL | https://github.com/jfwberg/lightweight-apex-unit-test-util-v2 |
+| | |
+|Name|Lightweight - LWC Util|
+|Version|0.1.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000O4TtIAK* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000O5MjIAK* |
+|Github URL | https://github.com/jfwberg/lightweight-lwc-util |
 | | |
 |Name|Lightweight - Apex REST Util|
 |Version|0.11.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6gHIAS*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6htIAC*
-|Github URL | https://github.com/jfwberg/lightweight-apex-rest-util 
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6gHIAS* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6htIAC* |
+|Github URL | https://github.com/jfwberg/lightweight-apex-rest-util |
 | | |
 |Name|Lightweight - Apex JSON Util|
 |Version|0.5.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6mjIAC*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6pxIAC*
-|Github URL | https://github.com/jfwberg/lightweight-json-util 
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6mjIAC* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6pxIAC* |
+|Github URL | https://github.com/jfwberg/lightweight-json-util |
 
 
 ## Optional Dependencies (!! Still recommended !!)
@@ -45,7 +59,7 @@ This package is built to be used with a custom Data Cloud Auth Provider. The aut
 |GIT URL                  | https://github.com/jfwberg/lightweight-data-cloud-auth-provider |
 | | |
 |Name|Lightweight - Salesforce Auth Provider|
-|Version|0.3.0-1|
+|Version|0.4.0-1|
 |Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000MCLtIAO*         |
 |Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000MCNVIA4*         |
 |GIT URL                  | https://github.com/jfwberg/lightweight-salesforce-auth-provider |
@@ -55,9 +69,9 @@ This package is built to be used with a custom Data Cloud Auth Provider. The aut
 | Info | Value |
 |---|---|
 |Name|Lightweight - Apex Data Cloud Util|
-|Version|0.3.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M7Z7IAK*
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M7ajIAC* 
+|Version|0.4.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000OPmrIAG* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000OPeoIAG* |
 
 ## Custom Metadata Configuration
 In order to callout to the Data Cloud Ingestion API you will need to create a configuration record for each Ingestion API Connector you want to connect to.

@@ -59,9 +59,9 @@
                 <label>percentField</label>
             </value>
             <value>
-                <fullName>booleantField</fullName>
+                <fullName>booleanField</fullName>
                 <default>false</default>
-                <label>booleanField</label>
+                <label>booleanField2</label>
             </value>
         </valueSetDefinition>
     </valueSet>

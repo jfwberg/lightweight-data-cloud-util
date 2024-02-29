@@ -10,7 +10,7 @@ import { api }         from 'lwc';
 import LightningModal  from 'lightning/modal';
 
 // Custom Utils
-import {handleError}   from 'c/dataCloudUtils';
+import {handleError}   from 'c/util';
 
 // Apex methods
 import getMetadataInfo from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";

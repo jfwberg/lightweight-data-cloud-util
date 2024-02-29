@@ -11,9 +11,8 @@
 **/objectTranslations/**
 **/connectedApps/**
 **/flows/**
-**/customMetadata/**
 **/layouts/**
-
+#**/customMetadata/**
 
 # Comment when deploying the connection
 **/force-app/connection/**

@@ -11,7 +11,7 @@ import LightningAlert    from 'lightning/alert';
 import LightningModal    from 'lightning/modal';
 
 // Custom Utils
-import {handleError}     from 'c/dataCloudUtils';
+import {handleError}     from 'c/util';
 
 // Apex methods
 import addCsv            from "@salesforce/apex/DataCloudUtilLwcCtrl.addCsv";
@@ -23,7 +23,7 @@ import getCsvPlaceholder from "@salesforce/apex/DataCloudUtilLwcCtrl.getCsvPlace
 const STATUS_UPLOAD_COMPLETE    = 'Upload Complete';
 
 // Data cloud action statusses
-const STATUS_SEND_TO_DC = 'Sending data to Data Cloud';
+const STATUS_SEND_TO_DC         = 'Sending data to Data Cloud';
 const STATUS_SEND_TO_DC_SUCCESS = 'CSV File Successfully sent to Data Cloud';
 const STATUS_SEND_TO_DC_ERROR   = 'An error occurred whilst sending the CSV File to Data Cloud. Please try again.';
 
