@@ -10,9 +10,10 @@ import {LightningElement}  from "lwc";
 
 // Custom Utils
 import {handleError}       from 'c/util';
-import {openHelpModal}     from 'c/util';
+import textModal           from 'c/textModal';
 
 // Modals
+import mappingModal        from 'c/dataCloudMappingModal';
 import queryResultModal    from 'c/dataCloudQueryResultModal';
 
 // Apex methods
@@ -51,9 +52,9 @@ export default class DataCloudQueryUtil extends LightningElement {
     // Specify what fields are getting auto generated
     fieldSelection = 'all';
     fieldSelectionOptions = [
-        {label : 'All', value:'all'},
-        {label : 'Primary Key Only', value:'pk'},
-        {label : 'Primary Key and EventTime', value:'pket'}
+        {label : 'All',                       value :'all'},
+        {label : 'Primary Key Only',          value :'pk'},
+        {label : 'Primary Key and EventTime', value :'pket'}
     ];
 
 
@@ -161,16 +162,33 @@ export default class DataCloudQueryUtil extends LightningElement {
         this.handleOpenQueryResultModal();
     }
 
+    handleClickShowMapping(){
+        this.handleOpenMappingModal({
+            mdtConfigRecord : this.mdtConfigRecord
+        });
+    }
+
     handleClickHelp(){
-        openHelpModal(
-            'Tool to generate a table view or CSV from a Data Cloud SQL Query. The query is executed against the Data Cloud named credential as specified in the metadata configuration that is selected.'
-        );
+        textModal.open({
+            header  : "Data Cloud Query Utility Help",
+            content : "Tool to generate a table view or CSV from a Data Cloud SQL Query. The query is executed against the Data Cloud named credential as specified in the metadata configuration that is selected."
+        });
     }
 
 
     /** **************************************************************************************************** **
      **                                            MODAL METHODS                                             **
      ** **************************************************************************************************** **/
+    /**
+     * Open the Mapping Modal
+     */
+    async handleOpenMappingModal (config) {
+        mappingModal.open({
+            config: config,
+            size: 'small',
+        });
+    }
+
     /**
      * Open the Mapping Modal
      */

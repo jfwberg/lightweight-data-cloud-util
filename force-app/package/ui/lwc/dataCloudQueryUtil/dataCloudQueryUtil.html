@@ -11,13 +11,21 @@
         </div>
         <div slot="actions">
             <lightning-button-group>
+                
                 <lightning-button
                     variant="neutral"
                     label="Execute Query" 
                     onclick={handleClickExecuteQuery}
                     disabled={actionDisabled}
                 ></lightning-button>
-            
+                
+                <lightning-button
+                    variant="neutral"
+                    label="Show Mapping" 
+                    onclick={handleClickShowMapping} 
+                    disabled={actionDisabled}
+                ></lightning-button>
+
                 <lightning-button
                     variant="neutral"
                     onclick={handleClickHelp} 
