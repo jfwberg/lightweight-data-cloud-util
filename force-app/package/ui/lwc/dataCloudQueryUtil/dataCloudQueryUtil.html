@@ -29,7 +29,7 @@
 
         </div>
         <div slot="footer">
-
+            
         </div>
         <div class="slds-var-p-around_small">
             <lightning-combobox
@@ -50,6 +50,26 @@
                 placeholder="Select..."
                 options={resultFormatOptions}
                 onchange={handlechangeResultFormat}
+            ></lightning-combobox>
+
+            <lightning-combobox
+                disabled={actionDisabled}
+                name="queryApiVersion"
+                label="Query API Version"
+                value={queryApiVersion}
+                placeholder="Select..."
+                options={queryApiVersionOptions}
+                onchange={handlechangeQueryApiVersion}
+            ></lightning-combobox>
+
+            <lightning-combobox
+                disabled={actionDisabled}
+                name="fieldSelection"
+                label="Field Selection"
+                value={fieldSelection}
+                placeholder="Select..."
+                options={fieldSelectionOptions}
+                onchange={handlechangeFieldSelection}
             ></lightning-combobox>
         
             <div class="slds-form-element">

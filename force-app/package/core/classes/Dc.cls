@@ -138,6 +138,71 @@ global with sharing class Dc {
     }
 
 
+    global class FieldMetadata implements Comparable{
+
+        // Variables
+        global String  name;
+        global String  type;
+        global Integer typeCode;
+        global Integer placeInOrder;
+        
+        // Main Constructor
+        global FieldMetadata(String name, Map<String,Object> metadata){
+            this.name         = name;
+            this.type         = (String)  metadata.get('type');
+            this.typeCode     = (Integer) metadata.get('typeCode');
+            this.placeInOrder = (Integer) metadata.get('placeInOrder');
+        }
+
+        // Compare order, note that the same order will never occur, so does not need to be checked
+        global Integer compareTo(Object compareTo) {
+            return (this.placeInOrder > ((FieldMetadata) compareTo).placeInOrder) ? 1 : -1;        
+        }
+    }
+
+    /**
+     * @description Method to get a set of column names in the correct from a metadata
+     *              response. This can be used to generate CSV or table headers
+     * @param metadataMap   The parsed metadata response map from
+     * @param removePostfix Remove the __c postfix from the end of the column names
+     * @return      A set of column names in the correct order
+     */
+    global static FieldMetadata[] getFieldMetadata(Map<String,Object> metadataMap, Boolean removePostfix){
+
+        // Input validation for the columns
+        if(metadataMap == null){
+            throw new DataCloudUtilException(INVALID_MTD_INPUT_ERROR_MSG);
+        }
+
+        try{
+            // Force exception for testing
+            utl.Tst.forceException('FIELD_METADATA');
+
+            // Output list
+            FieldMetadata[] fieldMetadata = new FieldMetadata[]{};
+
+            // Iterate the metadata to get the columns
+            for(String key : metadataMap.keySet()){
+                fieldMetadata.add(
+                    new FieldMetadata(
+                        key,
+                        (Map<String,Object>) metadataMap.get(key)
+                    )
+                );
+            }
+
+            // Sort the field metadata based on the place in the order
+            fieldMetadata.sort();
+
+            // Return the column Names in the correct order based on the metadata
+            return fieldMetadata;
+
+        }catch(Exception e){
+            throw new DataCloudUtilException(String.format(INVALID_MTD_JSON_ERROR_MSG, new String[]{e.getMessage()}));
+        }
+    }
+
+
     /**
      * @description Overload method to get a set of column names in the correct from a metadata
      *              response. This can be used to generate CSV or table headers
@@ -176,17 +241,31 @@ global with sharing class Dc {
     /** **************************************************************************************************** **
      **                                         GLOBAL QUERY METHODS                                         **
      ** **************************************************************************************************** **/
+
+    /**
+     * @description Overload method
+     */
+     global static utl.Rst executeQuery(String mdtConfigName, String query){
+        return executeQuery(mdtConfigName,  query,'v2');
+    }
+
+
     /**
      * @description Method to execute a query against data cloud
      * @param  mdtConfigName The Developer Name of the metadata record
      * @param  query         The SQL query to run against Data Cloud
      * @return The execution result of the Rest Execution  (utl.Rst)
      */
-    global static utl.Rst executeQuery(String mdtConfigName, String query){
+    global static utl.Rst executeQuery(String mdtConfigName, String query, String apiVersion){
 
         // Input validation
         if(String.isBlank(query)){
             throw new DataCloudUtilException(QUERY_CANNOT_BE_BLANK_MSG);
+        }
+
+        // Validate API version for the Query endpoint
+        if(String.isBlank(apiVersion) || !(new Set<String>{'v1','v2'}).contains(apiVersion)){
+            throw new DataCloudUtilException('Invalid API version: "' + apiVersion + '"');
         }
 
         try{
@@ -205,7 +284,7 @@ global with sharing class Dc {
             // Execute the query
             return new utl.Rst(record.Named_Credential_Name__c, true)
                 .setHandleSfEndpoint(false)
-                .setEndpoint('/api/v2/query')
+                .setEndpoint('/api/' + apiVersion + '/query')
                 .setMethod('POST')
                 .setBody(JSON.serialize(new Map<String,String>{'sql'=>query}))
                 .call()

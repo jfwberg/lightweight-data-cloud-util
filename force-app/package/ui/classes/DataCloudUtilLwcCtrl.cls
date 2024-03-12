@@ -466,13 +466,13 @@ public with sharing class DataCloudUtilLwcCtrl {
      **                                   DATA CLOUD QUERY AURA METHODS                                      **
      ** **************************************************************************************************** **/
     @AuraEnabled
-    public static String getDcQueryCsv(String mdtConfigName, String query){
+    public static String getDcQueryCsv(String mdtConfigName, String query, String apiVersion){
         try{
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
 
             // Return the CSV string
-            return getQueryTable(mdtConfigName, query, true).getCsvString();
+            return getQueryTable(mdtConfigName, query, apiVersion, true).getCsvString();
 
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -481,27 +481,103 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static Map<String,Object> getDcQueryTable(String mdtConfigName, String query){
+    public static utl.Ldt getDcQueryTable(String mdtConfigName, String query, String apiVersion){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
-            // Execute the query
-            utl.JsnTbl table = getQueryTable(mdtConfigName, query, false);
+            // Setup the output datatable
+            utl.Ldt ldt = new utl.Ldt()
+                .setKeyField('ldtKey')
+                .setHideCheckboxColumn(true)
+                .setShowRowNumberColumn(false)
+            ;
 
-            // Return the columns and the data
-            return new Map<String,Object>{
-                'columns' => table.getColumnNames(),
-                'data'    => table.getKeyValueData()
-            };
+            // Create a list to hold the column names
+            Set<String> columnNames = new Set<String>{};
+
+            // Create a list to hold the key column
+            Integer[] ldtKeyColumn = new Integer[]{};
+
+            // Cast the response as an object so we can get both the data and metadata
+            Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(
+                Dc.executeQuery(mdtConfigName, query, apiVersion)
+                    .getResponse()
+                    .getBody()
+            );
+
+            // Populate unique keys for the LDT
+            for(Integer i=0, max= (Integer) response.get('rowCount'); i<max;i++){
+                ldtKeyColumn.add(i+1);
+            }
+
+            // Create the columns
+            for(Dc.FieldMetadata fmdt : Dc.getFieldMetadata(utl.Jsn.getObjectMap('metadata', response), false)){
+                
+                // Create the initial column based on the type mapping
+                utl.Ldt.Col col = new utl.Ldt.Col(
+                        fmdt.name, 
+                        apiVersion == 'v1' ? fmdt.name : String.valueOf(fmdt.placeInOrder),
+                        CLOUD_DATA_TYPE_DATA_TABLE_TYPE_MAP.get(fmdt.type)
+                    )
+                    .setInitialWidth(fmdt.name.length() < 10 ? 120 : fmdt.name.length() * 12)
+                ;
+
+                // Format the date time fields
+                if(fmdt.type == 'TIMESTAMP WITH TIME ZONE'){
+                    if(apiVersion=='v1'){
+                        col.setTypeAttributes(
+                            new utl.Ldt.TypeAttributes()
+                                .setDay('2-digit')
+                                .setYear('numeric')
+                                .setMonth('numeric')
+                                .setHour('2-digit')
+                                .setMinute('2-digit')
+                                .setSecond('2-digit')
+                        );
+                    }else{
+                        // In API v2 the timestamp cannot be handled, so change it into text
+                        col.setType('text');
+                    }
+                }
+
+                // Add the column
+                ldt.addColumn(col);
+            }
+
+            // Return the table
+            return ldt.setData(
+                new utl.JsnTbl()
+                    .create(utl.Jsn.getObjectList('data', response))
+                    .updateColumnNames(columnNames)
+                    .upsertColumnData('ldtKey', ldtKeyColumn, columnNames.size())
+                    .getKeyValueData()
+            );
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static String getDcQueryRaw(String mdtConfigName, String query, String apiVersion){
+        try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
+            
+            // Return the raw response body
+            return Dc.executeQuery(mdtConfigName, query, apiVersion)
+                .getResponse()
+                .getBody();
 
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
 
+
     @AuraEnabled
-    public static String getQueryPlaceholder(String mdtConfigName){
+    public static String getQueryPlaceholder(String mdtConfigName, String fieldSelection){
         try{
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
@@ -511,10 +587,24 @@ public with sharing class DataCloudUtilLwcCtrl {
 
             // Create a query 
             String query = 'SELECT ';
-          
+           
             // Add mapping details
             for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
-                query+=(query == 'SELECT ' ? '' : ', ') + mapping.Target__c + '__c';
+                switch on fieldSelection {
+                    when 'pk'{
+                        if(mapping.Is_Primary_Key__c){
+                            query+=(query == 'SELECT ' ? '' : ', ') + mapping.Target__c + '__c';
+                        }
+                    }
+                    when 'pket'{
+                        if(mapping.Is_Primary_Key__c || mapping.Is_Event_Time_Field__c){
+                            query+=(query == 'SELECT ' ? '' : ', ') + mapping.Target__c + '__c';
+                        }
+                    }
+                    when else {
+                        query+=(query == 'SELECT ' ? '' : ', ') + mapping.Target__c + '__c'; 
+                    }
+                }
             }
             
             // Use the utility to generate a sample query
@@ -626,11 +716,11 @@ public with sharing class DataCloudUtilLwcCtrl {
     /** **************************************************************************************************** **
      **                                       PRIVATE SUPPORT METHODS                                        **
      ** **************************************************************************************************** **/
-    private static utl.JsnTbl getQueryTable(String mdtConfigName, String query, Boolean removePostfix){
-
+    private static utl.JsnTbl getQueryTable(String mdtConfigName, String query, String apiVersion, Boolean removePostfix){
+        
         // Cast the response as an object so we can get both the data and metadata
         Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(
-            Dc.executeQuery(mdtConfigName, query)
+            Dc.executeQuery(mdtConfigName, query, apiVersion)
                 .getResponse()
                 .getBody()
         );
@@ -691,7 +781,12 @@ public with sharing class DataCloudUtilLwcCtrl {
                 return Date.today().addDays(Integer.valueof((Math.random() * 100)));
             }
             when 'dateTimeField' {
-                return Datetime.now().addDays(Integer.valueof((Math.random() * 100))).addHours(Integer.valueof((Math.random() * 100))).addMinutes(Integer.valueof((Math.random() * 100)));
+                return Datetime.now()
+                        .addDays(   Integer.valueof((Math.random() * 100)))
+                        .addHours(  Integer.valueof((Math.random() * 100)))
+                        .addMinutes(Integer.valueof((Math.random() * 100)))
+                        .addSeconds(Integer.valueof((Math.random() * 100)))
+                ;
             }
             when 'uuidField' {
                 return utl.Rst.guid();

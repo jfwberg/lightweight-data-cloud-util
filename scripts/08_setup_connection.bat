@@ -21,3 +21,6 @@ REM 07 - Fix the force ignore again
 
 REM 06 - Connect the external credential in setup
 REM 07 - Run test Apex
+
+
+test-ezsblvgcsqc0@example.com

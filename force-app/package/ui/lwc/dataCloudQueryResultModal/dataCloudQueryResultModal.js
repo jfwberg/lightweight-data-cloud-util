@@ -10,13 +10,14 @@ import { api }               from 'lwc';
 import LightningModal        from 'lightning/modal';
 
 // Custom Utils
-import {handleError}         from 'c/dataCloudUtils';
-import {handleDownload}      from 'c/dataCloudUtils';
-import {copyTextToClipboard} from 'c/dataCloudUtils';
+import {handleError}         from 'c/util';
+import {handleDownload}      from 'c/util';
+import {copyTextToClipboard} from 'c/util';
 
 // Apex methods
 import getDcQueryCsv         from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryCsv";
 import getDcQueryTable       from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryTable";
+import getDcQueryRaw         from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryRaw";
 
 
 // Main class
@@ -29,26 +30,32 @@ export default class DataCloudQueryResultModal extends LightningModal  {
     loading = false;
 
     // Copy button style
-    variant         = 'brand';
+    copyVariant     = 'brand';
     downloadVariant = 'brand';
+    prettifyVariant = 'brand';
     
     // The CSV string that will be loaded
     csvData;
 
-    // Result from the query
-    data;
+    // The Raw API response
+    rawData;
 
-    // Column data is retrieved from the LWC controller as it is dependend on the query result
-    columns = [];
+    // Lightning data table response
+    ldt = {};
 
-    // Define result type visibility for CSV
+    // Define apexResponse type visibility for CSV
     get isCsv(){
-        return this.config.resultFormat === 'csv'  && this.loading === false;
+        return this.config.resultFormat === 'csv'  && this.loading  === false;
     }
 
-    // Define result type visibility for an LWC Data table
+    // Define apexResponse type visibility for an LWC Data table
     get isTable(){
         return this.config.resultFormat === 'table' && this.loading === false;
+    }
+
+    // Define apexResponse type visibility for Raw API Response
+    get isRaw(){
+        return this.config.resultFormat === 'raw'   && this.loading === false;
     }
 
 
@@ -58,12 +65,16 @@ export default class DataCloudQueryResultModal extends LightningModal  {
     connectedCallback() {
         try{
             // Handle CSV
-            if(this.config.resultFormat === 'csv'){
+            if(this.config.resultFormat       === 'csv'){
                 this.handleGetDcQueryCsv();
             
             // Handle data table
             }else if(this.config.resultFormat === 'table'){
                 this.handleGetDcQueryTable();
+        
+            // Handle raw response
+            }else if(this.config.resultFormat === 'raw'){
+                this.handleGetDcQueryRaw();
             }
         }catch(error){
             handleError(error);
@@ -76,8 +87,12 @@ export default class DataCloudQueryResultModal extends LightningModal  {
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
-     handleChangeCsvData(event){
-        this.csvData = event.target.value;
+    handleChangeCsvData(){
+        this.csvData = this.template.querySelector(".ta").value;
+    }
+
+    handleChangeRawData(){
+        this.rawData = this.template.querySelector(".ta").value;
     }
 
 
@@ -89,10 +104,11 @@ export default class DataCloudQueryResultModal extends LightningModal  {
             this.loading = true;
             getDcQueryCsv({
                 mdtConfigName : this.config.mdtConfigName,
-                query         : this.config.query
+                query         : this.config.query,
+                apiVersion    : this.config.apiVersion
             })
-            .then((result) => {
-                this.csvData = result;
+            .then((apexResponse) => {
+                this.csvData = apexResponse;
             })
             .catch((error) => {
                 handleError(error);
@@ -108,27 +124,42 @@ export default class DataCloudQueryResultModal extends LightningModal  {
         }
     }
 
+
     handleGetDcQueryTable(){
         try{
             this.loading = true;
             getDcQueryTable({
                 mdtConfigName : this.config.mdtConfigName,
-                query         : this.config.query
+                query         : this.config.query,
+                apiVersion    : this.config.apiVersion
             })
-            .then((result) => {
+            .then((apexResponse) => {
+                this.ldt = apexResponse;
+            })
+            .catch((error) => {
+                handleError(error);
+                this.close();
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
+            this.close();
+        }
+    }
 
-               
-                this.data = result.data;
-
-                for (let index = 0; index < result.columns.length; index++) {
-                    this.columns.push({ 
-                        label        : result.columns[index],
-                        fieldName    : String(index),
-                        initialWidth : result.columns[index].length < 10 ? 120 : (result.columns[index].length * 12)
-                    });
-                }
-
-                
+    handleGetDcQueryRaw(){
+        try{
+            this.loading = true;
+            getDcQueryRaw({
+                mdtConfigName : this.config.mdtConfigName,
+                query         : this.config.query,
+                apiVersion    : this.config.apiVersion
+            })
+            .then((apexResponse) => {
+                this.rawData = apexResponse; 
             })
             .catch((error) => {
                 handleError(error);
@@ -159,10 +190,10 @@ export default class DataCloudQueryResultModal extends LightningModal  {
             copyTextToClipboard(this.csvData);
 
             // Change color to green
-            this.variant = 'success';
+            this.copyVariant = 'success';
         }catch(error){
             // Change color to red
-            this.variant = 'destructive';
+            this.copyVariant = 'destructive';
             handleError(error);
         }
     }
@@ -185,9 +216,68 @@ export default class DataCloudQueryResultModal extends LightningModal  {
 
         }catch(error){
             // Change color to red
-            this.variant = 'destructive';
+            this.copyVariant = 'destructive';
             handleError(error);
 
+        }finally{
+            this.loading = false;
+        }
+    }
+
+    handleClickCopyRaw(){
+        try{
+            // Execute copy
+            copyTextToClipboard(this.rawData);
+
+            // Change color to green
+            this.copyVariant = 'success';
+        }catch(error){
+            // Change color to red
+            this.copyVariant = 'destructive';
+            handleError(error);
+        }
+    }
+
+    handleClickDownloadRaw() {
+        try{
+            this.loading = true;
+
+            handleDownload(
+                this.template,
+                'Data_Cloud_Query',
+                '.json',
+                'application/json; charset=utf-8;',
+                this.rawData,
+                true
+            );
+
+            // change button color to green
+            this.downloadVariant = 'success';
+
+        }catch(error){
+            // Change color to red
+            this.copyVariant = 'destructive';
+            handleError(error);
+
+        }finally{
+            this.loading = false;
+        }
+    }
+
+    handleClickPrettify(){
+        try{
+            this.loading = true;
+
+            // change button color to green
+            this.prettifyVariant = 'success';
+            
+            // Make it pretty
+            this.rawData = JSON.stringify(JSON.parse(this.rawData),null,4);
+
+        }catch(error){
+            // Change color to red
+            this.prettifyVariant = 'destructive';
+            handleError(error);
         }finally{
             this.loading = false;
         }

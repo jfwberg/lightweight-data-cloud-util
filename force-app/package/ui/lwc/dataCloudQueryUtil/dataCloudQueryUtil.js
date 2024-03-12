@@ -9,8 +9,8 @@
 import {LightningElement}  from "lwc";
 
 // Custom Utils
-import {handleError}       from 'c/dataCloudUtils';
-import {openHelpModal}     from 'c/dataCloudUtils';
+import {handleError}       from 'c/util';
+import {openHelpModal}     from 'c/util';
 
 // Modals
 import queryResultModal    from 'c/dataCloudQueryResultModal';
@@ -36,8 +36,24 @@ export default class DataCloudQueryUtil extends LightningElement {
     // Output as either csv or LWC data table
     resultFormat = 'table';
     resultFormatOptions = [
-        {label : 'Datatable', value:'table'},
-        {label : 'CSV',       value:'csv'}
+        {label : 'Lightning - Datatable', value:'table'},
+        {label : 'CSV',                   value:'csv'  },
+        {label : 'Raw API Response',      value:'raw'  }
+    ];
+
+    // Specify what API version you 
+    queryApiVersion = 'v1';
+    queryApiVersionOptions = [
+        {label : 'v2', value:'v2'},
+        {label : 'v1', value:'v1'}
+    ];
+
+    // Specify what fields are getting auto generated
+    fieldSelection = 'all';
+    fieldSelectionOptions = [
+        {label : 'All', value:'all'},
+        {label : 'Primary Key Only', value:'pk'},
+        {label : 'Primary Key and EventTime', value:'pket'}
     ];
 
 
@@ -69,8 +85,8 @@ export default class DataCloudQueryUtil extends LightningElement {
     handleGetMdtOptions(){
         try{
             getMtdConfigOptions()
-                .then((result) => {
-                    this.mdtConfigOptions = result;
+                .then((apexResponse) => {
+                    this.mdtConfigOptions = apexResponse;
                     this.mdtConfigOptionsLoaded = true;
                 })
                 .catch((error) => {
@@ -88,16 +104,20 @@ export default class DataCloudQueryUtil extends LightningElement {
 
     handleGetQueryPlaceholder(){
         try{
-            getQueryPlaceholder({mdtConfigName : this.mdtConfigRecord})
-                .then((result) => {
-                    this.query = result;
-                })
-                .catch((error) => {
-                    handleError(error);
-                })
-                .finally(()=>{
-                    this.loading = false; 
-                });
+            getQueryPlaceholder({
+                mdtConfigName  : this.mdtConfigRecord,
+                fieldSelection : this.fieldSelection
+                
+            })
+            .then((apexResponse) => {
+                this.query = apexResponse;
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false; 
+            });
         }catch(error){
             handleError(error);
             this.loading = false; 
@@ -122,6 +142,15 @@ export default class DataCloudQueryUtil extends LightningElement {
 
     handlechangeResultFormat(event) {
         this.resultFormat = event.detail.value;
+    }
+
+    handlechangeQueryApiVersion(event) {
+        this.queryApiVersion = event.detail.value;
+    }
+
+    handlechangeFieldSelection(event) {
+        this.fieldSelection = event.detail.value;
+        this.handleGetQueryPlaceholder();
     }
 
 
@@ -149,8 +178,9 @@ export default class DataCloudQueryUtil extends LightningElement {
         queryResultModal.open({
             config: {
                 mdtConfigName : this.mdtConfigRecord,
-                resultFormat : this.resultFormat,
-                query : this.query
+                resultFormat  : this.resultFormat,
+                query         : this.query,
+                apiVersion    : this.queryApiVersion
             },
             size: 'large',
         });

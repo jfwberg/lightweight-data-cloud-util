@@ -9,24 +9,39 @@
         <lightning-modal-body>
 
             <lightning-datatable
-                if:true={isTable}
-                key-field="key"
-                data={data}
-                columns={columns}
-                hide-checkbox-column
+                if:true                 = {isTable}
+                key-field               = {ldt.keyField}
+                data                    = {ldt.data}
+                columns                 = {ldt.columns}
+                hide-checkbox-column    = {ldt.hideCheckboxColumn}
+                show-row-number-column  = {ldt.showRowNumberColumn}
             ></lightning-datatable>
  
             <div class="slds-form-element__control" if:true={isCsv}>
-                <textarea  name="csvData" class="slds-textarea ta" >{csvData}</textarea>
+                <textarea name="csvData" class="slds-textarea ta" oninput={handleChangeCsvData}>{csvData}</textarea>
+            </div>
+
+            <div class="slds-form-element__control" if:true={isRaw}>
+                <textarea name="rawData" class="slds-textarea ta" oninput={handleChangeRawData}>{rawData}</textarea>
             </div>
 
         </lightning-modal-body>
     
     <lightning-modal-footer>
         <lightning-button-group>
-            <lightning-button label="Download" onclick={handleClickDownload} variant={downloadVariant} if:true={isCsv}></lightning-button>
-            <lightning-button label="Copy"     onclick={handleClickCopy}     variant={variant}         if:true={isCsv}></lightning-button>
+
+            <!-- RAW API RESPONSE-->
+            <lightning-button label="Prettify" onclick={handleClickPrettify}    variant={prettifyVariant} if:true={isRaw}></lightning-button>
+            <lightning-button label="Download" onclick={handleClickDownloadRaw} variant={downloadVariant} if:true={isRaw}></lightning-button>
+            <lightning-button label="Copy"     onclick={handleClickCopyRaw}     variant={copyVariant}     if:true={isRaw}></lightning-button>
+
+            <!-- CSV RESPONSE-->
+            <lightning-button label="Download" onclick={handleClickDownload}    variant={downloadVariant} if:true={isCsv}></lightning-button>
+            <lightning-button label="Copy"     onclick={handleClickCopy}        variant={copyVariant}     if:true={isCsv}></lightning-button>
+
+            <!-- COMMON-->
             <lightning-button label="Close"    onclick={handleClickClose}></lightning-button>
+
         </lightning-button-group>
     </lightning-modal-footer>
 </template>
