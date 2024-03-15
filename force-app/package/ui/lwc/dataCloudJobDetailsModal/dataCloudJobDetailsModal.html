@@ -1,21 +1,26 @@
 <template>
+    
     <lightning-spinner 
-        if:true={loading}
-        alternative-text="Loading" 
-        size="medium"
-        variant="base"
+        if:true         = {loading}
+        alternative-text= "Loading" 
+        size            = "medium"
+        variant         = "base"
     ></lightning-spinner>
+    
     <lightning-modal-header label="Bulk Ingestion Job Details"></lightning-modal-header>
+    
     <lightning-modal-body>
         <lightning-datatable
-        key-field="key"
-        data={data}
-        columns={columns}
-        hide-checkbox-column
-    ></lightning-datatable>
-
+            key-field               = {ldt.keyField} 
+            data                    = {ldt.data} 
+            columns                 = {ldt.columns}
+            hide-checkbox-column    = {ldt.hideCheckboxColumn}
+            show-row-number-column  = {ldt.showRowNumberColumn}
+        ></lightning-datatable>
     </lightning-modal-body>
+
     <lightning-modal-footer>
         <lightning-button label="Close" onclick={handleClose}></lightning-button>
     </lightning-modal-footer>
+    
 </template>

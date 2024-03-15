@@ -9,23 +9,24 @@
 import { LightningElement } from "lwc";
 
 // Custom Utils
-import {handleError}        from 'c/dataCloudUtils';
-import {openHelpModal}      from 'c/dataCloudUtils';
+import {handleError}         from 'c/util';
+import {removePreAndPostFix} from 'c/util';
 
 // Modals
+import textModal            from 'c/textModal';
 import yamlModal            from 'c/dataCloudYamlModal';
 
 // Apex methods
 import getSObjectOptions    from "@salesforce/apex/DataCloudUtilLwcCtrl.getSObjectOptions";
 import getSObjectFieldInfo  from "@salesforce/apex/DataCloudUtilLwcCtrl.getSObjectFieldInfo";
 
-const columns = [
-    { label: 'Source field (Salesforce)', fieldName: 'source'  },
-    { label: 'Salesforce field Type',     fieldName: 'sfFtype' },
-    { label: 'Custom field?',             fieldName: 'custom', type : 'boolean' },
-    { label: 'Target field (Data Cloud)', fieldName: 'target'  },
-    { label: 'Data Cloud Field Type',     fieldName: 'dcFtype' }
-];
+// Mapping for the YAML
+const FIELD_TYPE_MAPPING = {
+    "textField"     : "string",
+    "numberField"   : "number",
+    "dateField"     : "string\n          format: date",
+    "dateTimeField" : "string\n          format: date-time"
+};
 
 // Main class
 export default class DataCloudSObjectToYamlUtil extends LightningElement {
@@ -33,9 +34,11 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
     // Loading indicator for the spinner
     loading = false;
 
-    // Bulk job column details
-    data = [];
-    columns = columns;
+    // The yaml file that is to be generated
+    yamlData = '';
+
+    // Lightning output table, set default to prevent error message
+    ldt = {keyField : 'source'};
 
     // If set to true the labels and api names are inverted
     invertLabel     = true
@@ -50,9 +53,15 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
     sObjectName;
     sObjectOptions = [];
 
-    // Data table details
-    selectedData = [];
-    currentlySelectedData = [];
+    // Rows that are selected for a specific object (All objects)
+    // Contains only the records keys
+    selectedRows = {};
+
+    // All selected rows for all objects + data, YAML is created based on this
+    currentlySelectedRows = {};
+
+    // List of selected rows in the current visible object only, not all data
+    visibleSelectedRows = [];
     
     // Disable buttons
     get inputsEnabled(){
@@ -74,9 +83,9 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback(){
-        // Start with getting the metadata configurations
         this.handleGetSObjectOptions();
     }
+
 
     /** **************************************************************************************************** **
      **                                            APEX HANDLERS                                             **
@@ -85,10 +94,10 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
         try{
             this.loading = true;
             getSObjectOptions({invertLabel : this.invertLabel})
-                .then((result) => {
+                .then((apexResponse) => {
                     
                     // Clone array
-                    let ar = JSON.parse(JSON.stringify(result));
+                    let ar = JSON.parse(JSON.stringify(apexResponse));
 
                     // Sort the result by label in JS,
                     // The results are an unsorted mess that come back from apex for some reason
@@ -112,8 +121,13 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
         try{
             this.loading = true;
             getSObjectFieldInfo({sObjectName : this.sObjectName})
-                .then((result) => {
-                    this.data = result;
+                .then((apexResponse) => {
+                    // Update the data table
+                    this.ldt = apexResponse;
+
+                    // Pre-populate the data table for different objects, needs to run after the data table has been refreshed
+                    // Reset view when you move to an object that has not been added yet
+                    this.visibleSelectedRows = this.selectedRows.hasOwnProperty(this.sObjectName) ? JSON.parse(JSON.stringify(this.selectedRows[this.sObjectName])) : [];
                 })
                 .catch((error) => {
                     handleError(error);
@@ -134,21 +148,29 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
      ** **************************************************************************************************** **/
     // Set the config record name and update the table
     handleChangeSObject(event) {
-        this.data = [];
-        this.sObjectName = event.detail.value;
-        this.sObjectSelected = true;
-        this.handleGetSObjectFieldInfo();
+        try{
+            this.data = [];
+            this.sObjectName = event.detail.value;
+            this.sObjectSelected = true;
+            this.handleGetSObjectFieldInfo();
+        }catch(error){
+            handleError(error);
+        }
     }
 
+    
     handleChangeInvertLabel(event){
         this.invertLabel = event.detail.checked;
         this.handleGetSObjectOptions();
     }
 
 
-
     handleRowSelection(event) {
-        this.currentlySelectedData = event.detail.selectedRows;
+        // Add the records to the currently selected data
+        this.currentlySelectedRows[this.sObjectName] = JSON.parse(JSON.stringify(event.detail.selectedRows));
+
+        // Add ids to the selected rows
+        this.selectedRows[this.sObjectName] = JSON.parse(JSON.stringify(event.detail.selectedRows)).map(a => a.source);  
     }
 
 
@@ -160,9 +182,7 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
     }
     
     handleClickHelp(){
-        openHelpModal(
-            'Tool to generate a YAML file based on an sObject and selected number of fields. This YAML can be used to create a new ingestion API Connector in the Data Cloud Setup. Not that namespace prefixs and any postfixes like __c or __mdt will be removed from object and field names.'
-        );
+        this.handleOpenHelpModal() ;
     }
 
 
@@ -172,26 +192,93 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
     /**
      * Open the Mapping Modal
      */
-    async handleOpenYamlModal () {
-        yamlModal.open({
-            sObjectName : this.sObjectName,
-            currentlySelectedData: this.currentlySelectedData,
-            size: 'medium',
-        });
+    async handleOpenYamlModal(){
+        try{
+            // Generate the YAML
+            this.generateYaml();
+
+            // Open the generated YAML in a modal
+            yamlModal.open({
+                disabled         : false,
+                label            : 'YAML Creation Result',
+                content          : this.yamlData,
+                template         : this.template,
+                fileName         : 'YAML',
+                fileExtension    : '.yaml',
+                fileMimeType     : 'text/x-yaml; charset=utf-8;',
+                includeTimestamp : true,
+                size: 'small'
+            });
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+    
+    /**
+     * Open the help modal
+     */
+    handleOpenHelpModal(){
+        try{
+            textModal.open({
+                header  : "Data Cloud - sObject to YAML Utility - Help",
+                content : "Tool to generate a YAML file based on one or multiple sObjects and their selected fields. This YAML can be used to create a new Ingestion API Connector in the Data Cloud Setup. Note that namespace prefixs and any postfixes like __c or __mdt will be removed from object and field names and there is no duplicate check. So if you have Name and Name__c you're going to have to update the YAML manually.",
+                size    : 'small'
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 
 
     /** **************************************************************************************************** **
      **                                           SUPPORT METHODS                                            **
      ** **************************************************************************************************** **/
-    // Sort by label
-    compare(a,b) {
-        if (a.label < b.label){
-            return -1;
+    /**
+     * Method to generate a YAML for a object/field list mapping
+     */
+    generateYaml(){
+        try{
+            // Set the base string for the yaml data
+            this.yamlData='openapi: 3.0.3\ncomponents:\n  schemas:\n';
+
+            // Add objects
+            for (let sObjectName in this.currentlySelectedRows) {
+                
+                // Remove objects without any fields
+                if(this.currentlySelectedRows[sObjectName].length > 0){
+                    
+                    // Clean object name from pre and postfixes
+                    this.yamlData += '    ' + removePreAndPostFix(sObjectName) + ':\n      type: object\n      properties:\n';
+
+                    // Create the field info
+                    for (let index = 0; index < this.currentlySelectedRows[sObjectName].length; index++) {
+                        const element = this.currentlySelectedRows[sObjectName][index];
+                        this.yamlData += '        '   + removePreAndPostFix(element.target) + ':\n';
+                        this.yamlData += '          type: ' + FIELD_TYPE_MAPPING[element.dcFtype] + '\n';
+                    }
+                }
+            }
+        }catch(error){
+            handleError(error);
         }
-        if (a.label > b.label){
-            return 1;
+    }
+
+  
+    /**
+     * Method to sort an array by label
+     */
+    compare(a,b){
+        try{
+            if (a.label < b.label){
+                return -1;
+            }
+            if (a.label > b.label){
+                return 1;
+            }
+            return 0;
+        }catch(error){
+            handleError(error);
         }
-        return 0;
     }
 }

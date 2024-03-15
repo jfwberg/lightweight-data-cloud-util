@@ -10,10 +10,10 @@ import   LightningAlert        from 'lightning/alert';
 import { LightningElement }    from "lwc";
 
 // Custom Utils
-import {handleError}           from 'c/dataCloudUtils';
-import {openHelpModal}         from 'c/dataCloudUtils';
+import { handleError }         from 'c/util';
 
 // Modals
+import textModal               from 'c/textModal';
 import mappingModal            from 'c/dataCloudMappingModal';
 
 // Apex methods
@@ -60,8 +60,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleGetMdtOptions(){
         try{
             getMtdConfigOptions()
-                .then((result) => {
-                    this.mdtConfigOptions = result;
+                .then((apexResponse) => {
+                    this.mdtConfigOptions = apexResponse;
                 })
                 .catch((error) => {
                     handleError(error);
@@ -78,9 +78,9 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleGetStreamingPlaceholder(){
         try{
             getStreamingPlaceholder({ mdtConfigName : this.mdtConfigRecord})
-                .then((result) => {
-                    this.payload = result;
-                    this.template.querySelector(".ta").value = result;
+                .then((apexResponse) => {
+                    this.payload = apexResponse;
+                    this.template.querySelector(".ta").value = apexResponse;
                 })
                 .catch((error) => {
                     handleError(error);
@@ -99,8 +99,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         try{
             this.loading = true;
             sendDataStream({ mdtConfigName : this.mdtConfigRecord, payload : this.payload})
-                .then((result) => {
-                    if(result==true){
+                .then((apexResponse) => {
+                    if(apexResponse==true){
                         LightningAlert.open({
                             message: 'Message SENT successfully ',
                             label  : 'Success',
@@ -126,8 +126,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         try{
             this.loading = true;
             testDataStream({ mdtConfigName : this.mdtConfigRecord, payload : this.payload})
-                .then((result) => {
-                    if(result === true){
+                .then((apexResponse) => {
+                    if(apexResponse === true){
                         LightningAlert.open({
                             message: 'Message TESTED successfully ',
                             label  : 'Success',
@@ -154,9 +154,6 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
      ** **************************************************************************************************** **/
     // Set the config record name and update the table
     handleChangeMtdConfig(event) {
-        
-        console.log('changing...');
-
         try{
             this.mdtConfigRecord = event.detail.value;
             this.mdtConfigSelected = true;
@@ -181,6 +178,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleClickSend(){
         this.handleSendDataStream();
     }
+
     handleClickTest(){
         this.handleTestDataStream();
     }
@@ -192,9 +190,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     }
 
     handleClickHelp(){
-        openHelpModal(
-            'Tool to send an ingestion streaming payload to Data Cloud. Based on the Metadata Configuration a sample payload is automatically generated based on the target fields in the mapping.'
-        );
+       this.handleOpenHelpModal() ;
     }
 
 
@@ -205,9 +201,29 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
      * Open the Mapping Modal
      */
     async handleOpenMappingModal (config) {
-        mappingModal.open({
-            config: config,
-            size: 'small',
-        });
+        try{
+            mappingModal.open({
+                config: config,
+                size: 'small',
+            });
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+    
+    /**
+     * Open the help modal
+     */
+    handleOpenHelpModal(){
+        try{
+            textModal.open({
+                header  : "Data Cloud - Streaming Ingestion Utility - Help",
+                content : "Tool to send an ingestion streaming payload to Data Cloud. Based on the Metadata Configuration a sample payload is automatically generated based on the target fields in the mapping.",
+                size: 'small'
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 }

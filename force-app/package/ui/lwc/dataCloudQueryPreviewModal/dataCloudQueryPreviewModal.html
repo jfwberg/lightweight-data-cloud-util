@@ -1,24 +1,28 @@
 <template>
+    
     <lightning-spinner 
-        if:true={loading}
+        if:true         ={loading}
         alternative-text="Loading" 
-        size="medium"
-        variant="base"
+        size            ="medium"
+        variant         ="base"
     ></lightning-spinner>
-    <lightning-modal-header label="Data Cloud - SOQL Query to CSV Preview"></lightning-modal-header>
-        <lightning-modal-body>
 
-            <lightning-datatable
-                if:true={tableVisible}
-                key-field="key"
-                data={data}
-                columns={columns}
-                hide-checkbox-column
-            ></lightning-datatable>
- 
-        </lightning-modal-body>
+    <lightning-modal-header label="Data Cloud - SOQL Query to CSV Preview"></lightning-modal-header>
+
+    <lightning-modal-body>
+        <lightning-datatable 
+            if:true                 = {loaded}
+            key-field               = {ldt.keyField} 
+            data                    = {ldt.data} 
+            columns                 = {ldt.columns}
+            hide-checkbox-column    = {ldt.hideCheckboxColumn}
+            show-row-number-column  = {ldt.showRowNumberColumn}
+            onrowaction             = {handleRowAction}
+        ></lightning-datatable>
+    </lightning-modal-body>
     
     <lightning-modal-footer>
         <lightning-button label="Close" onclick={handleClickClose}></lightning-button>
     </lightning-modal-footer>
+    
 </template>

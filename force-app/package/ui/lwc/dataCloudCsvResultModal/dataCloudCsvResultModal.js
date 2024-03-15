@@ -10,9 +10,9 @@ import { api }               from 'lwc';
 import LightningModal        from 'lightning/modal';
 
 // Custom Utils
-import {handleError}         from 'c/dataCloudUtils';
-import {handleDownload}      from 'c/dataCloudUtils';
-import {copyTextToClipboard} from 'c/dataCloudUtils';
+import {handleError}         from 'c/util';
+import {handleDownload}      from 'c/util';
+import {copyTextToClipboard} from 'c/util';
 
 // Apex methods
 import getSoqlQueryCsv       from "@salesforce/apex/DataCloudUtilLwcCtrl.getSoqlQueryCsv";
@@ -61,8 +61,8 @@ export default class DataCloudCsvResultModal extends LightningModal  {
                 query         : this.config.query,
                 tooling       : this.config.tooling
             })
-            .then((result) => {
-                this.csvData = result;
+            .then((apexResponse) => {
+                this.csvData = apexResponse;
             })
             .catch((error) => {
                 handleError(error);

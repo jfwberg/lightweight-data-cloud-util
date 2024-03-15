@@ -10,16 +10,11 @@ import { api }        from 'lwc';
 import LightningModal from 'lightning/modal';
 
 // Custom Utils
-import {handleError}   from 'c/dataCloudUtils';
+import {handleError}   from 'c/util';
 
 // Apex methods
 import getJobInfo     from "@salesforce/apex/DataCloudUtilLwcCtrl.getJobInfo";
 
-// Columns for the bulk jobs
-const columns = [
-    { label: 'Key',   fieldName: 'key'  },
-    { label: 'Value', fieldName: 'value'}
-];
 
 // Main class
 export default class DataCloudJobDetailsModal extends LightningModal {
@@ -30,9 +25,8 @@ export default class DataCloudJobDetailsModal extends LightningModal {
     // Spinner indicator
     loading = false;
 
-    // Table info
-    data = [];
-    columns = columns;
+    // Lightning data table
+    ldt = {};
 
 
     /** **************************************************************************************************** **
@@ -46,8 +40,8 @@ export default class DataCloudJobDetailsModal extends LightningModal {
                 mdtConfigName : this.config.mdtConfigRecord,
                 jobId         : this.config.jobId
             })
-            .then((result) => {
-                this.data = result;
+            .then((apexResponse) => {
+                this.ldt = apexResponse;
             })
             .catch((error) => {
                 handleError(error);

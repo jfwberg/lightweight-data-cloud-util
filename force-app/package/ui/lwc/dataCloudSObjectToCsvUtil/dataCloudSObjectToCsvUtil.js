@@ -9,8 +9,8 @@
 import { LightningElement } from "lwc";
 
 // Custom Utils
-import {handleError}        from 'c/dataCloudUtils';
-import {openHelpModal}      from 'c/dataCloudUtils';
+import {handleError}        from 'c/util';
+import textModal            from 'c/textModal';
 
 // Modals
 import mappingModal         from 'c/dataCloudMappingModal';
@@ -63,8 +63,8 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     handleGetMdtOptions(){
         try{
             getMtdConfigOptions()
-                .then((result) => {
-                    this.mdtConfigOptions = result;
+                .then((apexResponse) => {
+                    this.mdtConfigOptions = apexResponse;
                 })
                 .catch((error) => {
                     handleError(error);
@@ -83,8 +83,9 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
             generateQueryFromMapping({
                 mdtConfigName : this.mdtConfigRecord
             })
-            .then((result) => {
-                this.query = result;
+            .then((apexResponse) => {
+                this.query = apexResponse;
+                this.template.querySelector(".ta").value = apexResponse;
             })
             .catch((error) => {
                 handleError(error);
@@ -136,41 +137,78 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     }
 
     handleClickHelp(){
-        openHelpModal(
-            'Tool to generate a CSV from a query that allows from sub queries and parent relationships. When a metadata record is selected the mapping is used to update the column headers to the target column names.'
-        );
+        this.handleOpenHelpModal() ;
     }
 
 
     /** **************************************************************************************************** **
      **                                            MODAL METHODS                                             **
      ** **************************************************************************************************** **/
-    async handleOpenCsvResultModal () {
-        csvResultModal.open({
-            config: {
-                mdtConfigName : this.mdtConfigRecord,
-                query         : this.query,
-                tooling       : this.tooling
-            },
-            size: 'large',
-        });
+    /**
+     * Open the CSV result modal
+     */
+    async handleOpenCsvResultModal(){
+        try{
+            csvResultModal.open({
+                config: {
+                    mdtConfigName : this.mdtConfigRecord,
+                    query         : this.query,
+                    tooling       : this.tooling
+                },
+                size: 'large',
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 
-    async handleOpenQueryPreviewModal () {
-        previewModal.open({
-            config: {
-                mdtConfigName : this.mdtConfigRecord,
-                query         : this.query,
-                tooling       : this.tooling
-            },
-            size: 'large',
-        });
+
+    /**
+     * Open the query preview modal
+     */
+    async handleOpenQueryPreviewModal(){
+        try{
+            previewModal.open({
+                config: {
+                    mdtConfigName : this.mdtConfigRecord,
+                    query         : this.query,
+                    tooling       : this.tooling
+                },
+                size: 'large',
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 
-    async handleOpenMappingModal (config) {
-        mappingModal.open({
-            config: config,
-            size: 'small',
-        });
+
+    /**
+     * Open the mapping modal
+     */
+    async handleOpenMappingModal(config){
+        try{
+            mappingModal.open({
+                config: config,
+                size: 'small',
+            });
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+
+    /**
+     * Open the help modal
+     */
+    handleOpenHelpModal(){
+        try{
+            textModal.open({
+                header  : "Data Cloud - sObject to CSV Utility - Help",
+                content : "Tool to generate a CSV from a query that allows from sub queries and parent relationships. When a metadata record is selected the mapping is used to update the column headers to the target column names.",
+                size    : 'small'
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 }

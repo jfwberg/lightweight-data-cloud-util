@@ -108,10 +108,10 @@ export default class DataCloudQueryUtil extends LightningElement {
             getQueryPlaceholder({
                 mdtConfigName  : this.mdtConfigRecord,
                 fieldSelection : this.fieldSelection
-                
             })
             .then((apexResponse) => {
                 this.query = apexResponse;
+                this.template.querySelector(".ta").value = apexResponse;
             })
             .catch((error) => {
                 handleError(error);
@@ -169,10 +169,7 @@ export default class DataCloudQueryUtil extends LightningElement {
     }
 
     handleClickHelp(){
-        textModal.open({
-            header  : "Data Cloud Query Utility Help",
-            content : "Tool to generate a table view or CSV from a Data Cloud SQL Query. The query is executed against the Data Cloud named credential as specified in the metadata configuration that is selected."
-        });
+        this.handleOpenHelpModal() ;
     }
 
 
@@ -182,25 +179,50 @@ export default class DataCloudQueryUtil extends LightningElement {
     /**
      * Open the Mapping Modal
      */
-    async handleOpenMappingModal (config) {
-        mappingModal.open({
-            config: config,
-            size: 'small',
-        });
+    async handleOpenMappingModal(config){
+        try{
+            mappingModal.open({
+                config: config,
+                size: 'small',
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 
+
     /**
-     * Open the Mapping Modal
+     * Open the query result Modal
      */
-    async handleOpenQueryResultModal() {
-        queryResultModal.open({
-            config: {
-                mdtConfigName : this.mdtConfigRecord,
-                resultFormat  : this.resultFormat,
-                query         : this.query,
-                apiVersion    : this.queryApiVersion
-            },
-            size: 'large',
-        });
+    async handleOpenQueryResultModal(){
+        try{
+            queryResultModal.open({
+                config: {
+                    mdtConfigName : this.mdtConfigRecord,
+                    resultFormat  : this.resultFormat,
+                    query         : this.query,
+                    apiVersion    : this.queryApiVersion
+                },
+                size: 'large',
+            });
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+    
+    /**
+     * Open the help modal
+     */
+    handleOpenHelpModal(){
+        try{
+            textModal.open({
+                header  : "Data Cloud - Query Utility - Help",
+                content : "Tool to generate a table view or CSV from a Data Cloud SQL Query. The query is executed against the Data Cloud named credential as specified in the metadata configuration that is selected.",
+                size    : 'small'
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 }

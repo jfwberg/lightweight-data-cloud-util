@@ -90,9 +90,9 @@ export default class DataCloudAddCsvModal extends LightningModal  {
             getCsvPlaceholder({
                 mdtConfigName : this.config.mdtConfigRecord
             })
-            .then((result) => {
+            .then((apexResponse) => {
 
-                this.csvData = result;
+                this.csvData = apexResponse;
             })
             .catch((error) => {
                 handleError(error);

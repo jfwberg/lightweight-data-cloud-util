@@ -22,12 +22,27 @@ public with sharing class DataCloudUtilLwcCtrl {
         SOAPType.ID           => 'textField',
         SOAPType.Integer      => 'numberField',
         SOAPType.String       => 'textField',
-        SOAPType.Time         => 'textField',
+        SOAPType.Time         => 'dateField',
         SOAPType.Address      => 'textField'
     };
 
-    // Mapping between field soap types and data cloud field types, used for YAML generation
-    private final static Map<String,String> CLOUD_DATA_TYPE_DATA_TABLE_TYPE_MAP = new Map<String,String>{
+    // Mapping between sObjectField SoapTypes and lightning datatable types 
+    private final static Map<Schema.SOAPType,String> SOAP_TYPE_LDT_DATA_TYPE_MAP = new Map<Schema.SOAPType,String>{
+        SOAPType.anytype      => 'text',
+        SOAPType.base64binary => 'text',
+        SOAPType.Boolean      => 'boolean',
+        SOAPType.Date         => 'date',
+        SOAPType.DateTime     => 'date',
+        SOAPType.Double       => 'number',
+        SOAPType.ID           => 'text',
+        SOAPType.Integer      => 'number',
+        SOAPType.String       => 'text',
+        SOAPType.Time         => 'date',
+        SOAPType.Address      => 'text'
+    };
+
+    // Mapping between data cloud query types and lightning datatable types
+    private final static Map<String,String> DATA_CLOUD_DATA_TYPE_LDT_DATA_TYPE_MAP = new Map<String,String>{
         'CHAR'                          => 'text',
         'VARCHAR'                       => 'text',
         'STRING'                        => 'text',
@@ -50,40 +65,52 @@ public with sharing class DataCloudUtilLwcCtrl {
     @AuraEnabled
     public static List<Map<String,String>>  getMtdConfigOptions(){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
+            // Return the metadata configuration picklist options
             return Dc.getConfigMetadataRecordsPicklistOptions();
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
 
-    @AuraEnabled
-    public static Map<String,Object> getMetadataInfo(String mdtConfigName, String jobId){
-        try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
 
-            // Table usable mapping data
-            List<Map<String,Object>> recordData  = new List<Map<String,Object>> ();
-            List<Map<String,Object>> mappingData = new List<Map<String,Object>>();
+    @AuraEnabled
+    public static List<Map<String, Object>> getMetadataInfo(String mdtConfigName, String jobId){
+        try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
             // Query the record
             Data_Cloud_Ingestion_API_Configuration__mdt record = Dc.getMetadataRecord(mdtConfigName);
 
-            // Add record details
-            recordData.add(new Map<String,Object>{'key'  => 'Configuration Record Name',       'value'=> record.DeveloperName});
-            recordData.add(new Map<String,Object>{'key'  => 'Salesforce Named Credential',     'value'=> record.Salesforce_Named_Credential_Name__c});
-            recordData.add(new Map<String,Object>{'key'  => 'Data Cloud Named Credential',     'value'=> record.Named_Credential_Name__c});
-            recordData.add(new Map<String,Object>{'key'  => 'Salesforce sObject Name',         'value'=> record.sObject_Name__c});
-            recordData.add(new Map<String,Object>{'key'  => 'Ingestion API Connector Name',    'value'=> record.Ingestion_API_Connector_Name__c});
-            recordData.add(new Map<String,Object>{'key'  => 'Ingestion API Target Object Name','value'=> record.Ingestion_API_Target_Object_Name__c});
-            recordData.add(new Map<String,Object>{'key'  => 'Data Lake Object Name',           'value'=> record.Data_Lake_Object_Name__c});
+            // Create the configuration table
+            utl.Ldt configTable = new utl.Ldt()
+                .setupKeyValue()
+                .addKeyValuePair('Configuration Record Name',       record.DeveloperName)
+                .addKeyValuePair('Salesforce Named Credential',     record.Salesforce_Named_Credential_Name__c)
+                .addKeyValuePair('Data Cloud Named Credential',     record.Named_Credential_Name__c)
+                .addKeyValuePair('Salesforce sObject Name',         record.sObject_Name__c)
+                .addKeyValuePair('Ingestion API Connector Name',    record.Ingestion_API_Connector_Name__c)
+                .addKeyValuePair('Ingestion API Target Object Name',record.Ingestion_API_Target_Object_Name__c)
+                .addKeyValuePair('Data Lake Object Name',           record.Data_Lake_Object_Name__c)
+            ;
 
-            // Add mapping details
+            // Create the configuration table
+            utl.Ldt mappingTable = new utl.Ldt()
+                .setKeyField('source')
+                .addColumn(new Ldt.Col('Source Field (Salesforce)', 'source', 'text'))
+                .addColumn(new Ldt.Col('Target Field (Data Cloud)', 'target', 'text'))
+                .addColumn(new Ldt.Col('Field Type (Data Cloud)',   'ftype',  'text'))
+                .addColumn(new Ldt.Col('Is Primary Key',            'isPk',   'boolean'))
+                .addColumn(new Ldt.Col('Is Event Time Field',       'isEt',   'boolean'))
+            ;
+	        
+            // Add mapping data
             for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
-                mappingData.add(
+                mappingTable.addRow(
                     new Map<String,Object>{
                         'source' => mapping.Source__c,
                         'target' => mapping.Target__c,
@@ -94,9 +121,15 @@ public with sharing class DataCloudUtilLwcCtrl {
             }
 
             // Return the combined
-            return new Map<String,Object>{
-                'recordData' => recordData,
-                'mappingData'=> mappingData
+            return new List<Map<String, Object>>{
+                new Map<String, Object>{
+                    'header' => 'Configuration Details',
+                    'ldt'    => configTable
+                },
+                new Map<String, Object>{ 
+                    'header' => 'Mapping Details',
+                    'ldt'    => mappingTable
+                }
             };
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -107,11 +140,14 @@ public with sharing class DataCloudUtilLwcCtrl {
     /** **************************************************************************************************** **
      **                                     BULK INGESTION AURA METHODS                                      **
      ** **************************************************************************************************** **/
+
+     // FIX the start comma if the first value is an empty value
+
     @AuraEnabled
     public static String getCsvPlaceholder(String mdtConfigName){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
             // Query the record
             Data_Cloud_Ingestion_API_Configuration__mdt record = Dc.getMetadataRecord(mdtConfigName);
@@ -124,6 +160,8 @@ public with sharing class DataCloudUtilLwcCtrl {
             for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
                 header+=',' + mapping.Target__c;
             }
+
+            // Add linebreak and remove the starting comma
             header+='\n';
             header = header.removeStart(',');
 
@@ -148,24 +186,22 @@ public with sharing class DataCloudUtilLwcCtrl {
         }
     }
 
+
     @AuraEnabled
-    public static List<Map<String,Object>> getJobInfo(String mdtConfigName, String jobId){
+    public static utl.Ldt getJobInfo(String mdtConfigName, String jobId){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
-            Map<String,Object> jobInfo = Dc.getBulkIngestionJobDetails(mdtConfigName,jobId);
-
-            List<Map<String,Object>> output = new List<Map<String,Object>>();
-
-            // Convert to a lightning data table output
-            for(String key : jobInfo.keySet()){
-                output.add(new Map<String,Object>{
-                    'key'  => key,
-                    'value'=> jobInfo.get(key)
-                });
-            }
-            return output;
+            // Output a key/value table with the job details
+            return new utl.Ldt()
+                .setupKeyValue()
+                .setData(
+                    new utl.JsnTbl()
+                        .create(Dc.getBulkIngestionJobDetails(mdtConfigName,jobId))
+                        .getKeyValuePairData()
+                )
+            ;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -180,11 +216,11 @@ public with sharing class DataCloudUtilLwcCtrl {
 
             // Create a lightning data table
             return new utl.Ldt()
-                .addColumn(new Ldt.Col('Created Date',  'createdDate','date'))
-                .addColumn(new Ldt.Col('Job Id',        'id','text'))
-                .addColumn(new Ldt.Col('Operation',     'operation','text'))
-                .addColumn(new Ldt.Col('Object',        'object','text'))
-                .addColumn(new Ldt.Col('Job State',     'state','text'))
+                .addColumn(new Ldt.Col('Created Date',  'createdDate', 'date'))
+                .addColumn(new Ldt.Col('Job Id',        'id',          'text'))
+                .addColumn(new Ldt.Col('Operation',     'operation',   'text'))
+                .addColumn(new Ldt.Col('Object',        'object',      'text'))
+                .addColumn(new Ldt.Col('Job State',     'state',       'text'))
                 .addColumn(
                     new utl.Ldt.Col(null, null)
                         .setType('action')
@@ -210,10 +246,12 @@ public with sharing class DataCloudUtilLwcCtrl {
     @AuraEnabled
     public static String newJob(String mdtConfigName, String jobType){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
+            // Create the ingestion job
             return Dc.createIngestionBulkJob(mdtConfigName, utl.Rst.guid(), jobType);
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -226,8 +264,12 @@ public with sharing class DataCloudUtilLwcCtrl {
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
 
+            // Update the job status
             Dc.updateIngestionBulkJobState(mdtConfigName, jobId, jobId, 'Aborted');
+
+            // return true when all is good
             return true;
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -237,11 +279,15 @@ public with sharing class DataCloudUtilLwcCtrl {
     @AuraEnabled
     public static Boolean completeJob(String mdtConfigName, String jobId){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
+            // Update the bulk job status
             Dc.updateIngestionBulkJobState(mdtConfigName, jobId, jobId, 'UploadComplete');
+
+            // return true when all is good
             return true;
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -251,11 +297,15 @@ public with sharing class DataCloudUtilLwcCtrl {
     @AuraEnabled
     public static Boolean deleteJob(String mdtConfigName, String jobId){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
+            // Delete the ingestion bulk job
             Dc.deleteIngestionBulkJob(mdtConfigName, jobId, jobId);
+
+            // return true when all is good
             return true;
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -265,11 +315,15 @@ public with sharing class DataCloudUtilLwcCtrl {
     @AuraEnabled
     public static Boolean addCsv(String mdtConfigName, String jobId, String csvData){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
+            // Add CSV data
             Dc.addCsvToIngestionBulkJob(mdtConfigName, jobId, jobId, csvData);
+
+            // return true when all is good
             return true;
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -317,7 +371,6 @@ public with sharing class DataCloudUtilLwcCtrl {
     }
     
 
-
     /** **************************************************************************************************** **
      **                                  STREAMING INGESTION AURA METHODS                                    **
      ** **************************************************************************************************** **/
@@ -332,8 +385,6 @@ public with sharing class DataCloudUtilLwcCtrl {
 
             // Dummy data place holder
             Map<String,Object> placeholder = new Map<String,Object>();
-
-            
 
             // Add mapping details
             for(Data_Cloud_Ingestion_API_Field_Mapping__mdt mapping : record.Data_Cloud_Ingestion_API_Field_Mappings__r){
@@ -353,15 +404,16 @@ public with sharing class DataCloudUtilLwcCtrl {
     }
 
 
-
-
     @AuraEnabled
     public static Boolean sendDataStream(String mdtConfigName, String payload){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
+            // Stream records
             Dc.streamDataToDataCloud(mdtConfigName, payload, false);
+
+            // return true when all is good
             return true;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -372,11 +424,15 @@ public with sharing class DataCloudUtilLwcCtrl {
     @AuraEnabled
     public static Boolean testDataStream(String mdtConfigName, String payload){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
+            // TEST the streaming of records
             Dc.streamDataToDataCloud(mdtConfigName, payload, true);
+            
+            // return true when all is good
             return true;
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -386,7 +442,6 @@ public with sharing class DataCloudUtilLwcCtrl {
     /** **************************************************************************************************** **
      **                                     GENERATE YAML AURA METHODS                                       **
      ** **************************************************************************************************** **/
-
     @AuraEnabled(cacheable=true)
     public static List<Map<String,Object>>  getSObjectOptions(Boolean invertLabel){
         try{
@@ -421,20 +476,28 @@ public with sharing class DataCloudUtilLwcCtrl {
         }
     }
 
+
     @AuraEnabled
-    public static List<Map<String,Object>> getSObjectFieldInfo(String sObjectName){
-
-        // Input validation
-        if(Type.forName('Schema.' + sObjectName) == null){
-            throw new AuraHandledException(String.format('sObject of type "{0}" does not exist in the metadata', new String[]{sObjectName}));
-        }
-
-        // Table data map
-        List<Map<String,Object>> output = new List<Map<String,Object>>();
-
+    public static utl.Ldt getSObjectFieldInfo(String sObjectName){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
+
+            // Input validation
+            if(Type.forName('Schema.' + sObjectName) == null){
+                throw new StringException(String.format('sObject of type "{0}" does not exist in the metadata', new String[]{sObjectName}));
+            }
+
+            // Creat the output data table
+            utl.Ldt ldt = new utl.Ldt()
+                .setKeyField('source')
+                .setHideCheckboxColumn(false)
+                .addColumn(new utl.Ldt.Col('Source field (Salesforce)', 'source', 'text'    ))
+                .addColumn(new utl.Ldt.Col('Salesforce field Type',     'sfFtype','text'    ))
+                .addColumn(new utl.Ldt.Col('Custom field?',             'custom', 'boolean' ))
+                .addColumn(new utl.Ldt.Col('Target field (Data Cloud)', 'target', 'text'    ))
+                .addColumn(new utl.Ldt.Col('Data Cloud Field Type',     'dcFtype','text'    ))
+            ;
 
             // Get the describe for the fields
             DescribeSObjectResult sdr = ((sObject) Type.forName('Schema.' + sObjectName).newInstance()).getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED);
@@ -444,7 +507,7 @@ public with sharing class DataCloudUtilLwcCtrl {
 
                 DescribeFieldResult sfr = field.getDescribe();
 
-                output.add(new Map<String,Object>{
+                ldt.addRow(new Map<String,Object>{
                     'source'  => sfr.name,
                     'sfFtype' => String.valueOf(sfr.SoapType),
                     'custom'  => sfr.custom,
@@ -452,34 +515,19 @@ public with sharing class DataCloudUtilLwcCtrl {
                     'dcFtype' => SOAP_TYPE_DATA_CLOUD_DATA_TYPE_MAP.get(sfr.SoapType)
                 });
             }
+
             // Return the data
-            return output;
+            return ldt;
+
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
-
-
 
 
     /** **************************************************************************************************** **
      **                                   DATA CLOUD QUERY AURA METHODS                                      **
      ** **************************************************************************************************** **/
-    @AuraEnabled
-    public static String getDcQueryCsv(String mdtConfigName, String query, String apiVersion){
-        try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
-
-            // Return the CSV string
-            return getQueryTable(mdtConfigName, query, apiVersion, true).getCsvString();
-
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
-    }
-
-
     @AuraEnabled
     public static utl.Ldt getDcQueryTable(String mdtConfigName, String query, String apiVersion){
         try{
@@ -518,7 +566,7 @@ public with sharing class DataCloudUtilLwcCtrl {
                 utl.Ldt.Col col = new utl.Ldt.Col(
                         fmdt.name, 
                         apiVersion == 'v1' ? fmdt.name : String.valueOf(fmdt.placeInOrder),
-                        CLOUD_DATA_TYPE_DATA_TABLE_TYPE_MAP.get(fmdt.type)
+                        DATA_CLOUD_DATA_TYPE_LDT_DATA_TYPE_MAP.get(fmdt.type)
                     )
                     .setInitialWidth(fmdt.name.length() < 10 ? 120 : fmdt.name.length() * 12)
                 ;
@@ -553,6 +601,36 @@ public with sharing class DataCloudUtilLwcCtrl {
                     .upsertColumnData('ldtKey', ldtKeyColumn, columnNames.size())
                     .getKeyValueData()
             );
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static String getDcQueryCsv(String mdtConfigName, String query, String apiVersion){
+        try{
+           // Force an exception for testing purposes
+           utl.Tst.forceException('AURA_EXCEPTION');
+
+           // Cast the response as an object so we can get both the data and metadata
+            Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(
+                Dc.executeQuery(mdtConfigName, query, apiVersion)
+                    .getResponse()
+                    .getBody()
+            );
+
+            // Create a datatable
+            return new utl.JsnTbl()
+                .create(utl.Jsn.getObjectList('data',response))
+                .updateColumnNames(
+                    Dc.getOrderedColumnNamesFromMetadata(
+                        utl.Jsn.getObjectMap('metadata', response),
+                        true // remove postfix
+                    )
+                )
+                .getCsvString()
+            ;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -647,42 +725,70 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static Map<String,Object> getSoqlQueryTable(String mdtConfigName, String query, Boolean tooling){
+    public static utl.Ldt getSoqlQueryTable(String mdtConfigName, String query, Boolean tooling){
 
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
-            // Map to hold the mappings
-            Map<String,String> mapping = new Map<String,String>();
+            // Extract the object name from the Query String
+            String sObjectName = query?.toLowerCase()?.split('from')[1].trim()?.substringBefore(' ');
 
-            // Create a mapping between label and field name (not ideal, but just how the )
-            List<Map<String,String>> columnDetailsList = new List<Map<String,String>>();
+            // Input validation
+            if(Type.forName('Schema.' + sObjectName) == null){
+                throw new StringException(String.format('sObject of type "{0}" does not exist in the metadata', new String[]{sObjectName}));
+            }
+
+            // Get the describe field result for the sObject
+            DescribeSObjectResult sdr = ((sObject) Type.forName('Schema.' + sObjectName).newInstance()).getSObjectType().getDescribe(SObjectDescribeOptions.DEFERRED);
 
             // Execute the query
-            utl.JsnTbl table = executeSoqlQuery(query, tooling);
+            utl.JsnTbl jsnTbl = executeSoqlQuery(query, tooling);
 
-            // Create the mapping
-            if(mdtConfigName != null){
-                mapping = Dc.createFieldMapping(Dc.getMetadataRecord(mdtConfigName).Data_Cloud_Ingestion_API_Field_Mappings__r);
+            // Create the configuration table
+            utl.Ldt ldt = new utl.Ldt()
+                .setData(jsnTbl.getKeyValueData())
+            ;
+
+            // Create the columns, get the name, label and field type from the metadata
+            for(String columnName : jsnTbl.getColumnNames()){
+                
+                // If the field exists in the metadata create a tailored column
+                if(sdr.fields.getMap().containsKey(columnName.toLowerCase())){
+                    
+                    // Describe the field
+                    DescribeFieldResult sfr = sdr.fields.getMap().get(columnName.toLowerCase()).getDescribe();
+
+                    // Setup the column config
+                    utl.Ldt.Col col = new utl.Ldt.Col(  
+                        sfr.getLabel(),
+                        sfr.getName(),
+                        SOAP_TYPE_LDT_DATA_TYPE_MAP.get(sfr.getSoapType())
+                    );
+
+                    // Add the date time formatting
+                    if(sfr.getSoapType() == SOAPType.DateTime){
+                        col.setTypeAttributes(
+                            new utl.Ldt.TypeAttributes()
+                                .setDay('2-digit')
+                                .setYear('numeric')
+                                .setMonth('numeric')
+                                .setHour('2-digit')
+                                .setMinute('2-digit')
+                                .setSecond('2-digit')
+                        );
+                    }
+
+                    // Add the column
+                    ldt.addColumn(col);
+                }else{
+                    // Default text column
+                    ldt.addColumn(new utl.Ldt.Col(columnName,columnName,'text'));
+                }
             }
 
-            // Set the column names
-            for(String columnName : table.getColumnNames()){
-                columnDetailsList.add( new Map<String,String>{
-                    'columnName' => columnName,
-                    'columnLabel'=> (mapping.containsKey(columnName)) ? mapping.get(columnName) : columnName
-                });
-            }
-
-            // Update the columns in the table
-            table.updateColumnNames(mapping);
-
-            // Return the columns and the data
-            return new Map<String,Object>{
-                'columns'      => columnDetailsList,
-                'data'         => table.getKeyValueData()
-            };
+            // Return the lightning data table
+            return ldt;
 
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -716,33 +822,6 @@ public with sharing class DataCloudUtilLwcCtrl {
     /** **************************************************************************************************** **
      **                                       PRIVATE SUPPORT METHODS                                        **
      ** **************************************************************************************************** **/
-    private static utl.JsnTbl getQueryTable(String mdtConfigName, String query, String apiVersion, Boolean removePostfix){
-        
-        // Cast the response as an object so we can get both the data and metadata
-        Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(
-            Dc.executeQuery(mdtConfigName, query, apiVersion)
-                .getResponse()
-                .getBody()
-        );
-
-        // Create a datatable
-        utl.JsnTbl table = new utl.JsnTbl()
-            .setAttributeFilter(new Set<String>{'startTime','endTime','rowCount','queryId','done','metadata','nextBatchId'})
-            .setListNameFilter(new Set<String>{'data'})
-            .create(utl.Jsn.getObjectList('data',response))
-            .updateColumnNames(
-                Dc.getOrderedColumnNamesFromMetadata(
-                    utl.Jsn.getObjectMap('metadata', response),
-                    removePostfix
-                )
-            )
-        ;
-
-        // Return the output as a CSV string
-        return table;
-    }
-
-
     private static utl.JsnTbl executeSoqlQuery(String query, Boolean tooling){
 
         // Input validation

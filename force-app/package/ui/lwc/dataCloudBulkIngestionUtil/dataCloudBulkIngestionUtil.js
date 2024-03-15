@@ -137,9 +137,9 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                 mdtConfigName : this.mdtConfigRecord,
                 jobType       : 'upsert'
             })
-                .then((result) => {
+                .then((apexResponse) => {
                     LightningAlert.open({
-                        message: 'Succesfully created a new bulk UPSERT job with Id : "' + result +'"',
+                        message: 'Succesfully created a new bulk UPSERT job with Id : "' + apexResponse +'"',
                         label: 'Success',
                         theme : 'success'
                     });
@@ -168,9 +168,9 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                 mdtConfigName : this.mdtConfigRecord,
                 jobType       : 'delete'
             })
-                .then((result) => {
+                .then((apexResponse) => {
                     LightningAlert.open({
-                        message: 'Succesfully created a new bulk DELETE job with Id : "' + result +'"',
+                        message: 'Succesfully created a new bulk DELETE job with Id : "' + apexResponse +'"',
                         label: 'Success',
                         theme : 'success'
                     });
@@ -276,8 +276,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleGetMdtOptions(){
         try{
             getMtdConfigOptions()
-                .then((result) => {
-                    this.mdtConfigOptions = result;
+                .then((apexResponse) => {
+                    this.mdtConfigOptions = apexResponse;
                 })
                 .catch((error) => {
                     handleError(error);
@@ -296,9 +296,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         try{
             this.loading = true;
             getIngestionJobTable({mdtConfigName : this.mdtConfigRecord})
-                .then((result) => {
-                    console.log(JSON.stringify(result,null,4));
-                    this.ldt = result;
+                .then((apexResponse) => {
+                    this.ldt = apexResponse;
                 })
                 .catch((error) => {
                     handleError(error);
@@ -350,19 +349,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     }
 
     handleClickHelp(){
-        textModal.open({
-            header : 'Data Cloud Bulk Ingestion Utility Help',
-            content:'Tool to manage Bulk ingestion jobs based on a metadata configuration. Note that CSVs need to include all headers even if they are not used or it will result in an error.' +
-                    '<br/> Add CSV will generate a sample file based on the target mapping.<br/>' +
-                    '<ul>'+
-                    '<li>Press <i>complete</i> to start the job when you have added all your CSVs</li>'+
-                    '<li>You can only have 1 open or in progress job at a time: No matter if it is an upsert or delete operation</li>'+
-                    '<li>You can only delete Aborted or Completed jobs</li>'+
-                    '<li>You can only abort open jobs, once started you cannot abort the job</li>'+
-                    '<li>Breaking any of these job status rules will all give the same error message: <li>"The request conflicts with current state of the target resource"</li> This is just the API so be aware of the different rules regarding the job states</li>' +
-                    '<li>This app is built on Apex and all Governor limits are in place. Any CSV file over about 5MB will fail due to the callout limit.</li>' +
-                    '</ul>'
-        });
+        this.handleOpenHelpModal();
     }
 
 
@@ -372,36 +359,73 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /**
      * Open the Mapping Modal
      */
-    async handleOpenMappingModal (config) {
-        mappingModal.open({
-            config: config,
-            size: 'small',
-        });
+    async handleOpenMappingModal(config){
+        try{
+            mappingModal.open({
+                config : config,
+                size   : 'small',
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 
 
     /**
      * Open the Job Details Modal
      */
-    async handleOpenJobDetailsModal (config) {
-        jobDetailsModal.open({
-            config: config,
-            size: 'small',
-        });
+    async handleOpenJobDetailsModal(config){
+        try{
+            jobDetailsModal.open({
+                config : config,
+                size   : 'small',
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 
 
     /**
      * Open the CSV Modal, on successful addition of the CSV file refresh the table
      */
-     async handleOpenAddCsvModal (config) {
-        addCsvModal.open({
-            config: config,
-            size: 'medium',
-        }).then((result) => {
-            if(result === 'ok') {
-                this.handleGetIngestionJobTable();
-            }
-        });
+    async handleOpenAddCsvModal(config){
+        try{
+            addCsvModal.open({
+                config : config,
+                size   : 'medium',
+            }).then((response) => {
+                if(response === 'ok') {
+                    this.handleGetIngestionJobTable();
+                }
+            });
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+
+    /**
+     * Open the help modal
+     */
+    handleOpenHelpModal(){
+        try{
+            textModal.open({
+                header :    'Data Cloud - Bulk Ingestion Utility - Help',
+                content:    'Tool to manage Bulk ingestion jobs based on a metadata configuration. Note that CSVs need to include all headers even if they are not used or it will result in an error.' +
+                            '<br/> Add CSV will generate a sample file based on the target mapping.<br/>' +
+                            '<ul>'+
+                            '<li>Press <i>complete</i> to start the job when you have added all your CSVs</li>'+
+                            '<li>You can only have 1 open or in progress job at a time: No matter if it is an upsert or delete operation</li>'+
+                            '<li>You can only delete Aborted or Completed jobs</li>'+
+                            '<li>You can only abort open jobs, once started you cannot abort the job</li>'+
+                            '<li>Breaking any of these job status rules will all give the same error message: <li>"The request conflicts with current state of the target resource"</li> This is just the API so be aware of the different rules regarding the job states</li>' +
+                            '<li>This app is built on Apex and all Governor limits are in place. Any CSV file over about 5MB will fail due to the callout limit.</li>' +
+                            '</ul>',
+                size    :   'small'
+            });
+        }catch(error){
+            handleError(error);
+        }
     }
 }

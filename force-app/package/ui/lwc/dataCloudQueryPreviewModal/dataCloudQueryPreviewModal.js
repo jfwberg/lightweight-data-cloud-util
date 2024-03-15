@@ -10,7 +10,7 @@ import { api }         from 'lwc';
 import LightningModal  from 'lightning/modal';
 
 // Custom Utils
-import {handleError}   from 'c/dataCloudUtils';
+import {handleError}   from 'c/util';
 
 // Apex methods
 import getSoqlQueryTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getSoqlQueryTable";
@@ -24,28 +24,19 @@ export default class DataCloudQueryPreviewModal extends LightningModal  {
     
     // Loading indicator for the spinner
     loading = false;
+
+    // Indicator the table has successfully been initialized
+    loaded = false;
     
-    // Result from the query
-    data = [];
-
-    // Column data is retrieved from the LWC controller as it is dependend on the query result
-    columns = [];
-
-    get tableVisible(){
-        return !this.loading;
-    }
+    // Lightning datatable
+    ldt = {};
 
 
     /** **************************************************************************************************** **
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback() {
-        try{
-            this.handleGetSoqlQueryTable();
-        }catch(error){
-            handleError(error);
-            this.loading = false;
-        }
+        this.handleGetSoqlQueryTable();
     }
 
 
@@ -60,15 +51,9 @@ export default class DataCloudQueryPreviewModal extends LightningModal  {
                 query         : this.config.query,
                 tooling       : this.config.tooling
             })
-            .then((result) => {
-                this.data = result.data;
-                for (let index = 0; index < result.columns.length; index++){
-                    this.columns.push({ 
-                        label        : result.columns[index].columnLabel,
-                        fieldName    : result.columns[index].columnName,
-                        initialWidth : result.columns[index].columnLabel.length < 10 ? 120 : (result.columns[index].columnLabel.length * 12)
-                    });
-                }
+            .then((apexResponse) => {
+                this.ldt = apexResponse;
+                this.loaded = true;
             })
             .catch((error) => {
                 handleError(error);

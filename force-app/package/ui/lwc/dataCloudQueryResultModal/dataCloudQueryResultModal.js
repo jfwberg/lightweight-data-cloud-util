@@ -274,6 +274,9 @@ export default class DataCloudQueryResultModal extends LightningModal  {
             // Make it pretty
             this.rawData = JSON.stringify(JSON.parse(this.rawData),null,4);
 
+            // Update the textarea
+            this.template.querySelector(".ta").value = this.rawData;
+
         }catch(error){
             // Change color to red
             this.prettifyVariant = 'destructive';

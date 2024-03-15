@@ -1,16 +1,20 @@
 <template>
     <lightning-card icon-name="standard:code_set" variant="base">
+        
         <lightning-spinner 
-            if:true={loading}
-            alternative-text="Loading" 
-            size="medium"
-            variant="base"
+            if:true         = {loading}
+            alternative-text= "Loading" 
+            size            = "medium"
+            variant         = "base"
         ></lightning-spinner>
+
         <div slot="title">
             Data Cloud Streaming Ingestion Utility
         </div>
+
         <div slot="actions">
             <lightning-button-group>
+                
                 <lightning-button 
                     variant="neutral"
                     label="Send" 
@@ -39,24 +43,25 @@
                     icon-position="right"
                     alternative-text="Help"
                 ></lightning-button>
+
             </lightning-button-group>
         </div>
+
         <div slot="footer">
 
         </div>
+
         <div class="slds-var-p-around_small">
             <lightning-combobox
-              
-                if:true={mdtConfigOptionsLoaded}
-                name="Metadata Configuration"
-                label="Metadata Configuration"
-                value={mdtConfigRecord}
-                placeholder="Select..."
-                options={mdtConfigOptions}
-                onchange={handleChangeMtdConfig}
+                lwc:if      = {mdtConfigOptionsLoaded}
+                name        = "Metadata Configuration"
+                label       = "Metadata Configuration"
+                value       = {mdtConfigRecord}
+                placeholder = "Select..."
+                options     = {mdtConfigOptions}
+                onchange    = {handleChangeMtdConfig}
                 >
             </lightning-combobox>
-           
         </div>
         
         <div class="slds-var-p-around_small">
@@ -67,7 +72,5 @@
             </div>
         </div>
     
-
     </lightning-card>
-
 </template>

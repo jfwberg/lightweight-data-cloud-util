@@ -612,7 +612,7 @@ global with sharing class Dc {
                 new utl.Rst(config.Named_Credential_Name__c, true)
                     .setHandleSfEndpoint(false)
                     .setRequestIdHeader(null)
-                    .setEndpoint(String.format('/api/v1/ingest/jobs/{0}',new String[]{jobId}))
+                    .setEndpoint(String.format('/api/v1/ingest/jobs/{0}', new String[]{jobId}))
                     .call()
                     .getResponse()
                     .getBody()

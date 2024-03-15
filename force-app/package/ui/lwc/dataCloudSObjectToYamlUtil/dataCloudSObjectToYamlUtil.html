@@ -1,67 +1,78 @@
 <template>
     <lightning-card icon-name="standard:code_playground" variant="base">
+
         <lightning-spinner 
-            if:true={loading}
-            alternative-text="Loading" 
-            size="medium"
-            variant="base"
+            if:true         = {loading}
+            alternative-text= "Loading" 
+            size            = "medium"
+            variant         = "base"
         ></lightning-spinner>
 
         <div slot="title">
-            Create Data Cloud Ingestion API YAML from SObject
+            Data Cloud - Create Ingestion API YAML from sObject
         </div>
+
         <div slot="actions">
             <lightning-button-group>
                 
                 <lightning-button 
-                    variant="neutral"
-                    label="Create YAML" 
-                    onclick={handleClickCreateYaml} 
-                    disabled={actionsEnabled}
+                    variant = "neutral"
+                    label   = "Create YAML" 
+                    onclick = {handleClickCreateYaml} 
+                    disabled= {actionsEnabled}
                 ></lightning-button>
 
                 <lightning-button
-                    variant="neutral"
-                    onclick={handleClickHelp} 
-                    icon-name="utility:help"
-                    icon-position="right"
-                    alternative-text="Help"
+                    variant         = "neutral"
+                    onclick         = {handleClickHelp} 
+                    icon-name       = "utility:help"
+                    icon-position   = "right"
+                    alternative-text= "Help"
                  ></lightning-button>
+
             </lightning-button-group>
 
         </div>
+        
         <div slot="footer">
 
         </div>
+
         <div class="slds-var-p-around_small">
+            
             <lightning-combobox
-                disabled={inputsEnabled}
-                name="sObject"
-                label={sObjectInputLabel}
-                value={sObjectName}
-                placeholder="Select..."
-                options={sObjectOptions}
-                onchange={handleChangeSObject}
+                disabled    = {inputsEnabled}
+                name        = "sObject"
+                label       = {sObjectInputLabel}
+                value       = {sObjectName}
+                placeholder = "Select..."
+                options     = {sObjectOptions}
+                onchange    = {handleChangeSObject}
                 >
             </lightning-combobox>
+
             <lightning-input 
-                disabled={inputsEnabled}
-                type="checkbox"
-                label="Invert Label / API Name"
-                name="invertLabel"
-                checked={invertLabel}
-                value={invertLabel}
-                onchange={handleChangeInvertLabel}
+                disabled= {inputsEnabled}
+                type    = "checkbox"
+                label   = "Invert Label / API Name"
+                name    = "invertLabel"
+                checked = {invertLabel}
+                value   = {invertLabel}
+                onchange= {handleChangeInvertLabel}
             ></lightning-input>
            
         </div>
         
         <div class="slds-var-p-around_small ta">
             <lightning-datatable
-                key-field="id"
-                data={data}
-                columns={columns}
-                onrowselection={handleRowSelection}
+                lwc:if                   = {sObjectSelected}
+                key-field               = {ldt.keyField} 
+                data                    = {ldt.data} 
+                columns                 = {ldt.columns}
+                hide-checkbox-column    = {ldt.hideCheckboxColumn}
+                show-row-number-column  = {ldt.showRowNumberColumn}
+                onrowselection          = {handleRowSelection}
+                selected-rows           = {visibleSelectedRows}
             ></lightning-datatable>
         </div>
     </lightning-card>

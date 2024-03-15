@@ -10,18 +10,10 @@ import { api }               from 'lwc';
 import LightningModal        from 'lightning/modal';
 
 // Custom Utils
-import {handleError}         from 'c/dataCloudUtils';
-import {handleDownload}      from 'c/dataCloudUtils';
-import {copyTextToClipboard} from 'c/dataCloudUtils';
+import {handleError}         from 'c/util';
+import {handleDownload}      from 'c/util';
+import {copyTextToClipboard} from 'c/util';
 
-
-// Mapping for the YAML
-const fieldTypeMapping = {
-    "textField"     : "string",
-    "numberField"   : "number",
-    "dateField"     : "string\n          format: date",
-    "dateTimeField" : "string\n          format: date-time"
-};
 
 // Main class
 export default class DataCloudYamlModal extends LightningModal {
@@ -32,38 +24,26 @@ export default class DataCloudYamlModal extends LightningModal {
     variant         = 'brand';
     downloadVariant = 'brand';
 
-    // Config
-    @api sObjectName;
-    @api currentlySelectedData;
+    // Textarea modal
+    @api label;
+    @api content;
+    @api disabled = false;
 
-    // Variable for the YAML data
-    yamlData;
+    // Download info
+    @api template;
+    @api fileName         = 'Unknown_File_Name';
+    @api fileExtension    = '.txt';
+    @api fileMimeType     = 'text/plain';
+    @api includeTimestamp = false;
 
-    /** **************************************************************************************************** **
-     **                                         LIFECYCLE HANDLERS                                           **
-     ** **************************************************************************************************** **/
-    connectedCallback(){
-        try{
-            // Set the base string for the yaml data
-            this.yamlData='openapi: 3.0.3\ncomponents:\n  schemas:\n    ' + this.removePreAndPostFix(this.sObjectName) + ':\n      type: object\n      properties:\n';
-
-            // Add the yaml field data, don't mess with the spaces :)
-            for (let index = 0; index < this.currentlySelectedData.length; index++) {
-                const element = this.currentlySelectedData[index];
-                this.yamlData += '        '   + this.removePreAndPostFix(element.target) + ':\n';
-                this.yamlData += '          type: ' + fieldTypeMapping[element.dcFtype] + '\n';
-            }
-        }catch(error){
-            handleError(error);
-        }
-    }
 
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
-     handleChangeYamlData(event){
-        this.yamlData = event.target.value;
+    handleChangeContent(event){
+        this.content = event.target.value;
     }
+
 
     handleClickClose() {
         this.close();
@@ -74,7 +54,7 @@ export default class DataCloudYamlModal extends LightningModal {
         try{
             this.loading = true;
 
-            copyTextToClipboard(this.yamlData);
+            copyTextToClipboard(this.content);
             
             // Change color to green
             this.variant = 'success';
@@ -95,10 +75,10 @@ export default class DataCloudYamlModal extends LightningModal {
 
             handleDownload(
                 this.template,
-                this.sObjectName,
-                '.yaml',
-                'text/x-yaml; charset=utf-8;',
-                this.yamlData,
+                this.fileName,
+                this.fileExtension,
+                this.fileMimeType,
+                this.content,
                 true
             );
 
@@ -121,26 +101,5 @@ export default class DataCloudYamlModal extends LightningModal {
      ** **************************************************************************************************** **/
     handleClose(){
         this.close('ok');
-    }
-
-    /**
-     * Method to remove the namespace prefix and the __c or any type of the fields
-     * YAMLs do not support __ in the name or the YAML will be rejected
-     */
-    removePreAndPostFix(str){
-
-        const myArray = str.split("__");
-        
-        switch (myArray.length) {
-            case 2:{
-                return myArray[0];
-            }
-            case 3:{
-                return myArray[1];
-            }
-            default:{
-                return str;
-            }
-        }
     }
 }

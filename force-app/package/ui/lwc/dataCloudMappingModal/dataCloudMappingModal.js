@@ -15,21 +15,6 @@ import {handleError}   from 'c/util';
 // Apex methods
 import getMetadataInfo from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
 
-// Columns for the bulk jobs
-const recordColumns = [
-    { label: 'Key',   fieldName: 'key'  },
-    { label: 'Value', fieldName: 'value'}
-];
-
-// Columns for the bulk jobs
-const mappingColumns = [ 
-    { label: 'Source field (Salesforce)', fieldName: 'source' },
-    { label: 'Target field (Data Cloud)', fieldName: 'target' },
-    { label: 'Data Cloud Field Type',     fieldName: 'ftype'  },
-    { label: 'Is Primary Key',            fieldName: 'isPk', type: 'boolean' },
-    { label: 'Is Event Time Field',       fieldName: 'isEt', type: 'boolean' }
-];
-
 // Main class
 export default class DataCloudMappingModal extends LightningModal {
     // Config
@@ -38,14 +23,12 @@ export default class DataCloudMappingModal extends LightningModal {
     // Spinner indicator
     loading = false;
 
-    // Record table
-    recordData = [];
-    recordColumns = recordColumns;
+    // Indicated loading is complete
+    loaded = false;
 
-    // Mapping table
-    mappingData = [];
-    mappingColumns = mappingColumns;
-
+    // Map with header and Lightning datatable
+    tableList = []
+    
 
     /** **************************************************************************************************** **
      **                                         LIFECYCLE HANDLERS                                           **
@@ -57,9 +40,9 @@ export default class DataCloudMappingModal extends LightningModal {
             getMetadataInfo({
                 mdtConfigName : this.config.mdtConfigRecord
             })
-            .then((result) => {
-                this.recordData  = result.recordData;
-                this.mappingData = result.mappingData;
+            .then((apexResponse) => {
+                this.tableList = apexResponse;
+                this.loaded    = true;
             })
             .catch((error) => {
                 handleError(error);
