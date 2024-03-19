@@ -1,7 +1,7 @@
 <template>
     
     <lightning-spinner 
-        if:true         ={loading}
+        lwc:if         ={loading}
         alternative-text="Loading" 
         size            ="medium"
         variant         ="base"
@@ -11,7 +11,7 @@
 
     <lightning-modal-body>
         <lightning-datatable 
-            if:true                 = {loaded}
+            lwc:if                 = {loaded}
             key-field               = {ldt.keyField} 
             data                    = {ldt.data} 
             columns                 = {ldt.columns}

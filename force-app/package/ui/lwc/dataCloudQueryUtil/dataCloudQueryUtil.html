@@ -1,37 +1,40 @@
 <template>
     <lightning-card icon-name="standard:sales_value" variant="base">
+
         <lightning-spinner 
-            if:true={loading}
-            alternative-text="Loading" 
-            size="medium"
-            variant="base"
+            lwc:if          = {loading}
+            alternative-text= "Loading" 
+            size            = "medium"
+            variant         = "base"
         ></lightning-spinner>
+
         <div slot="title">
-            Data Cloud Query Utility
+            Data Cloud - Query Utility
         </div>
+
         <div slot="actions">
             <lightning-button-group>
                 
                 <lightning-button
-                    variant="neutral"
-                    label="Execute Query" 
-                    onclick={handleClickExecuteQuery}
-                    disabled={actionDisabled}
+                    variant = "neutral"
+                    label   = "Execute Query" 
+                    onclick = {handleClickExecuteQuery}
+                    disabled= {actionDisabled}
                 ></lightning-button>
                 
                 <lightning-button
-                    variant="neutral"
-                    label="Show Mapping" 
-                    onclick={handleClickShowMapping} 
-                    disabled={actionDisabled}
+                    variant = "neutral"
+                    label   = "Show Mapping" 
+                    onclick = {handleClickShowMapping} 
+                    disabled= {actionDisabled}
                 ></lightning-button>
 
                 <lightning-button
-                    variant="neutral"
-                    onclick={handleClickHelp} 
-                    icon-name="utility:help"
-                    icon-position="right"
-                    alternative-text="Help"
+                    variant         = "neutral"
+                    onclick         = {handleClickHelp} 
+                    icon-name       = "utility:help"
+                    icon-position   = "right"
+                    alternative-text= "Help"
                 ></lightning-button>
             </lightning-button-group>
 
@@ -41,43 +44,43 @@
         </div>
         <div class="slds-var-p-around_small">
             <lightning-combobox
-                disabled={inputDisabled}
-                name="Metadata Configuration"
-                label="Metadata Configuration"
-                value={mdtConfigRecord}
-                placeholder="Select..."
-                options={mdtConfigOptions}
-                onchange={handleChangeMtdConfig}
+                disabled    = {inputDisabled}
+                name        = "Metadata Configuration"
+                label       = "Metadata Configuration"
+                value       = {mdtConfigRecord}
+                placeholder = "Select..."
+                options     = {mdtConfigOptions}
+                onchange    = {handleChangeMtdConfig}
             ></lightning-combobox>
             
             <lightning-combobox
-                disabled={actionDisabled}
-                name="resultFormat"
-                label="Result Format"
-                value={resultFormat}
-                placeholder="Select..."
-                options={resultFormatOptions}
-                onchange={handlechangeResultFormat}
+                disabled    = {actionDisabled}
+                name        = "resultFormat"
+                label       = "Result Format"
+                value       = {resultFormat}
+                placeholder = "Select..."
+                options     = {resultFormatOptions}
+                onchange    = {handlechangeResultFormat}
             ></lightning-combobox>
 
             <lightning-combobox
-                disabled={actionDisabled}
-                name="queryApiVersion"
-                label="Query API Version"
-                value={queryApiVersion}
-                placeholder="Select..."
-                options={queryApiVersionOptions}
-                onchange={handlechangeQueryApiVersion}
+                disabled    = {actionDisabled}
+                name        = "queryApiVersion"
+                label       = "Query API Version"
+                value       = {queryApiVersion}
+                placeholder = "Select..."
+                options     = {queryApiVersionOptions}
+                onchange    = {handlechangeQueryApiVersion}
             ></lightning-combobox>
 
             <lightning-combobox
-                disabled={actionDisabled}
-                name="fieldSelection"
-                label="Field Selection"
-                value={fieldSelection}
-                placeholder="Select..."
-                options={fieldSelectionOptions}
-                onchange={handlechangeFieldSelection}
+                disabled    = {actionDisabled}
+                name        = "fieldSelection"
+                label       = "Field Selection"
+                value       = {fieldSelection}
+                placeholder = "Select..."
+                options     = {fieldSelectionOptions}
+                onchange    = {handlechangeFieldSelection}
             ></lightning-combobox>
         
             <div class="slds-form-element">
@@ -87,8 +90,6 @@
                 </div>
             </div>
         </div>
-    
-
     </lightning-card>
 
 </template>

@@ -14,7 +14,7 @@ import {removePreAndPostFix} from 'c/util';
 
 // Modals
 import textModal            from 'c/textModal';
-import yamlModal            from 'c/dataCloudYamlModal';
+import textareaModal        from 'c/textareaModal';
 
 // Apex methods
 import getSObjectOptions    from "@salesforce/apex/DataCloudUtilLwcCtrl.getSObjectOptions";
@@ -198,16 +198,24 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
             this.generateYaml();
 
             // Open the generated YAML in a modal
-            yamlModal.open({
-                disabled         : false,
+            textareaModal.open({
+                // Modal info
+                size             : 'small',
                 label            : 'YAML Creation Result',
                 content          : this.yamlData,
-                template         : this.template,
+                disabled         : false,
+                
+                // Download info
                 fileName         : 'YAML',
                 fileExtension    : '.yaml',
                 fileMimeType     : 'text/x-yaml; charset=utf-8;',
                 includeTimestamp : true,
-                size: 'small'
+
+                // Button visibillity
+                copyButton       : true,
+                downloadButton   : true,
+                prettifyButton   : false,
+                closeButton      : true
             });
         }catch(error){
             handleError(error);

@@ -7,7 +7,7 @@
  */
 // Lightning stuff
 import   LightningAlert        from 'lightning/alert';
-import { LightningElement }    from "lwc";
+import { LightningElement }    from 'lwc';
 
 // Custom Utils
 import { handleError }         from 'c/util';
@@ -49,7 +49,6 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback(){
-        // Start with getting the metadata configurations
         this.handleGetMdtOptions();
     }
 
@@ -61,13 +60,13 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         try{
             getMtdConfigOptions()
                 .then((apexResponse) => {
-                    this.mdtConfigOptions = apexResponse;
+                    this.mdtConfigOptions       = apexResponse;
+                    this.mdtConfigOptionsLoaded = true;
                 })
                 .catch((error) => {
                     handleError(error);
                 })
                 .finally(()=>{
-                    this.mdtConfigOptionsLoaded = true;
                     this.loading = false;
                 });
         }catch(error){
@@ -75,18 +74,18 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         }
     }
 
+
     handleGetStreamingPlaceholder(){
         try{
             getStreamingPlaceholder({ mdtConfigName : this.mdtConfigRecord})
                 .then((apexResponse) => {
-                    this.payload = apexResponse;
+                    this.payload                             = apexResponse;
                     this.template.querySelector(".ta").value = apexResponse;
                 })
                 .catch((error) => {
                     handleError(error);
                 })
                 .finally(()=>{
-                    this.mdtConfigOptionsLoaded = true;
                     this.loading = false;
                 });
         }catch(error){
@@ -95,53 +94,58 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         }
     }
     
+
     handleSendDataStream(){
         try{
             this.loading = true;
-            sendDataStream({ mdtConfigName : this.mdtConfigRecord, payload : this.payload})
-                .then((apexResponse) => {
-                    if(apexResponse==true){
-                        LightningAlert.open({
-                            message: 'Message SENT successfully ',
-                            label  : 'Success',
-                            theme  : 'success'
-                        });
-                    }
-                })
-                .catch((error) => {
-                    handleError(error);
-                    this.loading = false;
-                })
-                .finally(()=>{
-                    this.mdtConfigOptionsLoaded = true;
-                    this.loading = false;
-                });
+            sendDataStream(
+                { mdtConfigName : this.mdtConfigRecord,
+                    payload     : this.payload}
+            )
+            .then((apexResponse) => {
+                if(apexResponse==true){
+                    LightningAlert.open({
+                        message: 'Message SENT successfully',
+                        label  : 'Success',
+                        theme  : 'success'
+                    });
+                }
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
         }catch(error){
             handleError(error);
             this.loading = false;
         }
     }
 
+
     handleTestDataStream(){
         try{
             this.loading = true;
-            testDataStream({ mdtConfigName : this.mdtConfigRecord, payload : this.payload})
-                .then((apexResponse) => {
-                    if(apexResponse === true){
-                        LightningAlert.open({
-                            message: 'Message TESTED successfully ',
-                            label  : 'Success',
-                            theme  : 'success'
-                        });
-                    }
-                })
-                .catch((error) => {
-                    handleError(error);
-                })
-                .finally(()=>{
-                    this.mdtConfigOptionsLoaded = true;
-                    this.loading = false;
-                });
+            testDataStream({ 
+                mdtConfigName : this.mdtConfigRecord, 
+                payload       : this.payload}
+            )
+            .then((apexResponse) => {
+                if(apexResponse === true){
+                    LightningAlert.open({
+                        message: 'Message TESTED successfully',
+                        label  : 'Success',
+                        theme  : 'success'
+                    });
+                }
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
         }catch(error){
             handleError(error);
             this.loading = false;
@@ -152,10 +156,12 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
-    // Set the config record name and update the table
+    /**
+     * Set the config record name and update the table
+     */
     handleChangeMtdConfig(event) {
         try{
-            this.mdtConfigRecord = event.detail.value;
+            this.mdtConfigRecord   = event.detail.value;
             this.mdtConfigSelected = true;
             this.handleGetStreamingPlaceholder();
         }catch(error){
@@ -163,6 +169,10 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         }
     }
 
+
+    /**
+     * Update changes in the payload textarea
+     */
     handleChangePayload() {
         try{
             this.payload = this.template.querySelector(".ta").value;
@@ -203,8 +213,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     async handleOpenMappingModal (config) {
         try{
             mappingModal.open({
-                config: config,
-                size: 'small',
+                config : config,
+                size   : 'small',
             });
         }catch(error){
             handleError(error);
@@ -220,7 +230,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             textModal.open({
                 header  : "Data Cloud - Streaming Ingestion Utility - Help",
                 content : "Tool to send an ingestion streaming payload to Data Cloud. Based on the Metadata Configuration a sample payload is automatically generated based on the target fields in the mapping.",
-                size: 'small'
+                size    : 'small'
             });
         }catch(error){
             handleError(error);

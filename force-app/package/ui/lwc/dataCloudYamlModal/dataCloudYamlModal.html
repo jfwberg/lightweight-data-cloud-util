@@ -1,30 +1,4 @@
 <template>
     
-    <lightning-spinner 
-        if:true         = {loading}
-        alternative-text= "Loading" 
-        size            = "medium"
-        variant         = "base"
-    ></lightning-spinner>
-    
-    <lightning-modal-header label={label}></lightning-modal-header>
-    
-    <lightning-modal-body>
-        <div class="slds-var-p-bottom_medium">
-            <div class="slds-form-element">
-                <div class="slds-form-element__control">
-                    <textarea id="ta" class="slds-textarea ta" onchange={handleChangeContent} disabled={disabled}>{content}</textarea>
-                </div>
-            </div>
-        </div>
-    </lightning-modal-body>
-    
-    <lightning-modal-footer>
-        <lightning-button-group>
-            <lightning-button label="Download" onclick={handleClickDownload} variant={downloadVariant}></lightning-button>
-            <lightning-button label="Copy"     onclick={handleClickCopy}     variant={variant}></lightning-button>
-            <lightning-button label="Close"    onclick={handleClickClose}></lightning-button>
-        </lightning-button-group>
-    </lightning-modal-footer>
 
 </template>

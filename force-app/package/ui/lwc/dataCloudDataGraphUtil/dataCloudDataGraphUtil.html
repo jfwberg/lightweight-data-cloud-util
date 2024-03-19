@@ -1,0 +1,90 @@
+<template>
+    <lightning-card icon-name="standard:lightning_usage" variant="base">
+ 
+        <lightning-spinner
+            lwc:if          = {loading}
+            alternative-text= "Loading"
+            size            = "medium"
+            variant         = "base"
+        ></lightning-spinner>
+
+        <div slot="title">
+            Data Cloud - Data Graph Utility
+        </div>
+
+        <div slot="actions">
+            <lightning-button-group>
+
+                <lightning-button
+                    label           = "Execute Data Graph"
+                    disabled        = {executeDisabled}
+                    variant         = "neutral"
+                    onclick         = {handleClickExecute}
+                    alternative-text= "Execute Data Graph"
+                ></lightning-button>
+
+                <lightning-button
+                    label           = "Metadata"
+                    disabled        = {metadataDisabled}
+                    variant         = "neutral"
+                    onclick         = {handleClickMetadata}
+                    alternative-text= "Show Metadata"
+                ></lightning-button>
+
+                <lightning-button
+                    variant         = "neutral"
+                    onclick         = {handleClickHelp}
+                    icon-name       = "utility:help"
+                    icon-position   = "right"
+                    alternative-text= "Help"
+                ></lightning-button>
+
+            </lightning-button-group>
+
+        </div>
+        <div slot="footer">
+
+        </div>
+        <div class="slds-var-p-around_small">
+            <lightning-combobox
+                disabled    = {ncDisabled}
+                name        = "Data Cloud Named Credential"
+                label       = "Data Cloud Named Credential"
+                value       = {ncName}
+                placeholder = "Select..."
+                options     = {ncOptions}
+                onchange    = {handleChangeNcName}
+            ></lightning-combobox>
+
+            <lightning-combobox
+                disabled    = {dgDisabled}
+                name        = "Data Graph"
+                label       = "Data Graph"
+                value       = {dgName}
+                placeholder = "Select..."
+                options     = {dgOptions}
+                onchange    = {handleChangeDgName}
+            ></lightning-combobox>
+
+            <lightning-combobox
+                disabled    = {pkDisabled}
+                name        = "Primary Key fields"
+                label       = "Primary Key fields"
+                value       = {pkName}
+                placeholder = "Select..."
+                options     = {pkOptions}
+                onchange    = {handleChangePkName}
+            ></lightning-combobox>
+
+            <lightning-input
+                type="text"
+                label="Primary Key Record Id"
+                value={pkRecordId}
+                disabled={pkRecordIdDisabled}
+                onchange={handleChangePkRecordId}
+            ></lightning-input>
+
+        </div>
+    </lightning-card>
+
+</template>

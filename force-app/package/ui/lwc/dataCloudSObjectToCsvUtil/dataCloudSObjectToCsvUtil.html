@@ -2,7 +2,7 @@
     <lightning-card icon-name="standard:sobject_collection" variant="base">
         
         <lightning-spinner 
-            if:true         ={loading}
+            lwc:if         ={loading}
             alternative-text="Loading" 
             size            ="medium"
             variant         ="base"
@@ -49,7 +49,7 @@
         <div class="slds-var-p-around_small">
 
             <lightning-combobox
-                if:true={mdtConfigOptionsLoaded}
+                lwc:if={mdtConfigOptionsLoaded}
                 name="Metadata Configuration"
                 label="Metadata Configuration"
                 value={mdtConfigRecord}

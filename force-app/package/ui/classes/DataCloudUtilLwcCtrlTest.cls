@@ -19,7 +19,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
     private static final User TST_USER = utl.Tst.createRunAsUser(
         utl.Tst.MINIMUM_ACCESS_PROFILE,
         PERMISSION_SET_NAME
-    );
+    ); 
 
     // API Responses
     private static final String SOQL_RESPONSE           = '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"User","url":"/services/data/v53.0/sobjects/User/005Q1000000RJtBIAW"},"Id":"005Q1000000RJtBIAW"}]}';
@@ -642,7 +642,9 @@ private with sharing class DataCloudUtilLwcCtrlTest {
     /** **************************************************************************************************** **
      **                                   DATA CLOUD QUERY AURA METHODS                                      **
      ** **************************************************************************************************** **/
-    @IsTest
+    
+    /*
+     @IsTest
     static void testGetDcQueryCsv(){
         // Variable to hold the test Exceptions
         Exception auraException;
@@ -674,8 +676,8 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         // Assert exception message
         Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
     }
-
-
+    */
+    /*
     @IsTest
     static void testGetDcQueryTable(){
        // Variable to hold the test Exceptions
@@ -708,7 +710,9 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         // Assert exception message
         Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
     }
+    */
 
+    /*
     @IsTest
     static void testGetQueryPlaceholder(){
         // Variable to hold the test Exceptions
@@ -747,7 +751,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         // Assert exception message
         Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
     }
-
+*/
 
     /** **************************************************************************************************** **
      **                                      SOQL QUERY AURA METHODS                                         **

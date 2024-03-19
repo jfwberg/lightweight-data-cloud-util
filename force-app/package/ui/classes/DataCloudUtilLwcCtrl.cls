@@ -695,6 +695,161 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     /** **************************************************************************************************** **
+     **                                       DATA GRAPH AURA METHODS                                        **
+     ** **************************************************************************************************** **/
+    @AuraEnabled
+    public static List<Map<String,String>>  getDcNamedCredentialOptions(){
+        try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
+
+            // Return the named credential picklist options
+            return Dc.getDataCloudNamedCredentialPicklistOptions();
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static List<Map<String,String>> getDataGraphOptions(String namedCredentialName){
+        try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
+
+            // List containing the output picklist options
+            List<Map<String,String>> output = new List<Map<String,String>>();
+
+            // Get the metadata an convert names into list
+            for(Map<String,Object> dataGraphMetadata : Dc.getAllDataGraphMetadata(namedCredentialName)){
+                output.add(new Map<String,String>{
+                    'label' => (String) dataGraphMetadata.get('developerName'),
+                    'value' => (String) dataGraphMetadata.get('developerName')
+                });
+            }
+
+            // Return the named credential picklist options
+            return output;
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static Map<String,Object> getDataGraphDetails(String namedCredentialName, String dataGraphName){
+        try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
+
+            // Fetch the detailed metadata
+            Map<String,Object> dgMdt = Dc.getDetailedDataGraphMetadata(namedCredentialName, dataGraphName);
+
+            // List containing the output pk options
+            List<Map<String,String>> pkOptions = new List<Map<String,String>>();
+
+            // Create a the picklist values for key fields
+            for(Object o : utl.Jsn.getObjectList('object.fields', dgMdt)){
+                Map<String,Object> om = (Map<String,Object>) o;
+                if(om.get('keyCol') == 'true'){
+                    pkOptions.add(new Map<String,String>{
+                        'label' => (String) om.get('developerName'),
+                        'value' => (String) om.get('developerName')
+                    });
+                }
+            }
+
+            
+            // Overview
+            utl.Ldt ovTable = new utl.Ldt()
+                .setupKeyValue()
+                .setData(
+                    new utl.JsnTbl()
+                        .setAttributeFilter(new Set<String>{'object'})
+                        .create(dgMdt)
+                        .getKeyValuePairData()
+                    )
+            ;
+
+            // Primary Object
+            utl.Ldt poTable = new utl.Ldt()
+            .setupKeyValue()
+            .setData(
+                new utl.JsnTbl()
+                    .setAttributeFilter(new Set<String>{'relatedObjects', 'fields', 'recencyCriteria'})
+                    .create(utl.Jsn.getObjectMap('object',dgMdt))
+                    .getKeyValuePairData()
+                )
+            ;
+
+            // Primary Object fields
+            utl.Ldt pofTable = new utl.Ldt()
+                .setData(
+                    new utl.JsnTbl()
+                        .setAttributeFilter(new Set<String>{'relatedObjects', 'fields'})
+                        .create(utl.Jsn.getObjectList('object.fields', dgMdt))
+                        .getKeyValueData()
+                )
+                .addColumn(new utl.Ldt.Col('developerName',     'developerName'))
+                .addColumn(new utl.Ldt.Col('ssot__Id__c',       'ssot__Id__c'))
+                .addColumn(new utl.Ldt.Col('lookupCol',         'lookupCol'))
+                .addColumn(new utl.Ldt.Col('length',            'length'))
+                .addColumn(new utl.Ldt.Col('dataType',          'dataType'))
+                .addColumn(new utl.Ldt.Col('keyCol',            'keyCol'))
+                .addColumn(new utl.Ldt.Col('keyQualifierName',  'keyQualifierName'))
+                .addColumn(new utl.Ldt.Col('usageTag',          'usageTag'))
+                .addColumn(new utl.Ldt.Col('ciFieldType',       'ciFieldType'))
+                .addColumn(new utl.Ldt.Col('isProjected',       'isProjected'))
+            ;
+
+
+            // Return the combined
+            List<Map<String, Object>> dataTables = new List<Map<String, Object>>{
+                new Map<String, Object>{
+                    'key'    => '1',
+                    'header' => 'Overview Table',
+                    'ldt'    => ovTable
+                },
+                new Map<String, Object>{
+                    'key'    => '2', 
+                    'header' => 'Primary Object',
+                    'ldt'    => poTable
+                },
+                new Map<String, Object>{ 
+                    'key'    => '3',
+                    'header' => 'Primary Object Details',
+                    'ldt'    => pofTable
+                }
+            };
+
+            // Return all the details
+            return new Map<String,Object>{
+                'dataTables' => dataTables,
+                'pkOptions'  => pkOptions
+            };
+
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static String getDataGraphJsonBlob(String namedCredentialName, String dataGraphName, String dataGraphRecordId){
+        try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
+ 
+            return Dc.getDataGraphJsonBlob(namedCredentialName, dataGraphName, dataGraphRecordId);
+
+        }catch(Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    /** **************************************************************************************************** **
      **                                      SOQL QUERY AURA METHODS                                         **
      ** **************************************************************************************************** **/
     @AuraEnabled

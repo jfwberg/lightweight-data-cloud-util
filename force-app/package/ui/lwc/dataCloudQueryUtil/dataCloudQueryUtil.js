@@ -23,6 +23,9 @@ import getQueryPlaceholder from "@salesforce/apex/DataCloudUtilLwcCtrl.getQueryP
 // Main class
 export default class DataCloudQueryUtil extends LightningElement {
 
+    // Loading indicator
+    loading = false;
+
     // The query
     query = '';
 
@@ -85,6 +88,7 @@ export default class DataCloudQueryUtil extends LightningElement {
      ** **************************************************************************************************** **/
     handleGetMdtOptions(){
         try{
+            this.loading = true;
             getMtdConfigOptions()
                 .then((apexResponse) => {
                     this.mdtConfigOptions = apexResponse;
@@ -105,6 +109,7 @@ export default class DataCloudQueryUtil extends LightningElement {
 
     handleGetQueryPlaceholder(){
         try{
+            this.loading = true;
             getQueryPlaceholder({
                 mdtConfigName  : this.mdtConfigRecord,
                 fieldSelection : this.fieldSelection

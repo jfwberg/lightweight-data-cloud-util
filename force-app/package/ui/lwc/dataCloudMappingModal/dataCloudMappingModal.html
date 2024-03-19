@@ -1,6 +1,6 @@
 <template>
     <lightning-spinner 
-        if:true         = {loading}
+        lwc:if         = {loading}
         alternative-text= "Loading" 
         size            = "medium"
         variant         = "base"
@@ -9,7 +9,7 @@
     <lightning-modal-header label="Ingestion API Metadata Configuration Details"></lightning-modal-header>
         
     <lightning-modal-body>
-        <template for:each={tableList} for:item="table" if:true={loaded}>
+        <template for:each={tableList} for:item="table" lwc:if={loaded}>
             <div key={table.header} class="slds-text-heading_small slds-p-vertical_x-small">{table.header}</div>
             <lightning-datatable
                 key                     = {table.header}            

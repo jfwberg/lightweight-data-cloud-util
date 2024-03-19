@@ -9,7 +9,7 @@
  */
 @IsTest
 @SuppressWarnings('PMD.ApexUnitTestClassShouldHaveAsserts, PMD.ApexDoc')
-private with sharing class DcTest {
+private with sharing class DcTest{
 
     /** **************************************************************************************************** **
      **                                          PRIVATE CONSTANTS                                           **

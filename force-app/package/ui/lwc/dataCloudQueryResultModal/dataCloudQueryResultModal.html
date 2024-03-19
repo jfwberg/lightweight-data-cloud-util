@@ -1,15 +1,16 @@
 <template>
     <lightning-spinner 
-        if:true={loading}
-        alternative-text="Loading" 
-        size="medium"
-        variant="base"
+        lwc:if          = {loading}
+        alternative-text= "Loading" 
+        size            = "medium"
+        variant         = "base"
     ></lightning-spinner>
+
     <lightning-modal-header label="Data Cloud Query Result"></lightning-modal-header>
         <lightning-modal-body>
 
             <lightning-datatable
-                if:true                 = {isTable}
+                lwc:if                  = {isTable}
                 key-field               = {ldt.keyField}
                 data                    = {ldt.data}
                 columns                 = {ldt.columns}
@@ -17,11 +18,11 @@
                 show-row-number-column  = {ldt.showRowNumberColumn}
             ></lightning-datatable>
  
-            <div class="slds-form-element__control" if:true={isCsv}>
+            <div class="slds-form-element__control" lwc:if={isCsv}>
                 <textarea name="csvData" class="slds-textarea ta" oninput={handleChangeCsvData}>{csvData}</textarea>
             </div>
 
-            <div class="slds-form-element__control" if:true={isRaw}>
+            <div class="slds-form-element__control" lwc:if={isRaw}>
                 <textarea name="rawData" class="slds-textarea ta" oninput={handleChangeRawData}>{rawData}</textarea>
             </div>
 
@@ -31,13 +32,13 @@
         <lightning-button-group>
 
             <!-- RAW API RESPONSE-->
-            <lightning-button label="Prettify" onclick={handleClickPrettify}    variant={prettifyVariant} if:true={isRaw}></lightning-button>
-            <lightning-button label="Download" onclick={handleClickDownloadRaw} variant={downloadVariant} if:true={isRaw}></lightning-button>
-            <lightning-button label="Copy"     onclick={handleClickCopyRaw}     variant={copyVariant}     if:true={isRaw}></lightning-button>
+            <lightning-button label="Prettify" onclick={handleClickPrettify}    variant={prettifyVariant} lwc:if={isRaw}></lightning-button>
+            <lightning-button label="Download" onclick={handleClickDownloadRaw} variant={downloadVariant} lwc:if={isRaw}></lightning-button>
+            <lightning-button label="Copy"     onclick={handleClickCopyRaw}     variant={copyVariant}     lwc:if={isRaw}></lightning-button>
 
             <!-- CSV RESPONSE-->
-            <lightning-button label="Download" onclick={handleClickDownload}    variant={downloadVariant} if:true={isCsv}></lightning-button>
-            <lightning-button label="Copy"     onclick={handleClickCopy}        variant={copyVariant}     if:true={isCsv}></lightning-button>
+            <lightning-button label="Download" onclick={handleClickDownload}    variant={downloadVariant} lwc:if={isCsv}></lightning-button>
+            <lightning-button label="Copy"     onclick={handleClickCopy}        variant={copyVariant}     lwc:if={isCsv}></lightning-button>
 
             <!-- COMMON-->
             <lightning-button label="Close"    onclick={handleClickClose}></lightning-button>

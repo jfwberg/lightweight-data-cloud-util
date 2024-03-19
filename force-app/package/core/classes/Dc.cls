@@ -110,23 +110,16 @@ global with sharing class Dc {
             // Force exception for testing
             utl.Tst.forceException('ORDER_COLUMNS');
 
-            // Create a mapping between column index and column name
-            Map<Integer,String> columnIndexMap = new Map<Integer,String>();
-
-            // Create a new set for the column names
+            // Create a map for the output
             Set<String> columnNamesInOrder = new Set<String>{};
 
-            // Iterate the metadata to get the columns
-            for(String key : metadataMap.keySet()){
-                columnIndexMap.put(
-                    (Integer) utl.Jsn.getObject('placeInOrder', (Map<String,Object>) metadataMap.get(key)),
-                    (removePostfix) ? key?.removeEnd('__c') : key
-                );
-            }
+            // Get the field metadata and sort the objects
+            FieldMetadata[] fMdt = getFieldMetadata(metadataMap,removePostfix);
+            fMdt.sort();
 
             // Create an ordered list
-            for(Integer i=0,max=columnIndexMap.size(); i<max;i++){
-                columnNamesInOrder.add(columnIndexMap.get(i));
+            for(Integer i=0,max=fMdt.size(); i<max;i++){
+                columnNamesInOrder.add(fMdt[i].name);
             }
 
             // Return the column Names in the correct order based on the metadata
@@ -138,31 +131,19 @@ global with sharing class Dc {
     }
 
 
-    global class FieldMetadata implements Comparable{
-
-        // Variables
-        global String  name;
-        global String  type;
-        global Integer typeCode;
-        global Integer placeInOrder;
-        
-        // Main Constructor
-        global FieldMetadata(String name, Map<String,Object> metadata){
-            this.name         = name;
-            this.type         = (String)  metadata.get('type');
-            this.typeCode     = (Integer) metadata.get('typeCode');
-            this.placeInOrder = (Integer) metadata.get('placeInOrder');
-        }
-
-        // Compare order, note that the same order will never occur, so does not need to be checked
-        global Integer compareTo(Object compareTo) {
-            return (this.placeInOrder > ((FieldMetadata) compareTo).placeInOrder) ? 1 : -1;        
-        }
+    /**
+     * @description Overload method to get a set of column names in the correct from a metadata
+     *              response. This can be used to generate CSV or table headers
+     * @param metadataMap The parsed metadata response map from
+     * @return      A set of column names in the correct order
+     */
+    global static Set<String> getOrderedColumnNamesFromMetadata(Map<String,Object> metadataMap){
+        return getOrderedColumnNamesFromMetadata(metadataMap, false);
     }
 
+
     /**
-     * @description Method to get a set of column names in the correct from a metadata
-     *              response. This can be used to generate CSV or table headers
+     * @description Method to get a full set set of column metadata
      * @param metadataMap   The parsed metadata response map from
      * @param removePostfix Remove the __c postfix from the end of the column names
      * @return      A set of column names in the correct order
@@ -185,7 +166,7 @@ global with sharing class Dc {
             for(String key : metadataMap.keySet()){
                 fieldMetadata.add(
                     new FieldMetadata(
-                        key,
+                        (removePostfix) ? key?.removeEnd('__c') : key,
                         (Map<String,Object>) metadataMap.get(key)
                     )
                 );
@@ -204,13 +185,12 @@ global with sharing class Dc {
 
 
     /**
-     * @description Overload method to get a set of column names in the correct from a metadata
-     *              response. This can be used to generate CSV or table headers
-     * @param metadataMap The parsed metadata response map from
-     * @return      A set of column names in the correct order
+    * @description         Method to get a full set set of column metadata
+     * @param  metadataMap The parsed metadata response map from
+     * @return             A set of column names in the correct order
      */
-    global static Set<String> getOrderedColumnNamesFromMetadata(Map<String,Object> metadataMap){
-        return getOrderedColumnNamesFromMetadata(metadataMap, false);
+    global static FieldMetadata[] getFieldMetadata(Map<String,Object> metadataMap){
+        return getFieldMetadata(metadataMap, false);
     }
 
 
@@ -238,6 +218,46 @@ global with sharing class Dc {
     }
 
 
+    /**
+     * @description Method to query named credential parameters to get the list of
+     *              Data Cloud Related Named Credentials on the current org
+     * @return      Ready to use picklist values for a data cloud named credential picklist
+     */
+    global static List<Map<String,String>> getDataCloudNamedCredentialPicklistOptions(){
+
+        // List containing the output
+        List<Map<String,String>> output = new List<Map<String,String>>();
+                
+        // Create a tooling query to get the named credential parameters for 
+        String  query  = 'SELECT NamedCredential.MasterLabel,NamedCredential.DeveloperName, ParameterValue FROM NamedCredentialParameter ';
+                query += 'WHERE ParameterType = \'Url\' ';
+                query += 'ORDER BY NamedCredential.MasterLabel';
+
+        // Execute the tooling query and iterate the results
+        for(Object o : utl.Jsn.getObjectList(
+            'records',
+            (Map<String,Object>) JSON.deserializeUntyped(
+                new utl.Rst(true)
+                .setEndpoint('/tooling/query?q=' + EncodingUtil.urlEncode(query,'UTF-8'))
+                .setMethod('GET')
+                .call()
+                .getResponse().
+                getBody()
+            )
+        )){
+            // Rudimentary way of getting the Data Cloud based on the endpoint name 
+            if(((String) utl.Jsn.getObject('ParameterValue', (Map<String,Object>) o )).contains('.c360a.salesforce.com')){
+                output.add(new Map<String,String>{
+                    'label' => (String) utl.Jsn.getObject('NamedCredential.MasterLabel',   (Map<String,Object>) o),
+                    'value' => (String) utl.Jsn.getObject('NamedCredential.DeveloperName', (Map<String,Object>) o)
+                });
+            }
+        }
+        
+        // Return the picklist values
+        return output;
+    }
+
     /** **************************************************************************************************** **
      **                                         GLOBAL QUERY METHODS                                         **
      ** **************************************************************************************************** **/
@@ -246,7 +266,7 @@ global with sharing class Dc {
      * @description Overload method
      */
      global static utl.Rst executeQuery(String mdtConfigName, String query){
-        return executeQuery(mdtConfigName,  query,'v2');
+        return executeQuery(mdtConfigName, query, 'v2');
     }
 
 
@@ -292,6 +312,93 @@ global with sharing class Dc {
         }catch(Exception e){
             throw new DataCloudUtilException(String.format(QUERY_EXCEPTION_MSG, new String[]{e.getMessage()}));
         }
+    }
+
+
+    /** **************************************************************************************************** **
+     **                                      GLOBAL DATA GRAPH METHODS                                       **
+     ** **************************************************************************************************** **/
+    /**
+     * @description               Method to get the list of all data graph metadata
+     * @param namedCredentialName The name of the data cloud named credential
+     * @return                    A list of ALL data graph metadata 
+     */
+    global static List<Map<String,Object>> getAllDataGraphMetadata(String namedCredentialName){
+
+        // List to hold the converted output
+        List<Map<String,Object>> output = new List<Map<String,Object>>();
+
+        // Get the objects from the metadata
+        for(Object o : utl.Jsn.getObjectList(
+            'metadata',
+            (Map<String, Object>) JSON.deserializeUntyped(
+                new utl.Rst(namedCredentialName, true)
+                .setHandleSfEndpoint(false)
+                .setEndpoint('/api/v1/dataGraph/metadata')
+                .setMethod('GET')
+                .call()
+                .getResponse()
+                .getBody()
+            )
+        )){
+            // Cast the objects to untyped maps and add to the output
+            output.add((Map<String,Object>) o);
+        }
+
+        // Return the list of graph metadata
+        return output;
+    }
+
+
+    /**
+     * @description               Method to get the list of all data graph metadata
+     * @param namedCredentialName The name of the data cloud named credential
+     * @param dataGraphName       The name of the specific Graph API details
+     * @return                    A single data graph's metadata 
+     */
+    global static Map<String,Object> getDetailedDataGraphMetadata(String namedCredentialName, String dataGraphName){
+        return (Map<String,Object>) utl.Jsn.getObjectList(
+            'metadata',
+            (Map<String, Object>) JSON.deserializeUntyped(
+                new utl.Rst(namedCredentialName, true)
+                .setHandleSfEndpoint(false)
+                .setEndpoint(String.format('/api/v1/dataGraph/metadata?entityName={0}', new String[]{dataGraphName}))
+                .setMethod('GET')
+                .call()
+                .getResponse()
+                .getBody()
+            )
+        )[0];
+    }
+
+
+    /**
+     * @description               Method to get the blob JSON for a data graph
+     * @param namedCredentialName The name of the data cloud named credential
+     * @param dataGraphName       The name of the specific Graph API details
+     * @param dataGraphRecordId   The record Id of the primary object's Primary key field
+     * @return                    A single data graph's metadata 
+     */
+    global static String getDataGraphJsonBlob(String namedCredentialName, String dataGraphName, String dataGraphRecordId){
+        return (String) utl.Jsn.getObject(
+            'json_blob__c',
+            (Map<String, Object>) utl.Jsn.getObjectList(
+                'data',
+                (Map<String, Object>) JSON.deserializeUntyped(
+                    new utl.Rst('UKTA_DC_ORG', true)
+                    .setHandleSfEndpoint(false)
+                    .setEndpoint(
+                        String.format(
+                            '/api/v1/dataGraph/{0}/{1}',
+                            new String[]{dataGraphName,dataGraphRecordId})
+                        )
+                    .setMethod('GET')
+                    .call()
+                    .getResponse()
+                    .getBody()
+                )
+            )[0]
+        );
     }
 
 
@@ -806,7 +913,37 @@ global with sharing class Dc {
 
 
     /** **************************************************************************************************** **
-     **                                       GLOBAL EXCEPTION METHODS                                       **
+     **                                    GLOBAL DATA STRUCTURE CLASSES                                     **
+     ** **************************************************************************************************** **/
+    /**
+     * @description Data structure representing Data Cloud field metadata
+     *              Implements comparable to sort on place in order ASC
+     */
+     global class FieldMetadata implements Comparable{
+
+        // Variables
+        global String  name;
+        global String  type;
+        global Integer typeCode;
+        global Integer placeInOrder;
+        
+        // Main Constructor
+        global FieldMetadata(String name, Map<String,Object> metadata){
+            this.name         = name;
+            this.type         = (String)  metadata.get('type');
+            this.typeCode     = (Integer) metadata.get('typeCode');
+            this.placeInOrder = (Integer) metadata.get('placeInOrder');
+        }
+
+        // Compare order, note that the same order will never occur, so does not need to be checked
+        global Integer compareTo(Object compareTo) {
+            return (this.placeInOrder > ((FieldMetadata) compareTo).placeInOrder) ? 1 : -1;        
+        }
+    }
+
+
+    /** **************************************************************************************************** **
+     **                                       GLOBAL EXCEPTION CLASSES                                       **
      ** **************************************************************************************************** **/
     /**
      * @description Exception that is thrown on any generic issue in the Data Cloud Util

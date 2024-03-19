@@ -1,13 +1,14 @@
 <template>
     
     <lightning-spinner 
-        if:true={loading}
-        alternative-text="Loading" 
-        size="medium"
-        variant="base"
+        lwc:if          = {loading}
+        alternative-text= "Loading" 
+        size            = "medium"
+        variant         = "base"
     ></lightning-spinner>
 
     <lightning-modal-header label="Add CSV (Data) to Bulk Job"></lightning-modal-header>
+
     <lightning-modal-body>
     
         <div class="slds-var-p-bottom_medium" if:false={isUpload}>
@@ -19,15 +20,15 @@
         </div>
 
         <lightning-file-upload
-            if:true={isUpload}
-            label="Upload CSV File"
-            name="fileUploader"
-            accept={acceptedFormats}
-            onuploadfinished={handleUploadFinished}
-            disabled={fileUploadDisabled}
+            lwc:if          = {isUpload}
+            label           = "Upload CSV File"
+            name            = "fileUploader"
+            accept          = {acceptedFormats}
+            onuploadfinished= {handleUploadFinished}
+            disabled        = {fileUploadDisabled}
         ></lightning-file-upload>
 
-        <div class="slds-var-p-top_medium" if:true={documentInfoVisible}>
+        <div class="slds-var-p-top_medium" lwc:if={documentInfoVisible}>
             <b>Document Id:</b> {document.id}<br/>
             <b>Document Name:</b> {document.name}<br/>
             <b>Document Status:</b> {document.status}<br/>
@@ -36,6 +37,7 @@
         </div>
 
     </lightning-modal-body>
+    
     <lightning-modal-footer>
         <lightning-button-group>
             <lightning-button label="Add CSV" onclick={handleClickAddCsv} variant={variant} if:false={isUpload}></lightning-button>
