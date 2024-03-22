@@ -10,15 +10,22 @@ import {LightningElement}  from "lwc";
 
 // Custom Utils
 import {handleError}       from 'c/util';
-import textModal           from 'c/textModal';
 
 // Modals
-import mappingModal        from 'c/dataCloudMappingModal';
-import queryResultModal    from 'c/dataCloudQueryResultModal';
+import textModal           from 'c/textModal';
+import textareaModal       from 'c/textareaModal';
+import ldtModal            from 'c/ldtModal';
+import multiLdtModal       from 'c/multiLdtModal';
 
-// Apex methods
+// Apex methods for setup
 import getMtdConfigOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
 import getQueryPlaceholder from "@salesforce/apex/DataCloudUtilLwcCtrl.getQueryPlaceholder";
+import getMetadataInfo     from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
+
+// Apex methods for query results
+import getDcQueryCsv       from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryCsv";
+import getDcQueryTable     from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryTable";
+import getDcQueryRaw       from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryRaw";
 
 // Main class
 export default class DataCloudQueryUtil extends LightningElement {
@@ -28,6 +35,9 @@ export default class DataCloudQueryUtil extends LightningElement {
 
     // The query
     query = '';
+
+    // Metadata configuration tables
+    mdtTableList;
 
     // Indicator to view the button
     mdtConfigOptionsLoaded = false;
@@ -78,7 +88,6 @@ export default class DataCloudQueryUtil extends LightningElement {
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback(){
-        // Start with getting the metadata configurations
         this.handleGetMdtOptions();
     }
 
@@ -130,6 +139,99 @@ export default class DataCloudQueryUtil extends LightningElement {
         }
     }
 
+
+    handleGetMetadataInfo(){
+        try{
+            this.loading = true;
+            getMetadataInfo({
+                mdtConfigName  : this.mdtConfigRecord
+            })
+            .then((apexResponse) => {
+                this.handleOpenMappingModal(apexResponse);
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false; 
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false; 
+        }
+    }
+
+
+    handleGetDcQueryTable(){
+        try{
+            this.loading = true;
+            getDcQueryTable({
+                mdtConfigName : this.mdtConfigRecord,
+                query         : this.query,
+                apiVersion    : this.queryApiVersion
+            })
+            .then((apexResponse) => {
+                this.handleOpenDcResultTableModal(apexResponse);
+            })
+            .catch((error) => {
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
+        }
+    }
+
+
+    handleGetDcQueryCsv(){
+        try{
+            this.loading = true;
+            getDcQueryCsv({
+                mdtConfigName : this.mdtConfigRecord,
+                query         : this.query,
+                apiVersion    : this.queryApiVersion
+            })
+            .then((apexResponse) => {
+                this.handleOpenDcResultCsvModal(apexResponse);
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
+        }
+    }
+
+
+    handleGetDcQueryRaw(){
+        try{
+            this.loading = true;
+            getDcQueryRaw({
+                mdtConfigName : this.mdtConfigRecord,
+                query         : this.query,
+                apiVersion    : this.queryApiVersion
+            })
+            .then((apexResponse) => {
+                this.handleOpenDcResultRawModal(apexResponse);
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
+        }
+    }
+
     
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
@@ -164,13 +266,30 @@ export default class DataCloudQueryUtil extends LightningElement {
      **                                        CLICK BUTTON HANDLERS                                         **
      ** **************************************************************************************************** **/
     handleClickExecuteQuery(){
-        this.handleOpenQueryResultModal();
+        try{
+            switch (this.resultFormat) {
+                case 'table':{
+                    this.handleGetDcQueryTable();
+                }
+                break;
+                
+                case 'csv':{
+                    this.handleGetDcQueryCsv();
+                }
+                break;
+
+                case 'raw':{
+                    this.handleGetDcQueryRaw();
+                }
+                break;
+            }
+        }catch(error){
+            handleError(error);
+        }
     }
 
     handleClickShowMapping(){
-        this.handleOpenMappingModal({
-            mdtConfigRecord : this.mdtConfigRecord
-        });
+        this.handleGetMetadataInfo();
     }
 
     handleClickHelp(){
@@ -184,11 +303,12 @@ export default class DataCloudQueryUtil extends LightningElement {
     /**
      * Open the Mapping Modal
      */
-    async handleOpenMappingModal(config){
+    handleOpenMappingModal(apexResponse){
         try{
-            mappingModal.open({
-                config: config,
-                size: 'small',
+            multiLdtModal.open({
+                header    : "Data Cloud Configuration Metadata Details",
+                tableList : apexResponse,
+                size      : 'medium'
             });
         }catch(error){
             handleError(error);
@@ -196,26 +316,6 @@ export default class DataCloudQueryUtil extends LightningElement {
     }
 
 
-    /**
-     * Open the query result Modal
-     */
-    async handleOpenQueryResultModal(){
-        try{
-            queryResultModal.open({
-                config: {
-                    mdtConfigName : this.mdtConfigRecord,
-                    resultFormat  : this.resultFormat,
-                    query         : this.query,
-                    apiVersion    : this.queryApiVersion
-                },
-                size: 'large',
-            });
-        }catch(error){
-            handleError(error);
-        }
-    }
-
-    
     /**
      * Open the help modal
      */
@@ -226,6 +326,84 @@ export default class DataCloudQueryUtil extends LightningElement {
                 content : "Tool to generate a table view or CSV from a Data Cloud SQL Query. The query is executed against the Data Cloud named credential as specified in the metadata configuration that is selected.",
                 size    : 'small'
             });
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+
+    /**
+     * Open results in a Table format
+     */
+    handleOpenDcResultTableModal(apexResponse){
+        try{
+            ldtModal.open({
+                size   : 'large',
+                header : "Data Cloud - Query Results - LDT",
+                ldt    : apexResponse
+            }); 
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+    
+    /**
+     * Open results in a CSV format
+     */
+    handleOpenDcResultCsvModal(apexResponse){
+        try{
+            textareaModal.open({
+                
+                // Modal info
+                size             : 'large',
+                label            : 'Data Cloud - Query Results - CSV',
+                content          : apexResponse,
+                disabled         : false,
+                
+                // Download info
+                fileName         : 'DC_Query',
+                fileExtension    : '.csv',
+                fileMimeType     : 'text/csv; charset=utf-8;',
+                includeTimestamp : true,
+                
+                // Button visibillity
+                copyButton       : true,
+                downloadButton   : true,
+                prettifyButton   : false,
+                closeButton      : true
+            });
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+    
+    /**
+     * Open results in a RAW format
+     */
+    handleOpenDcResultRawModal(apexResponse){
+        try{
+            textareaModal.open({
+                
+                // Modal info
+                size             : 'large',
+                label            : 'Data Cloud - Query Results - RAW',
+                content          : apexResponse,
+                disabled         : false,
+                
+                // Download info
+                fileName         : 'DC_Query',
+                fileExtension    : '.json',
+                fileMimeType     : 'application/json; charset=utf-8;',
+                includeTimestamp : true,
+                
+                // Button visibillity
+                copyButton       : true,
+                downloadButton   : true,
+                prettifyButton   : true,
+                closeButton      : true
+            }); 
         }catch(error){
             handleError(error);
         }

@@ -123,10 +123,12 @@ public with sharing class DataCloudUtilLwcCtrl {
             // Return the combined
             return new List<Map<String, Object>>{
                 new Map<String, Object>{
+                    'key'    => '1',
                     'header' => 'Configuration Details',
                     'ldt'    => configTable
                 },
-                new Map<String, Object>{ 
+                new Map<String, Object>{
+                    'key'    => '2',
                     'header' => 'Mapping Details',
                     'ldt'    => mappingTable
                 }
@@ -485,7 +487,7 @@ public with sharing class DataCloudUtilLwcCtrl {
 
             // Input validation
             if(Type.forName('Schema.' + sObjectName) == null){
-                throw new StringException(String.format('sObject of type "{0}" does not exist in the metadata', new String[]{sObjectName}));
+                throw new Dc.DataCloudUtilException(String.format('sObject of type "{0}" does not exist in the metadata', new String[]{sObjectName}));
             }
 
             // Creat the output data table
@@ -744,6 +746,12 @@ public with sharing class DataCloudUtilLwcCtrl {
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
 
+            // Key counter for LWC
+            Integer key = 0;
+
+            // Data tables for the output
+            List<Map<String, Object>> dataTables = new List<Map<String, Object>>();
+
             // Fetch the detailed metadata
             Map<String,Object> dgMdt = Dc.getDetailedDataGraphMetadata(namedCredentialName, dataGraphName);
 
@@ -761,68 +769,87 @@ public with sharing class DataCloudUtilLwcCtrl {
                 }
             }
 
+            // Add overview table to the output
+            dataTables.add(
+                new Map<String, Object>{
+                    'key'    => key++,
+                    'header' => 'Overview Table',
+                    'ldt'    => new utl.Ldt()
+                    .setupKeyValue()
+                    .setData(
+                        new utl.JsnTbl()
+                            .setAttributeFilter(new Set<String>{'object'})
+                            .create(dgMdt)
+                            .getKeyValuePairData()
+                        )
+                }
+            );
             
-            // Overview
-            utl.Ldt ovTable = new utl.Ldt()
-                .setupKeyValue()
-                .setData(
-                    new utl.JsnTbl()
-                        .setAttributeFilter(new Set<String>{'object'})
-                        .create(dgMdt)
-                        .getKeyValuePairData()
-                    )
-            ;
-
-            // Primary Object
-            utl.Ldt poTable = new utl.Ldt()
-            .setupKeyValue()
-            .setData(
-                new utl.JsnTbl()
-                    .setAttributeFilter(new Set<String>{'relatedObjects', 'fields', 'recencyCriteria'})
-                    .create(utl.Jsn.getObjectMap('object',dgMdt))
-                    .getKeyValuePairData()
-                )
-            ;
+            // Add primary object table
+            dataTables.add(
+                new Map<String, Object>{
+                    'key'    => key++, 
+                    'header' => 'Primary Object Details',
+                    'ldt'    =>  new utl.Ldt()
+                        .setupKeyValue()
+                        .setData(
+                            new utl.JsnTbl()
+                                .setAttributeFilter(new Set<String>{'relatedObjects', 'fields', 'recencyCriteria'})
+                                .create(utl.Jsn.getObjectMap('object',dgMdt))
+                                .getKeyValuePairData()
+                            )
+                }
+            );
 
             // Primary Object fields
-            utl.Ldt pofTable = new utl.Ldt()
-                .setData(
-                    new utl.JsnTbl()
-                        .setAttributeFilter(new Set<String>{'relatedObjects', 'fields'})
-                        .create(utl.Jsn.getObjectList('object.fields', dgMdt))
-                        .getKeyValueData()
-                )
-                .addColumn(new utl.Ldt.Col('developerName',     'developerName'))
-                .addColumn(new utl.Ldt.Col('ssot__Id__c',       'ssot__Id__c'))
-                .addColumn(new utl.Ldt.Col('lookupCol',         'lookupCol'))
-                .addColumn(new utl.Ldt.Col('length',            'length'))
-                .addColumn(new utl.Ldt.Col('dataType',          'dataType'))
-                .addColumn(new utl.Ldt.Col('keyCol',            'keyCol'))
-                .addColumn(new utl.Ldt.Col('keyQualifierName',  'keyQualifierName'))
-                .addColumn(new utl.Ldt.Col('usageTag',          'usageTag'))
-                .addColumn(new utl.Ldt.Col('ciFieldType',       'ciFieldType'))
-                .addColumn(new utl.Ldt.Col('isProjected',       'isProjected'))
-            ;
-
-
-            // Return the combined
-            List<Map<String, Object>> dataTables = new List<Map<String, Object>>{
-                new Map<String, Object>{
-                    'key'    => '1',
-                    'header' => 'Overview Table',
-                    'ldt'    => ovTable
-                },
-                new Map<String, Object>{
-                    'key'    => '2', 
-                    'header' => 'Primary Object',
-                    'ldt'    => poTable
-                },
+            dataTables.add(
                 new Map<String, Object>{ 
-                    'key'    => '3',
-                    'header' => 'Primary Object Details',
-                    'ldt'    => pofTable
+                    'key'    => key++,
+                    'header' => 'Primary Object Fields',
+                    'ldt'    => addFieldColumns(
+                        new utl.Ldt()
+                            .setData(
+                                new utl.JsnTbl()
+                                    .setAttributeFilter(new Set<String>{'relatedObjects', 'fields'})
+                                    .create(utl.Jsn.getObjectList('object.fields', dgMdt))
+                                    .getKeyValueData()
+                            )
+                    )
                 }
-            };
+            );
+                
+            // Add related table
+            for(Object o : utl.Jsn.getObjectList('object.relatedObjects', dgMdt)){
+                dataTables.add(
+                    new Map<String, Object>{ 
+                        'key'    => key++,
+                        'header' => 'Related Object Details - ' + ((Map<String, Object>) o ).get('developerName'),
+                        'ldt'    => new utl.Ldt()
+                            .setupKeyValue()
+                            .setData(
+                                new utl.JsnTbl()
+                                    .setAttributeFilter(new Set<String>{'relatedObjects','fields'})
+                                    .create((Map<String, Object>) o )
+                                    .getKeyValuePairData()
+                                )
+                    }
+                );
+   
+                dataTables.add(
+                    new Map<String, Object>{ 
+                        'key'    => key++,
+                        'header' => 'Related Object Fields - ' + ((Map<String, Object>) o ).get('developerName'),
+                        'ldt'    => addFieldColumns(
+                            new utl.Ldt()
+                                .setData(
+                                    new utl.JsnTbl()
+                                        .create(utl.Jsn.getObjectList('fields', (Map<String, Object>) o))
+                                        .getKeyValueData()
+                                )
+                        )
+                    }
+                );
+            }
 
             // Return all the details
             return new Map<String,Object>{
@@ -878,6 +905,34 @@ public with sharing class DataCloudUtilLwcCtrl {
         }
     }
 
+    
+    @AuraEnabled
+    public static String getSoqlQueryRaw(String mdtConfigName, String query, Boolean tooling){
+        try{
+           // Force an exception for testing purposes
+           utl.Tst.forceException('AURA_EXCEPTION');
+
+            // Map to hold the mappings
+            Map<String,String> mapping = new Map<String,String>();
+
+            if(mdtConfigName != null){
+                // Create the mapping
+                mapping = Dc.createFieldMapping(Dc.getMetadataRecord(mdtConfigName).Data_Cloud_Ingestion_API_Field_Mappings__r);
+            }
+
+            // Execute the query and return the result
+            return new utl.Rst(true)
+                .setEndpoint(((tooling) ? '/tooling/' : '' ) +  '/query?q=' + EncodingUtil.urlEncode(query,'UTF-8'))
+                .setMethod('GET')
+                .call()
+                .getResponse()
+                .getBody()
+            ;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
 
     @AuraEnabled
     public static utl.Ldt getSoqlQueryTable(String mdtConfigName, String query, Boolean tooling){
@@ -891,7 +946,7 @@ public with sharing class DataCloudUtilLwcCtrl {
 
             // Input validation
             if(Type.forName('Schema.' + sObjectName) == null){
-                throw new StringException(String.format('sObject of type "{0}" does not exist in the metadata', new String[]{sObjectName}));
+                throw new Dc.DataCloudUtilException(String.format('sObject of type "{0}" does not exist in the metadata', new String[]{sObjectName}));
             }
 
             // Get the describe field result for the sObject
@@ -1000,6 +1055,25 @@ public with sharing class DataCloudUtilLwcCtrl {
 
         // Return the output as a CSV string
         return table;
+    }
+
+
+    /**
+     * @description Method to add Data Cloud Field columns to a LDT based on Data Graph Metadata
+     */
+    private static utl.Ldt addFieldColumns(utl.Ldt ldt){
+        return ldt 
+            .addColumn(new utl.Ldt.Col('developerName',     'developerName'))
+            .addColumn(new utl.Ldt.Col('ssot__Id__c',       'ssot__Id__c'))
+            .addColumn(new utl.Ldt.Col('lookupCol',         'lookupCol'))
+            .addColumn(new utl.Ldt.Col('length',            'length'))
+            .addColumn(new utl.Ldt.Col('dataType',          'dataType'))
+            .addColumn(new utl.Ldt.Col('keyCol',            'keyCol'))
+            .addColumn(new utl.Ldt.Col('keyQualifierName',  'keyQualifierName'))
+            .addColumn(new utl.Ldt.Col('usageTag',          'usageTag'))
+            .addColumn(new utl.Ldt.Col('ciFieldType',       'ciFieldType'))
+            .addColumn(new utl.Ldt.Col('isProjected',       'isProjected'))
+        ;
     }
 
 

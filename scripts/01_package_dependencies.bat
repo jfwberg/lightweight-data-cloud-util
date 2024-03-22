@@ -2,10 +2,10 @@ REM --------------------------------------------------------
 REM MANGED DEPENDENCIES (PICK EITHER MANAGED OR UNLOCKED)  -
 REM --------------------------------------------------------
 rem Lightweight - Apex Unit Test Util v2@2.4.0-2
-sf package install -p "04tP3000000M6OXIA0" -w 30
+sf package install -p "04tP3000000QiLaIAK" -w 30
 
-REM Lightweight - Apex LWC Util@0.1.0-3
-call sf package install --package "04tP3000000O4TtIAK" -w 30
+REM Lightweight - Apex LWC Util@0.3.0-3
+call sf package install --package "04tP3000000R7F7IAK" -w 30
 
 rem Lightweight - REST Util@0.11.0-1
 sf package install -p "04tP3000000M6gHIAS" -w 30
@@ -30,8 +30,8 @@ REM --------------------------------------------------------
 rem Lightweight - Apex Unit Test Util v2 (Unlocked)@2.4.0-2
 sf package install -p "04tP3000000M6Q9IAK" -w 30
 
-REM Lightweight - Apex LWC Util@0.1.0-1
-call sf package install --package "04tP3000000O5MjIAK" -w 30
+REM Lightweight - Apex LWC Util@0.3.0-1 (Unlocked)
+call sf package install --package "04tP3000000R7GjIAK" -w 30
 
 rem Lightweight - REST Util (Unlocked)@0.11.0-1
 sf package install -p "04tP3000000M6htIAC" -w 30

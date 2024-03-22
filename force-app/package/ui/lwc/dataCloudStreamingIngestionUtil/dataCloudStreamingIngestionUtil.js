@@ -14,10 +14,12 @@ import { handleError }         from 'c/util';
 
 // Modals
 import textModal               from 'c/textModal';
-import mappingModal            from 'c/dataCloudMappingModal';
+import multiLdtModal           from 'c/multiLdtModal';
+
 
 // Apex methods
 import getMtdConfigOptions     from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getMetadataInfo         from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
 import getStreamingPlaceholder from "@salesforce/apex/DataCloudUtilLwcCtrl.getStreamingPlaceholder";
 import sendDataStream          from "@salesforce/apex/DataCloudUtilLwcCtrl.sendDataStream";
 import testDataStream          from "@salesforce/apex/DataCloudUtilLwcCtrl.testDataStream";
@@ -71,6 +73,28 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                 });
         }catch(error){
             handleError(error); 
+        }
+    }
+
+
+    handleGetMetadataInfo(){
+        try{
+            this.loading = true;
+            getMetadataInfo({
+                mdtConfigName  : this.mdtConfigRecord
+            })
+            .then((apexResponse) => {
+                this.handleOpenMappingModal(apexResponse);
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false; 
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false; 
         }
     }
 
@@ -194,9 +218,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     }
 
     handleClickShowMapping(){
-        this.handleOpenMappingModal({
-            mdtConfigRecord : this.mdtConfigRecord
-        });
+        this.handleGetMetadataInfo();
     }
 
     handleClickHelp(){
@@ -210,11 +232,12 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /**
      * Open the Mapping Modal
      */
-    async handleOpenMappingModal (config) {
+    handleOpenMappingModal(apexResponse){
         try{
-            mappingModal.open({
-                config : config,
-                size   : 'small',
+            multiLdtModal.open({
+                header    : "Data Cloud Configuration Metadata Details",
+                tableList : apexResponse,
+                size      : 'medium'
             });
         }catch(error){
             handleError(error);

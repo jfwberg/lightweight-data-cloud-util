@@ -10,16 +10,22 @@ import { LightningElement } from "lwc";
 
 // Custom Utils
 import {handleError}        from 'c/util';
-import textModal            from 'c/textModal';
 
 // Modals
-import mappingModal         from 'c/dataCloudMappingModal';
-import previewModal         from 'c/dataCloudQueryPreviewModal';
-import csvResultModal       from 'c/dataCloudCsvResultModal';
+import textModal           from 'c/textModal';
+import textareaModal       from 'c/textareaModal';
+import ldtModal            from 'c/ldtModal';
+import multiLdtModal       from 'c/multiLdtModal';
 
-// Apex methods
+// Apex methods for setup
 import getMtdConfigOptions      from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getMetadataInfo          from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
 import generateQueryFromMapping from "@salesforce/apex/DataCloudUtilLwcCtrl.generateQueryFromMapping";
+
+// Apex Methods for result handling
+import getSoqlQueryTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getSoqlQueryTable";
+import getSoqlQueryCsv   from "@salesforce/apex/DataCloudUtilLwcCtrl.getSoqlQueryCsv";
+import getSoqlQueryRaw   from "@salesforce/apex/DataCloudUtilLwcCtrl.getSoqlQueryRaw";
 
 
 // Main class
@@ -37,14 +43,30 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     mdtConfigOptions = [];
 
     // The query we are going to test
-    query;
+    query = 'SELECT Id, Name, TrialExpirationDate, CreatedDate, CreatedBy.Name FROM Organization LIMIT 1';
 
     // Indicate this is a tooling query
     tooling = false;
 
+    // Output as either csv or LWC data table
+    resultFormat = 'table';
+    resultFormatOptions = [
+        {label : 'Lightning - Datatable', value:'table'},
+        {label : 'CSV',                   value:'csv'  },
+        {label : 'Raw API Response',      value:'raw'  }
+    ];
+
+
+    /** **************************************************************************************************** **
+     **                                            GETTER METHODS                                            **
+     ** **************************************************************************************************** **/
     // Disable buttons
-    get buttonsEnabled(){
+    get actionDisabled(){
         return !this.mdtConfigSelected;
+    }
+
+    get inputDisabled(){
+        return !this.mdtConfigOptionsLoaded;
     }
 
 
@@ -52,7 +74,6 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback(){
-        // Start with getting the metadata configurations
         this.handleGetMdtOptions();
     }
 
@@ -78,6 +99,29 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
         }
     }
 
+
+    handleGetMetadataInfo(){
+        try{
+            this.loading = true;
+            getMetadataInfo({
+                mdtConfigName  : this.mdtConfigRecord
+            })
+            .then((apexResponse) => {
+                this.handleOpenMappingModal(apexResponse);
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false; 
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false; 
+        }
+    }
+
+
     handleGenerateQueryFromMapping(){
         try{
             generateQueryFromMapping({
@@ -100,6 +144,78 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     }
 
    
+    handleGetSoqlQueryTable(){
+        try{
+            this.loading = true;
+            getSoqlQueryTable({
+                mdtConfigName : this.mdtConfigRecord,
+                query         : this.query,
+                tooling       : this.tooling
+            })
+            .then((apexResponse) => {
+                this.handleOpenSoqlResultTableModal(apexResponse);
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
+        }
+    }
+
+
+    handleGetSoqlQueryCsv(){
+        try{
+            this.loading = true;
+            getSoqlQueryCsv({
+                mdtConfigName : this.mdtConfigRecord,
+                query         : this.query,
+                tooling       : this.tooling
+            })
+            .then((apexResponse) => {
+                this.handleOpenSoqlResultCsvModal(apexResponse);
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
+        }
+    }
+
+
+    handleGetSoqlQueryRaw(){
+        try{
+            this.loading = true;
+            getSoqlQueryRaw({
+                mdtConfigName : this.mdtConfigRecord,
+                query         : this.query,
+                tooling       : this.tooling
+            })
+            .then((apexResponse) => {
+                this.handleOpenSoqlResultRawModal(apexResponse);
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
+        }
+    }
+
+
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
@@ -108,6 +224,10 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
         this.mdtConfigRecord = event.detail.value;
         this.mdtConfigSelected = true;
         this.handleGenerateQueryFromMapping();
+    }
+
+    handlechangeResultFormat(event) {
+        this.resultFormat = event.detail.value;
     }
 
     handleChangeQuery(){
@@ -122,18 +242,31 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                        CLICK BUTTON HANDLERS                                         **
      ** **************************************************************************************************** **/
-    handleClickPreview(){
-        this.handleOpenQueryPreviewModal();
-    }
+    handleClickExecuteQuery(){
+        try{
+            switch (this.resultFormat) {
+                case 'table':{
+                    this.handleGetSoqlQueryTable();
+                }
+                break;
+                
+                case 'csv':{
+                    this.handleGetSoqlQueryCsv();
+                }
+                break;
 
-    handleClickGenerateCsv(){
-        this.handleOpenCsvResultModal();
+                case 'raw':{
+                    this.handleGetSoqlQueryRaw();
+                }
+                break;
+            }
+        }catch(error){
+            handleError(error);
+        }
     }
 
     handleClickShowMapping(){
-        this.handleOpenMappingModal({
-            mdtConfigRecord : this.mdtConfigRecord
-        });
+        this.handleGetMetadataInfo();
     }
 
     handleClickHelp(){
@@ -145,51 +278,14 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
      **                                            MODAL METHODS                                             **
      ** **************************************************************************************************** **/
     /**
-     * Open the CSV result modal
-     */
-    async handleOpenCsvResultModal(){
-        try{
-            csvResultModal.open({
-                config: {
-                    mdtConfigName : this.mdtConfigRecord,
-                    query         : this.query,
-                    tooling       : this.tooling
-                },
-                size: 'large',
-            });
-        }catch(error){
-            handleError(error);
-        }
-    }
-
-
-    /**
-     * Open the query preview modal
-     */
-    async handleOpenQueryPreviewModal(){
-        try{
-            previewModal.open({
-                config: {
-                    mdtConfigName : this.mdtConfigRecord,
-                    query         : this.query,
-                    tooling       : this.tooling
-                },
-                size: 'large',
-            });
-        }catch(error){
-            handleError(error);
-        }
-    }
-
-
-    /**
      * Open the mapping modal
      */
-    async handleOpenMappingModal(config){
+    async handleOpenMappingModal(apexResponse){
         try{
-            mappingModal.open({
-                config: config,
-                size: 'small',
+            multiLdtModal.open({
+                header    : "Data Cloud Configuration Metadata Details",
+                tableList : apexResponse,
+                size      : 'medium'
             });
         }catch(error){
             handleError(error);
@@ -207,6 +303,83 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
                 content : "Tool to generate a CSV from a query that allows from sub queries and parent relationships. When a metadata record is selected the mapping is used to update the column headers to the target column names.",
                 size    : 'small'
             });
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+
+    /**
+     * Open results in a Table format
+     */
+    handleOpenSoqlResultTableModal(apexResponse){
+        try{
+            ldtModal.open({
+                size   : 'large',
+                header : "SOQL - Query Results - LDT",
+                ldt    : apexResponse
+            }); 
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+    /**
+     * Open results in a CSV format
+     */
+    handleOpenSoqlResultCsvModal(apexResponse){
+        try{
+            textareaModal.open({
+                
+                // Modal info
+                size             : 'large',
+                label            : 'SOQL - Query Results - CSV',
+                content          : apexResponse,
+                disabled         : false,
+                
+                // Download info
+                fileName         : 'SOQL',
+                fileExtension    : '.csv',
+                fileMimeType     : 'text/csv; charset=utf-8;',
+                includeTimestamp : true,
+                
+                // Button visibillity
+                copyButton       : true,
+                downloadButton   : true,
+                prettifyButton   : false,
+                closeButton      : true
+            });
+        }catch(error){
+            handleError(error);
+        }
+    }
+
+
+    /**
+     * Open results in a RAW format
+     */
+    handleOpenSoqlResultRawModal(apexResponse){
+        try{
+            textareaModal.open({
+                
+                // Modal info
+                size             : 'large',
+                label            : 'SOQL - Query Results - RAW',
+                content          : apexResponse,
+                disabled         : false,
+                
+                // Download info
+                fileName         : 'SOQL',
+                fileExtension    : '.json',
+                fileMimeType     : 'application/json; charset=utf-8;',
+                includeTimestamp : true,
+                
+                // Button visibillity
+                copyButton       : true,
+                downloadButton   : true,
+                prettifyButton   : true,
+                closeButton      : true
+            }); 
         }catch(error){
             handleError(error);
         }

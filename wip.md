@@ -1,49 +1,51 @@
 Changes
+- Upgraded aura:if to lwc:if
+- Completed Metadata details modal
+- Deleted unecesarry modals (help, yaml, mapping, query preview, query result)
+- Delete unrequired data cloud utils LWC
+- Upgraded Salesforce Query to match Data Cloud Query functionality (added raw, single button)
+- Moved all modal logic outside of display only modals
+
+
+FIX Job details modal, delete the modal
 
 
 
-## yamlModal == textareaModal
-## 
+TODO - LWC
+ Delete dataCloudUtil LWC
+- Delete help modal LWC
+- Delete yamlModal modal LWC
+- Delete mappingModal LWC
++ delete queryResultModal LWC
+- delete dataCloudQueryPreviewModal LWC
+- dlete dataCloudCsvResultModal
 
+
+TODO - APEX
+- Fix test classes
+
+TODO -LWC UTIL
+- Fix Class Name
+- Fix copy button variant...
+- Create new package aarghghghgh
 
 TODO - DEMO
 - Extract all demo data
 
-TODO - LWC
-- Upgrade all data tables (yaml / streaming ingestion)
-- Delete dataCloudUtil LWC
-- Delete help modal LWC
-- upgrade aura ifs to lwc:if
-- fix picklist options for metadata configuration (own picklist component?)
-- check all loading items in the apex methods
-- Move the modal logic out of the modals and use the modals for visibility only
-
-
-TODO - APEX
-- Tidy Code, (utility methods, comments, test classes, constants for v1 v2 etc, error messages)
-- Fix AuraException thrown inside aura exception
-- Update field mappings for more detailed type support
-
-
-TODO - LWC Util
-// - Create a textarea modal with copy / save function (show copy / show save / saveName editable) (dataCloudYamlModal...)
-// - Create a modal with multiple ldts tables in the LWC package (also add add settor for visibility or editiablity)
-- Create a picklist class utl.Pkls
-
-
-
-TODO - DataTable
-- Give the option to add a type to a datatype to a column, admin only, not really functionality
-- Add function to setAllColumns
-
-TODO - BLOG
-- Update reasons for multi org 
-
-
-DOCUMENTATION
+DOCUMENTATION - DC UTIL
+- Package dependncies
 - List<Map<String,String>> getDataCloudNamedCredentialPicklistOptions()
 - FieldMetadata[] getFieldMetadata(Map<String,Object> metadataMap, Boolean removePostfix)
 - FieldMetadata class
 - getAllDataGraphMetadata
 - Map<String,Object> getDetailedDataGraphMetadata(String namedCredentialName, String dataGraphName){
 - List<Map<String,Object>> getAllDataGraphMetadata(String namedCredentialName){
+
+DOCUMENTATION - BLOG
+- Add functionality description to blog
+- Update the package versions in the manual and add screenshots
+
+
+I have updated the Data Cloud Util Apex Library to v0.5 with added support for the Data Graph API, Multi Object YAML files generation and a lot of little overdue code "tidy ups".
+You'll have to upgrade the LWC Util package to v0.20 before upgrading to v0.5.
+And to answer why not use the Data Cloud Query Builder... That is (currently) working for the home org only and this is an example of a custom implementation an LWC, not a really a functional tool.

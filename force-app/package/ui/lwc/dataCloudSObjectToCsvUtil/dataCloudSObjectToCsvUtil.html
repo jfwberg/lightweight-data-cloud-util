@@ -16,21 +16,15 @@
                 
                 <lightning-button 
                     variant = "neutral"
-                    label   = "Generate CSV" 
-                    onclick = {handleClickGenerateCsv} 
+                    label   = "Execute" 
+                    onclick = {handleClickExecuteQuery} 
                 ></lightning-button>
 
-                <lightning-button 
-                    variant = "neutral"
-                    label   = "Preview" 
-                    onclick = {handleClickPreview} 
-                ></lightning-button>
-            
                 <lightning-button
+                    disabled= {actionDisabled}
                     variant = "neutral"
                     label   = "Show Mapping" 
                     onclick = {handleClickShowMapping} 
-                    disabled= {buttonsEnabled}
                 ></lightning-button>
 
                 <lightning-button
@@ -49,21 +43,23 @@
         <div class="slds-var-p-around_small">
 
             <lightning-combobox
-                lwc:if={mdtConfigOptionsLoaded}
-                name="Metadata Configuration"
-                label="Metadata Configuration"
-                value={mdtConfigRecord}
-                placeholder="Select..."
-                options={mdtConfigOptions}
-                onchange={handleChangeMtdConfig}
+                disabled    = {inputDisabled}
+                name        = "Metadata Configuration"
+                label       = "Metadata Configuration"
+                value       = {mdtConfigRecord}
+                placeholder = "Select..."
+                options     = {mdtConfigOptions}
+                onchange    = {handleChangeMtdConfig}
             ></lightning-combobox>
 
-            <div class="slds-form-element">
-                <label class="slds-form-element__label" for="textarea-id-01">SOQL Query</label>
-                <div class="slds-form-element__control">
-                    <textarea id="ta" class="slds-textarea ta" oninput={handleChangeQuery}></textarea>
-                </div>
-            </div>
+            <lightning-combobox
+                name        = "resultFormat"
+                label       = "Result Format"
+                value       = {resultFormat}
+                placeholder = "Select..."
+                options     = {resultFormatOptions}
+                onchange    = {handlechangeResultFormat}
+            ></lightning-combobox>
 
             <lightning-input 
                 type        = "checkbox"
@@ -72,6 +68,13 @@
                 value       = {tooling}
                 onchange    = {handleChangeTooling}
             ></lightning-input>
+
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="textarea-id-01">SOQL Query</label>
+                <div class="slds-form-element__control">
+                    <textarea id="ta" class="slds-textarea ta" oninput={handleChangeQuery}>{query}</textarea>
+                </div>
+            </div>
         </div>
         
     </lightning-card>

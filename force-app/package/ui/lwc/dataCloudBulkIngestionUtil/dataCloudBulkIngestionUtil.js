@@ -11,42 +11,22 @@ import { LightningElement } from "lwc";
 
 // Custom Utils
 import {handleError}        from 'c/util';
-import textModal            from 'c/textModal';
 
 // Modals
-import mappingModal         from 'c/dataCloudMappingModal';
+import textModal            from 'c/textModal';
+import multiLdtModal        from 'c/multiLdtModal';
 import jobDetailsModal      from 'c/dataCloudJobDetailsModal';
 import addCsvModal          from 'c/dataCloudAddCsvModal';
 
 // Apex methods
 import getMtdConfigOptions  from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getMetadataInfo      from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
 import getIngestionJobTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getIngestionJobTable";
 import newJob               from "@salesforce/apex/DataCloudUtilLwcCtrl.newJob";
 import abortJob             from "@salesforce/apex/DataCloudUtilLwcCtrl.abortJob";
 import completeJob          from "@salesforce/apex/DataCloudUtilLwcCtrl.completeJob";
 import deleteJob            from "@salesforce/apex/DataCloudUtilLwcCtrl.deleteJob";
 
-/*
-// Actions for the bulk jobs
-const actions = [
-    { label: 'Details',      name: 'details'  },
-    { label: 'Add CSV Data', name: 'csv'      },
-    { label: 'Upload CSV',   name: 'uploadCsv'},
-    { label: 'Complete',     name: 'complete' },
-    { label: 'Abort',        name: 'abort'    },
-    { label: 'Delete',       name: 'delete'   }
-];
-
-// Columns for the bulk jobs
-const columns = [
-    { label: 'Created Date', fieldName: 'createdDate' },
-    { label: 'Job Id',       fieldName: 'id' },
-    { label: 'Operation',    fieldName: 'operation' },
-    { label: 'Object',       fieldName: 'object' },
-    { label: 'Job State',    fieldName: 'state' },
-    { type: 'action', typeAttributes: { rowActions: actions, menuAlignment: 'auto' } }
-];
-*/
 
 // Main class
 export default class DataCloudBulkIngestionUtil extends LightningElement {
@@ -74,7 +54,6 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback(){
-        // Start with getting the metadata configurations
         this.handleGetMdtOptions();
     }
 
@@ -84,7 +63,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
      ** **************************************************************************************************** **/
     handleRowAction(event) {
         const action = event.detail.action;
-        const row = event.detail.row;
+        const row    = event.detail.row;
         switch (action.name) {
             case 'details':
                 this.handleOpenJobDetailsModal({
@@ -109,9 +88,6 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
                     });
             break;
 
-
-            
-
             case 'complete':
                 this.handleComplete(row.id);
             break;
@@ -130,6 +106,28 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                            APEX HANDLERS                                             **
      ** **************************************************************************************************** **/
+    handleGetMetadataInfo(){
+        try{
+            this.loading = true;
+            getMetadataInfo({
+                mdtConfigName  : this.mdtConfigRecord
+            })
+            .then((apexResponse) => {
+                this.handleOpenMappingModal(apexResponse);
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false; 
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false; 
+        }
+    }
+
+
     handleNew(){
         try{
             this.loading = true;
@@ -343,9 +341,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     }
 
     handleClickShowMapping(){
-        this.handleOpenMappingModal({
-            mdtConfigRecord : this.mdtConfigRecord
-        });
+        this.handleGetMetadataInfo();
     }
 
     handleClickHelp(){
@@ -359,11 +355,12 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /**
      * Open the Mapping Modal
      */
-    async handleOpenMappingModal(config){
+    handleOpenMappingModal(apexResponse){
         try{
-            mappingModal.open({
-                config : config,
-                size   : 'small',
+            multiLdtModal.open({
+                header    : "Data Cloud Configuration Metadata Details",
+                tableList : apexResponse,
+                size      : 'medium'
             });
         }catch(error){
             handleError(error);
@@ -374,7 +371,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /**
      * Open the Job Details Modal
      */
-    async handleOpenJobDetailsModal(config){
+    handleOpenJobDetailsModal(config){
         try{
             jobDetailsModal.open({
                 config : config,

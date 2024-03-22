@@ -102,12 +102,14 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
                     // Sort the result by label in JS,
                     // The results are an unsorted mess that come back from apex for some reason
                     this.sObjectOptions = ar.sort(this.compare);
+
+                    // Options loaded is true
+                    this.optionsLoaded = true;
                 })
                 .catch((error) => {
                     handleError(error);
                 })
                 .finally(()=>{
-                    this.optionsLoaded = true;
                     this.loading=false;
                 });
         }catch(error){
@@ -133,7 +135,6 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
                     handleError(error);
                 })
                 .finally(()=>{
-                    this.optionsLoaded = true;
                     this.loading=false;
                 });
         }catch(error){
@@ -192,7 +193,7 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
     /**
      * Open the Mapping Modal
      */
-    async handleOpenYamlModal(){
+    handleOpenYamlModal(){
         try{
             // Generate the YAML
             this.generateYaml();

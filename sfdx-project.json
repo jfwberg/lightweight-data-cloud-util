@@ -29,7 +29,7 @@
           "package": "Lightweight - Apex Unit Test Util v2@2.4.0-1"
         },
         {
-          "package": "Lightweight - Apex LWC Util@0.1.0-3"
+          "package": "Lightweight - Apex LWC Util@0.3.0-3"
         },
         {
           "package": "Lightweight - REST Util@0.11.0-1"
@@ -51,7 +51,7 @@
           "package": "Lightweight - Apex Unit Test Util v2 (Unlocked)@2.4.0-1"
         },
         {
-          "package": "Lightweight - Apex LWC Util (Unlocked)@0.1.0-1"
+          "package": "Lightweight - Apex LWC Util (Unlocked)@0.3.0-1"
         },
         {
           "package": "Lightweight - REST Util (Unlocked)@0.11.0-1"
@@ -69,8 +69,8 @@
   "packageAliases": {
     "Lightweight - Apex Unit Test Util v2@2.4.0-1": "04tP3000000M6OXIA0",
     "Lightweight - Apex Unit Test Util v2 (Unlocked)@2.4.0-1": "04tP3000000M6Q9IAK",
-    "Lightweight - Apex LWC Util@0.1.0-3": "04tP3000000O4TtIAK",
-    "Lightweight - Apex LWC Util (Unlocked)@0.1.0-1": "04tP3000000O5MjIAK",
+    "Lightweight - Apex LWC Util@0.3.0-3": "04tP3000000R7F7IAK",
+    "Lightweight - Apex LWC Util (Unlocked)@0.3.0-1": "04tP3000000R7GjIAK",
     "Lightweight - REST Util@0.11.0-1": "04tP3000000M6gHIAS",
     "Lightweight - REST Util (Unlocked)@0.11.0-1": "04tP3000000M6htIAC",
     "Lightweight - JSON Util@0.5.0-1": "04tP3000000M6mjIAC",

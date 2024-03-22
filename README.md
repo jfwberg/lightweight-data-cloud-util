@@ -24,9 +24,9 @@ If you use the *managed package* you need to installed the managed package depen
 |Github URL | https://github.com/jfwberg/lightweight-apex-unit-test-util-v2 |
 | | |
 |Name|Lightweight - LWC Util|
-|Version|0.1.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000O4TtIAK* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000O5MjIAK* |
+|Version|0.3.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000R7F7IAK* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000R7GjIAK* |
 |Github URL | https://github.com/jfwberg/lightweight-lwc-util |
 | | |
 |Name|Lightweight - Apex REST Util|
