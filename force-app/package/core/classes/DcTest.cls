@@ -125,7 +125,75 @@ private with sharing class DcTest{
             utl.Tst.getForcedExceptionMessage(),
             generalException
         );
+    }
 
+    @IsTest
+    static void testGetFieldMetadata(){
+
+        // Columns to assert
+        Dc.FieldMetadata[] mdl;
+
+        // Variable to hold the test Exceptions
+        Exception validationException;
+        Exception generalException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Typical metadata String
+            String metadataJSON = '{ "metadata": { "ssot__CreatedDate__c": { "type": "TIMESTAMP WITH TIME ZONE", "placeInOrder": 1, "typeCode": 2014 }, "ssot__Name__c": { "type": "VARCHAR", "placeInOrder": 2, "typeCode": 12 }, "ssot__Id__c": { "type": "VARCHAR", "placeInOrder": 0, "typeCode": 12 } } }';
+
+            // Get the metadata from the JSON String
+            mdl = Dc.getFieldMetadata(utl.Jsn.getObjectMap('metadata',(Map<String,Object>) JSON.deserializeUntyped(metadataJSON)));
+
+            // Exception path
+            try{
+                Dc.getFieldMetadata(null);
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                validationException = e;
+            }
+
+            // Exception path
+            try{
+                // Force exception
+                utl.Tst.addForcedException('FIELD_METADATA');
+                Dc.getFieldMetadata(new Map<String,Object>());
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                generalException = e;
+            }
+        }
+        Test.stopTest();
+        
+         // Assert the list of column names is ordered
+         Assert.areEqual(
+            3,
+            mdl.size(),
+            'Unexpected number of items'
+        );
+
+        // Assert field names and their order
+        Assert.areEqual('ssot__Id__c',          mdl[0].name);
+        Assert.areEqual('ssot__CreatedDate__c', mdl[1].name);
+        Assert.areEqual('ssot__Name__c',        mdl[2].name);
+
+        // Assert exception
+        utl.Tst.assertExceptionMessage(Dc.INVALID_MTD_INPUT_ERROR_MSG, validationException);
+
+        // Assert exception
+        utl.Tst.assertExceptionMessage(
+            Dc.INVALID_MTD_JSON_ERROR_MSG,
+            utl.Tst.getForcedExceptionMessage(),
+            generalException
+        );
     }
 
 
@@ -148,6 +216,33 @@ private with sharing class DcTest{
         Assert.areEqual('Apex_Unit_Test', response[0].get('value'), 'Unexpected value');
     }
 
+
+    @IsTest
+    static void testGetDataCloudNamedCredentialPicklistOptions(){
+
+        // Variables to assert
+        List<Map<String,String>> dcOptions;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Setup the callout response
+            utl.Mck.setResponse(200, '{ "records": [ { "NamedCredential": { "MasterLabel": "LB1", "DeveloperName": "DN1" }, "ParameterValue": "https://DCO01.c360a.salesforce.com" }, { "NamedCredential": { "MasterLabel": "LB2", "DeveloperName": "DN2" }, "ParameterValue": "https://DCO02.c360a.salesforce.com" } ] }');
+            
+            // Get the named credential output
+            dcOptions = Dc.getDataCloudNamedCredentialPicklistOptions();
+        }
+        Test.stopTest();
+
+        // Validate
+        Assert.areEqual('LB1', dcOptions[0].get('label'), 'Unexpected label 1');
+        Assert.areEqual('DN1', dcOptions[0].get('value'), 'Unexpected value 1');
+        Assert.areEqual('LB2', dcOptions[1].get('label'), 'Unexpected label 2');
+        Assert.areEqual('DN2', dcOptions[1].get('value'), 'Unexpected value 2');
+    }
+
+
     /** **************************************************************************************************** **
      **                                         GLOBAL QUERY METHODS                                         **
      ** **************************************************************************************************** **/
@@ -156,6 +251,7 @@ private with sharing class DcTest{
         // Variable to hold the test Exceptions
         Exception generalException;
         Exception validationException;
+        Exception apiVersionException;
         utl.Rst result;
 
         // Run test
@@ -177,6 +273,17 @@ private with sharing class DcTest{
 
             }catch(Exception e){
                 validationException = e;
+            }
+
+            // Invalid API exception
+            try{
+                Dc.executeQuery( 'Apex_Unit_Test', 'SELECT 1', 'v50');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                apiVersionException = e;
             }
 
             // Forced error path
@@ -203,10 +310,82 @@ private with sharing class DcTest{
         // Validate exception
         utl.Tst.assertExceptionMessage(Dc.QUERY_CANNOT_BE_BLANK_MSG,validationException);
 
+        // API Version exception
+        utl.Tst.assertExceptionMessage(Dc.INVALID_API_EXCEPTION_MSG, 'v50', apiVersionException);
+
         // Assert the general exception message
         utl.Tst.assertExceptionMessage(Dc.QUERY_EXCEPTION_MSG, utl.Tst.getForcedExceptionMessage(), generalException);
     }
 
+
+    /** **************************************************************************************************** **
+     **                                      GLOBAL DATA GRAPH METHODS                                       **
+     ** **************************************************************************************************** **/
+    @IsTest
+     static void testGetAllDataGraphMetadata(){
+
+        // Data to assert
+        List<Map<String,Object>> dgMetadataList;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Set the API Response
+            utl.Mck.setResponse('{"metadata" : [{},{}]}');
+
+            // Execute method
+            dgMetadataList = Dc.getAllDataGraphMetadata('NC01');
+        }
+
+        // Execute asserts
+        Assert.areEqual(2, dgMetadataList.size());
+    }
+
+
+    @IsTest
+    static void testGetDetailedDataGraphMetadata(){
+        
+        // Data to assert
+        Map<String,Object> dgMetadata;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Set the API Response
+            utl.Mck.setResponse('{"metadata" : [{"test" : "test"}]}');
+
+            // Execute method
+            dgMetadata = Dc.getDetailedDataGraphMetadata('NC01', 'DG01');
+        }
+
+        // Execute asserts
+        Assert.areEqual(true, dgMetadata.containsKey('test'));
+    }
+
+
+    @IsTest
+    static void testGetDataGraphJsonBlob(){
+
+        // Data to assert
+        String jsonBlob;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Set the API Response
+            utl.Mck.setResponse('{"data" : [{"json_blob__c" : "JSON_STRING"}]}');
+
+            // Execute method
+            jsonBlob = Dc.getDataGraphJsonBlob('NC01', 'DG01', 'DG_RID_01');
+        }
+
+        // Execute asserts
+        Assert.areEqual('JSON_STRING', jsonBlob);
+    }
+    
 
     /** **************************************************************************************************** **
      **                                  GLOBAL STREAMING INGESTION METHODS                                  **

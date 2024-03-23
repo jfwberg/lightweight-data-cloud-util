@@ -14,6 +14,7 @@ import {handleError}        from 'c/util';
 
 // Modals
 import textModal            from 'c/textModal';
+import lLdtModal            from 'c/ldtModal';
 import multiLdtModal        from 'c/multiLdtModal';
 import jobDetailsModal      from 'c/dataCloudJobDetailsModal';
 import addCsvModal          from 'c/dataCloudAddCsvModal';
@@ -22,6 +23,7 @@ import addCsvModal          from 'c/dataCloudAddCsvModal';
 import getMtdConfigOptions  from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
 import getMetadataInfo      from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
 import getIngestionJobTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getIngestionJobTable";
+import getJobInfo           from "@salesforce/apex/DataCloudUtilLwcCtrl.getJobInfo";
 import newJob               from "@salesforce/apex/DataCloudUtilLwcCtrl.newJob";
 import abortJob             from "@salesforce/apex/DataCloudUtilLwcCtrl.abortJob";
 import completeJob          from "@salesforce/apex/DataCloudUtilLwcCtrl.completeJob";
@@ -66,10 +68,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         const row    = event.detail.row;
         switch (action.name) {
             case 'details':
-                this.handleOpenJobDetailsModal({
-                    mdtConfigRecord : this.mdtConfigRecord,
-                    jobId : row.id
-                });
+                this.handleGetJobInfo(row.id);
             break;
 
             case 'csv':
@@ -124,6 +123,30 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         }catch(error){
             handleError(error);
             this.loading = false; 
+        }
+    }
+
+
+    handleGetJobInfo(jobId){
+        try{
+            this.loading = true;
+
+            getJobInfo({
+                mdtConfigName : this.mdtConfigRecord,
+                jobId         : jobId
+            })
+            .then((apexResponse) => {
+                this.handleOpenJobDetailsModal(apexResponse)
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
         }
     }
 
@@ -371,11 +394,12 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /**
      * Open the Job Details Modal
      */
-    handleOpenJobDetailsModal(config){
+    handleOpenJobDetailsModal(apexResponse){
         try{
-            jobDetailsModal.open({
-                config : config,
-                size   : 'small',
+            lLdtModal.open({
+                size : 'small',
+                header : 'Job Details',
+                ldt : apexResponse
             });
         }catch(error){
             handleError(error);

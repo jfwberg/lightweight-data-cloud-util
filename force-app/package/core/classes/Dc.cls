@@ -28,6 +28,7 @@ global with sharing class Dc {
     // Query (Error) Messages
     @TestVisible private final static String QUERY_CANNOT_BE_BLANK_MSG  = 'The input query cannot be empty';
     @TestVisible private final static String QUERY_EXCEPTION_MSG        = 'Something when wrong whilst executing the Data Cloud Query: {0}';
+    @TestVisible private final static String INVALID_API_EXCEPTION_MSG  = 'Invalid API version: "{0}"';
 
     // Streaming Ingestion (Error) Messages
     @TestVisible private static final String NO_MDT_RECORD_FOUND_MSG    = 'No Data_Cloud_Ingestion_API_Configuration__mdt record with the name "{0}" exists.';
@@ -227,7 +228,7 @@ global with sharing class Dc {
 
         // List containing the output
         List<Map<String,String>> output = new List<Map<String,String>>();
-                
+  
         // Create a tooling query to get the named credential parameters for 
         String  query  = 'SELECT NamedCredential.MasterLabel,NamedCredential.DeveloperName, ParameterValue FROM NamedCredentialParameter ';
                 query += 'WHERE ParameterType = \'Url\' ';
@@ -236,15 +237,14 @@ global with sharing class Dc {
         // Execute the tooling query and iterate the results
         for(Object o : utl.Jsn.getObjectList(
             'records',
-            (Map<String,Object>) JSON.deserializeUntyped(
-                new utl.Rst(true)
+            (Map<String,Object>) JSON.deserializeUntyped(new utl.Rst(true)
                 .setEndpoint('/tooling/query?q=' + EncodingUtil.urlEncode(query,'UTF-8'))
                 .setMethod('GET')
                 .call()
-                .getResponse().
-                getBody()
-            )
-        )){
+                .getResponse()
+                .getBody()
+            ))
+        ){
             // Rudimentary way of getting the Data Cloud based on the endpoint name 
             if(((String) utl.Jsn.getObject('ParameterValue', (Map<String,Object>) o )).contains('.c360a.salesforce.com')){
                 output.add(new Map<String,String>{
@@ -266,7 +266,7 @@ global with sharing class Dc {
      * @description Overload method
      */
      global static utl.Rst executeQuery(String mdtConfigName, String query){
-        return executeQuery(mdtConfigName, query, 'v2');
+        return executeQuery(mdtConfigName, query, 'v1');
     }
 
 
@@ -285,11 +285,10 @@ global with sharing class Dc {
 
         // Validate API version for the Query endpoint
         if(String.isBlank(apiVersion) || !(new Set<String>{'v1','v2'}).contains(apiVersion)){
-            throw new DataCloudUtilException('Invalid API version: "' + apiVersion + '"');
+            throw new DataCloudUtilException(String.format(INVALID_API_EXCEPTION_MSG,new String[]{apiVersion}));
         }
 
         try{
-
             // Force an exception for testing purposes
             utl.Tst.forceException('DC_QUERY');
 
@@ -385,7 +384,7 @@ global with sharing class Dc {
             (Map<String, Object>) utl.Jsn.getObjectList(
                 'data',
                 (Map<String, Object>) JSON.deserializeUntyped(
-                    new utl.Rst('UKTA_DC_ORG', true)
+                    new utl.Rst(namedCredentialName, true)
                     .setHandleSfEndpoint(false)
                     .setEndpoint(
                         String.format(

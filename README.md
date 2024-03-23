@@ -11,7 +11,6 @@ A lightweight set of Data Cloud utilities to ingest or query data directly from 
 [Stream platform events directly from Salesforce into Data Cloud using the Ingestion API](https://medium.com/@justusvandenberg/stream-platform-events-directly-from-salesforce-into-data-cloud-using-the-ingestion-api-7068f6787fde)
 
 
-
 ## Dependency - Package Info
 The following package need to be installed first before installing this package.
 If you use the *managed package* you need to installed the managed package dependency and if you use the *unlocked version* you need to use the unlocked dependency.
@@ -100,6 +99,8 @@ This mapping in used int he utility functions to create a mapping between the so
 |utl__Data_Cloud_Ingestion_API_Configuration__c| Lookup to the parent configuration record
 |utl__Source__c                                | The sObject field name to map
 |utl__Target__c                                | The Data Cloud Object field name to map to
+|utl__Is_Primary_Key__c                        | Indicator if the field is the primary key (can be used for generating deletion queries)
+|utl__Is_Event_Time_Field__c                   | Indicator if this field is an event tiem field (can be used for generating deletion queries)
 
 
 ## Method Signatures
@@ -112,22 +113,58 @@ This mapping in used int he utility functions to create a mapping between the so
 utl__Data_Cloud_Ingestion_API_Configuration__mdt configRecord = utl.Dc.getMetadataRecord(String mdtConfigName);
 
 // Method to create an ordered set of column names from a Data Cloud (query) Metadata response
+// Uses the getFieldMetadata() method, see below for details
 Set<String> columns = utl.Dc.getOrderedColumnNamesFromMetadata(Map<String,Object> metadataMap);
 
 // Method to get the metadata configuration labels and names in a ready to use LWC picklist format
 List<Map<String,String>> mdtOptions = utl.Dc.getConfigMetadataRecordsPicklistOptions();
 
-```
+// Method to get list of picklist options with only Data Cloud Named Credentials in a ready to Use LWC picklist format
+// Works based on endpoint that end with "c360a.my.salesforce.com"
+List<Map<String,String>> ncOptions = utl.Dc.getDataCloudNamedCredentialPicklistOptions()
 
+// Method to get a list of field metadata that is sorted by the order in column from a Data Cloud Query result
+// When removePostfix is set to true, the __c is removed from the custom fields
+// See the class format below
+utl.Dc.FieldMetadata[] = utl.Dc.getFieldMetadata(Map<String,Object> metadataMap, Boolean removePostfix)
+
+// Format of the utl.Dc.FieldMetadata Class
+class FieldMetadata{
+    String  name;
+    String  type;
+    Integer typeCode;
+    Integer placeInOrder;
+}
+```
 
 ### Query methods
 ```java
 /**
  * QUERY API v2 METHODS
  */
-// Method to execute a Data Cloud SQL query
+// Method to execute a Data Cloud SQL query, uses V1 by default
 utl.Rst callout = utl.Dc.executeQuery(String mdtConfigName, String query);
 
+// Allows to specify a different query API valid values are "v1" or "v2"
+utl.Rst callout = utl.Rst executeQuery(String mdtConfigName, String query, String apiVersion)
+```
+
+### Data Graph Methods
+```java
+/**
+ * Data Graph METHODS
+ */
+// Method to get a list of all Data Graph Metadata
+// Note: This works based on the name of the Data Cloud Named Credential, not a configuration record
+List<Map<String,Object>> dgMetadataList = utl.Dc.getAllDataGraphMetadata(String namedCredentialName)
+
+// Method to get a a single instance of the a Data Graph Metadata
+// Note: This works based on the name of the Data Cloud Named Credential, not a configuration record
+Map<String,Object> dgMetadata = utl.Dc.getDetailedDataGraphMetadata(String namedCredentialName, String dataGraphName)
+
+// Method that queries the Data Graph and returns the JSON Blob based on the data graph name and a record Id
+// The record Id needs to be bassed of the primary key field
+String dgJsonBlob = utl.Dc.getDataGraphJsonBlob(String namedCredentialName, String dataGraphName, String dataGraphRecordId)
 ```
 
 
