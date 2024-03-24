@@ -1,7 +1,7 @@
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
 	<apiVersion>60.0</apiVersion>
 	<isExposed>true</isExposed>
-	<masterLabel>Data Cloud sObject To YAML Util</masterLabel>
+	<masterLabel>Data Cloud - sObject To YAML Util</masterLabel>
 	<targets>
 		<target>lightning__AppPage</target>
 		<target>lightning__HomePage</target>

@@ -16,7 +16,6 @@ import {handleError}        from 'c/util';
 import textModal            from 'c/textModal';
 import lLdtModal            from 'c/ldtModal';
 import multiLdtModal        from 'c/multiLdtModal';
-import jobDetailsModal      from 'c/dataCloudJobDetailsModal';
 import addCsvModal          from 'c/dataCloudAddCsvModal';
 
 // Apex methods

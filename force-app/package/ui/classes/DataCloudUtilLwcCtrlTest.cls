@@ -22,8 +22,8 @@ private with sharing class DataCloudUtilLwcCtrlTest {
     ); 
 
     // API Responses
-    private static final String SOQL_RESPONSE           = '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"User","url":"/services/data/v53.0/sobjects/User/005Q1000000RJtBIAW"},"Id":"005Q1000000RJtBIAW"}]}';
-    private static final String DC_QUERY_RESPONSE       = '{ "data": [ [ "0_1", "0_2" ], [ "1_1", "1_2" ] ], "startTime": "2021-10-06T13:36:30.33265Z", "endTime": "2021-10-06T13:36:32.81927Z", "rowCount": 2, "queryId": "20211006_133630_00059_9adm3", "nextBatchId": "09151b49-54ed-4948-8139-1f4c7c3a9581", "done": false, "metadata": { "Field_00__c": { "type": "VARCHAR", "placeInOrder": 0, "typeCode": 12 }, "Field_01__c": { "type": "VARCHAR", "placeInOrder": 1, "typeCode": 12 } } }';
+    private static final String SOQL_RESPONSE           = '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"User","url":"/services/data/v53.0/sobjects/User/005Q1000000RJtBIAW"},"Id":"005Q1000000RJtBIAW","CreatedDate" : "2024-03-11T13:40:23.000+0000","Extra" : "Becomes Textfield"}]}';
+    private static final String DC_QUERY_RESPONSE       = '{ "data": [ [ "0_1", "0_2" ], [ "1_1", "1_2" ] ], "startTime": "2021-10-06T13:36:30.33265Z", "endTime": "2021-10-06T13:36:32.81927Z", "rowCount": 2, "queryId": "20211006_133630_00059_9adm3", "nextBatchId": "09151b49-54ed-4948-8139-1f4c7c3a9581", "done": false, "metadata": { "Field_00__c": { "type": "VARCHAR", "placeInOrder": 0, "typeCode": 12 }, "Field_01__c": { "type": "TIMESTAMP WITH TIME ZONE", "placeInOrder": 1, "typeCode": 12 } } }';
     private static final String INGESTION_RESPONSE      = '{"accepted" : true}';
     private static final String CREATE_BULK_JOB_RESPONSE= '{"id": "4d5a4477-e27f-4bc1-a219-31e79407eade", "operation": "upsert", "object": "my_object", "sourceName": "my_api_connector", "createdById": "005R0000000sJ1hIAE", "createdDate": "2021-04-05T13:35:31.000Z", "systemModstamp": "2021-04-05T13:35:31.000Z", "state": "Open", "contentType": "CSV", "apiVersion": "v1", "contentUrl": "api/v1/ingest/jobs/4d5a4477-e27f-4bc1-a219-31e79407eade/batches"}';
     private static final String SINGLE_JOB_RESPONSE     = '{ "id": "4d5a4477-e27f-4bc1-a219-31e79407eade" }';
@@ -610,12 +610,24 @@ private with sharing class DataCloudUtilLwcCtrlTest {
     static void testGetSObjectFieldInfo(){
         // Variable to hold the test Exceptions
         Exception auraException;
+        Exception auraException2;
 
         // Run test
         Test.startTest();
         System.runAs(TST_USER){
             // Happy Path
             DataCloudUtilLwcCtrl.getSObjectFieldInfo('User');
+
+            // Forced error path
+            try{
+                // Execute method
+                DataCloudUtilLwcCtrl.getSObjectFieldInfo('Invalid');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+            }catch(Exception e){
+                auraException2 = e;
+            }
 
             // Forced error path
             try{
@@ -643,8 +655,8 @@ private with sharing class DataCloudUtilLwcCtrlTest {
      **                                   DATA CLOUD QUERY AURA METHODS                                      **
      ** **************************************************************************************************** **/
     
-    /*
-     @IsTest
+    
+    @IsTest
     static void testGetDcQueryCsv(){
         // Variable to hold the test Exceptions
         Exception auraException;
@@ -654,7 +666,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         System.runAs(TST_USER){
             // Happy Path
             utl.Mck.setResponse(DC_QUERY_RESPONSE);
-            DataCloudUtilLwcCtrl.getDcQueryCsv('Apex_Unit_Test','SELECT 1');
+            DataCloudUtilLwcCtrl.getDcQueryCsv('Apex_Unit_Test','SELECT 1','v1');
 
             // Forced error path
             try{
@@ -662,7 +674,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
                 utl.Tst.addForcedException('AURA_EXCEPTION');
 
                 // Execute method
-                DataCloudUtilLwcCtrl.getDcQueryCsv('Apex_Unit_Test','SELECT 1');
+                DataCloudUtilLwcCtrl.getDcQueryCsv('Apex_Unit_Test','SELECT 1', 'v2');
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();
@@ -676,8 +688,42 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         // Assert exception message
         Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
     }
-    */
-    /*
+
+
+    @IsTest
+    static void testGetDcQueryRaw(){
+        // Variable to hold the test Exceptions
+        Exception auraException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+            // Happy Path
+            utl.Mck.setResponse(DC_QUERY_RESPONSE);
+            DataCloudUtilLwcCtrl.getDcQueryRaw('Apex_Unit_Test','SELECT 1','v1');
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('AURA_EXCEPTION');
+
+                // Execute method
+                DataCloudUtilLwcCtrl.getDcQueryRaw('Apex_Unit_Test','SELECT 1', 'v2');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert exception message
+        Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+    
+    
     @IsTest
     static void testGetDcQueryTable(){
        // Variable to hold the test Exceptions
@@ -688,7 +734,8 @@ private with sharing class DataCloudUtilLwcCtrlTest {
        System.runAs(TST_USER){
            // Happy Path
             utl.Mck.setResponse(DC_QUERY_RESPONSE);
-            DataCloudUtilLwcCtrl.getDcQueryTable('Apex_Unit_Test','SELECT 1');
+            DataCloudUtilLwcCtrl.getDcQueryTable('Apex_Unit_Test','SELECT 1','v1');
+            DataCloudUtilLwcCtrl.getDcQueryTable('Apex_Unit_Test','SELECT 1','v2');
 
             // Forced error path
             try{
@@ -696,7 +743,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
                 utl.Tst.addForcedException('AURA_EXCEPTION');
 
                 // Execute method
-                DataCloudUtilLwcCtrl.getDcQueryTable('Apex_Unit_Test','SELECT 1');
+                DataCloudUtilLwcCtrl.getDcQueryTable('Apex_Unit_Test','SELECT 1', 'v2');
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();
@@ -710,9 +757,9 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         // Assert exception message
         Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
     }
-    */
+    
 
-    /*
+    
     @IsTest
     static void testGetQueryPlaceholder(){
         // Variable to hold the test Exceptions
@@ -720,13 +767,17 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         
         // The query that is generated
         String query;
+        String query2;
+        String query3;
 
        // Run test
        Test.startTest();
        System.runAs(TST_USER){
             
             // Generate the query
-            query = DataCloudUtilLwcCtrl.getQueryPlaceholder('Apex_Unit_Test');
+            query  = DataCloudUtilLwcCtrl.getQueryPlaceholder('Apex_Unit_Test', 'all');
+            query2 = DataCloudUtilLwcCtrl.getQueryPlaceholder('Apex_Unit_Test', 'pk');
+            query3 = DataCloudUtilLwcCtrl.getQueryPlaceholder('Apex_Unit_Test', 'pket');
 
             // Forced error path
             try{
@@ -734,7 +785,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
                 utl.Tst.addForcedException('AURA_EXCEPTION');
 
                 // Execute method
-                DataCloudUtilLwcCtrl.getQueryPlaceholder('Apex_Unit_Test');
+                DataCloudUtilLwcCtrl.getQueryPlaceholder('Apex_Unit_Test','pk');
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();
@@ -751,7 +802,152 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         // Assert exception message
         Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
     }
-*/
+
+
+    /** **************************************************************************************************** **
+     **                                       DATA GRAPH AURA METHODS                                        **
+     ** **************************************************************************************************** **/
+    @IsTest
+    static void testGetDcNamedCredentialOptions(){
+
+        // Variable to hold the test Exceptions
+        Exception auraException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+            // Happy Path
+            utl.Mck.setResponse(200, '{ "records": [ { "NamedCredential": { "MasterLabel": "LB1", "DeveloperName": "DN1" }, "ParameterValue": "https://DCO01.c360a.salesforce.com" }, { "NamedCredential": { "MasterLabel": "LB2", "DeveloperName": "DN2" }, "ParameterValue": "https://DCO02.c360a.salesforce.com" } ] }');
+            DataCloudUtilLwcCtrl.getDcNamedCredentialOptions();
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('AURA_EXCEPTION');
+
+                // Execute method
+                DataCloudUtilLwcCtrl.getDcNamedCredentialOptions();
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert exception message
+        Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+
+
+    @IsTest
+    static void testGetDataGraphOptions(){
+
+        // Variable to hold the test Exceptions
+        Exception auraException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+            // Happy Path
+            utl.Mck.setResponse('{"metadata" : [{},{}]}');
+            DataCloudUtilLwcCtrl.getDataGraphOptions('NC01');
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('AURA_EXCEPTION');
+
+                // Execute method
+                DataCloudUtilLwcCtrl.getDataGraphOptions('NC01');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert exception message
+        Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+
+
+    @IsTest
+    static void testGetDataGraphDetails(){
+
+        // Variable to hold the test Exceptions
+        Exception auraException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Set the API Response
+            utl.Mck.setResponse('{ "metadata": [ { "test": "test", "object": { "fields": [ { "developerName": "field", "keyCol": "true" } ], "relatedObjects": [ { "developerName": "relObj", "fields": [ { "developerName": "field", "keyCol": "true" } ] } ] } } ] }');
+            DataCloudUtilLwcCtrl.getDataGraphDetails('NC01','DG01');
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('AURA_EXCEPTION');
+
+                // Execute method
+                DataCloudUtilLwcCtrl.getDataGraphDetails('NC01','DG01');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert exception message
+        Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+
+    @IsTest
+    static void getDataGraphJsonBlob(){
+
+        // Variable to hold the test Exceptions
+        Exception auraException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+
+            // Set the API Response
+            utl.Mck.setResponse('{"data" : [{"json_blob__c" : "JSON_STRING"}]}');
+            DataCloudUtilLwcCtrl.getDataGraphJsonBlob('NC01','DG01','DG_RC_ID_01');
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('AURA_EXCEPTION');
+
+                // Execute method
+                DataCloudUtilLwcCtrl.getDataGraphJsonBlob('NC01','DG01','DG_RC_ID_01');
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert exception message
+        Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+    
+
 
     /** **************************************************************************************************** **
      **                                      SOQL QUERY AURA METHODS                                         **
@@ -792,7 +988,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
 
 
     @IsTest
-    static void testGetSoqlQueryTable(){
+    static void testGetSoqlQueryRaw(){
 
         // Variable to hold the test Exceptions
         Exception auraException;
@@ -802,7 +998,55 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         System.runAs(TST_USER){
             // Happy Path
             utl.Mck.setResponse(SOQL_RESPONSE);
+            DataCloudUtilLwcCtrl.getSoqlQueryRaw('Apex_Unit_Test','SELECT Id FROM User', false);
+
+            // Forced error path
+            try{
+                // Force the exception
+                utl.Tst.addForcedException('AURA_EXCEPTION');
+
+                // Execute method
+                DataCloudUtilLwcCtrl.getSoqlQueryRaw('Apex_Unit_Test','SELECT Id FROM User', false);
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert exception message
+        Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+
+
+    @IsTest
+    static void testGetSoqlQueryTable(){
+
+        // Variable to hold the test Exceptions
+        Exception auraException;
+        Exception auraException2;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+            // Happy Path
+            utl.Mck.setResponse(SOQL_RESPONSE);
             DataCloudUtilLwcCtrl.getSoqlQueryTable('Apex_Unit_Test','SELECT Id FROM User', false);
+
+            // Forced error path
+            try{
+                // Execute method
+                DataCloudUtilLwcCtrl.getSoqlQueryTable('Apex_Unit_Test','SELECT Id FROM Invalid', false);
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException2 = e;
+            }
 
             // Forced error path
             try{
@@ -858,5 +1102,51 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         // Assert exception message
         Assert.areEqual('Script-thrown exception', auraException.getMessage(), 'Unexpected Exception Message');
 
+    }
+
+
+    @IsTest
+    static void testExecuteSoqlQuery(){
+        
+        // Variable to hold the test Exceptions
+        Exception auraException;
+
+        Test.startTest();
+        System.runAs(TST_USER){
+            // Forced error path
+            try{
+                // Execute method
+                DataCloudUtilLwcCtrl.executeSoqlQuery('',true);
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                auraException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert exception message
+        Assert.areEqual('SOQL Query cannot be empty', auraException.getMessage(), 'Unexpected Exception Message');
+    }
+
+
+    @IsTest
+    static void testGenerateSampleData(){
+        Test.startTest();
+        System.runAs(TST_USER){
+            DataCloudUtilLwcCtrl.generateSampleData('numberField');
+            DataCloudUtilLwcCtrl.generateSampleData('dateField');
+            DataCloudUtilLwcCtrl.generateSampleData('dateTimeField');
+            DataCloudUtilLwcCtrl.generateSampleData('uuidField');
+            DataCloudUtilLwcCtrl.generateSampleData('urlField');
+            DataCloudUtilLwcCtrl.generateSampleData('emailField');
+            DataCloudUtilLwcCtrl.generateSampleData('phoneField');
+            DataCloudUtilLwcCtrl.generateSampleData('booleanField');
+            DataCloudUtilLwcCtrl.generateSampleData('percentField');
+            DataCloudUtilLwcCtrl.generateSampleData('textField');
+        }
+        Test.stopTest();
     }
 }

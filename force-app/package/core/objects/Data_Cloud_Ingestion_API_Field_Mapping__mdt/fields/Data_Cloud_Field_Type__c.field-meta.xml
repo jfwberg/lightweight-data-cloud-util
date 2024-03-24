@@ -61,7 +61,7 @@
             <value>
                 <fullName>booleanField</fullName>
                 <default>false</default>
-                <label>booleanField2</label>
+                <label>booleanField</label>
             </value>
         </valueSetDefinition>
     </valueSet>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Run Data Cloud Queries and Graph API from a sample LWC component</description>
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
@@ -11,6 +12,12 @@
         <type>Region</type>
     </flexiPageRegions>
     <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>dataCloudDataGraphUtil</componentName>
+                <identifier>utl_dataCloudDataGraphUtil</identifier>
+            </componentInstance>
+        </itemInstances>
         <name>column2</name>
         <type>Region</type>
     </flexiPageRegions>

@@ -18,4 +18,8 @@
         <field>Target__c</field>
         <value xsi:type="xsd:string">Target_Id</value>
     </values>
+    <values>
+        <field>Is_Primary_Key__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
 </CustomMetadata>

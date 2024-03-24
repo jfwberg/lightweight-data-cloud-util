@@ -1,0 +1,3 @@
+dark circle #301d72
+inner top light wave #868aca
+inner bottom dark wave #5E62A2

@@ -18,4 +18,8 @@
         <field>Target__c</field>
         <value xsi:type="xsd:string">Target_Username</value>
     </values>
+    <values>
+        <field>Is_Event_Time_Field__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
 </CustomMetadata>

@@ -20,9 +20,9 @@
       "path": "force-app/package",
       "default": true,
       "package": "Lightweight - Data Cloud Util",
-      "versionName": "v60.0 - 0.4",
-      "versionNumber": "0.4.0.NEXT",
-      "ancestorVersion": "0.3.0",
+      "versionName": "v60.0 - 0.7",
+      "versionNumber": "0.7.0.NEXT",
+      "ancestorVersion": "0.6.0",
       "versionDescription": "A lightweight set of Data Cloud API and mapping utilities for streaming and bulk data ingestion.",
       "dependencies": [
         {
@@ -43,8 +43,8 @@
       "path": "force-app/package",
       "default": false,
       "package": "Lightweight - Data Cloud Util (Unlocked)",
-      "versionName": "v60.0 - 0.4",
-      "versionNumber": "0.4.0.NEXT",
+      "versionName": "v60.0 - 0.7",
+      "versionNumber": "0.7.0.NEXT",
       "versionDescription": "A lightweight set of Data Cloud API and mapping utilities for streaming and bulk data ingestion.",
       "dependencies": [
         {
@@ -84,6 +84,12 @@
     "Lightweight - Data Cloud Util@0.3.0-1": "04tP3000000M7Z7IAK",
     "Lightweight - Data Cloud Util (Unlocked)@0.3.0-1": "04tP3000000M7ajIAC",
     "Lightweight - Data Cloud Util@0.4.0-1": "04tP3000000OPmrIAG",
-    "Lightweight - Data Cloud Util (Unlocked)@0.4.0-1": "04tP3000000OPeoIAG"
+    "Lightweight - Data Cloud Util (Unlocked)@0.4.0-1": "04tP3000000OPeoIAG",
+    "Lightweight - Data Cloud Util@0.5.0-1": "04tP3000000RIFNIA4",
+    "Lightweight - Data Cloud Util (Unlocked)@0.5.0-1": "04tP3000000RISHIA4",
+    "Lightweight - Data Cloud Util (Unlocked)@0.6.0-1": "04tP3000000RIfBIAW",
+    "Lightweight - Data Cloud Util@0.6.0-1": "04tP3000000RIgnIAG",
+    "Lightweight - Data Cloud Util@0.7.0-1": "04tP3000000RIthIAG",
+    "Lightweight - Data Cloud Util (Unlocked)@0.7.0-1": "04tP3000000RIvJIAW"
   }
 }

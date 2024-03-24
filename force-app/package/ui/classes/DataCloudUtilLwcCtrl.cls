@@ -1032,6 +1032,7 @@ public with sharing class DataCloudUtilLwcCtrl {
     /** **************************************************************************************************** **
      **                                       PRIVATE SUPPORT METHODS                                        **
      ** **************************************************************************************************** **/
+    @TestVisible
     private static utl.JsnTbl executeSoqlQuery(String query, Boolean tooling){
 
         // Input validation
@@ -1080,6 +1081,7 @@ public with sharing class DataCloudUtilLwcCtrl {
     /**
      * @description Method for generating sample data based on the data type
      */
+    @TestVisible
     private static Object generateSampleData(String dataType){
         switch on dataType {
             when 'numberField' {
@@ -1108,7 +1110,7 @@ public with sharing class DataCloudUtilLwcCtrl {
             when 'phoneField' {
                 return '078-' + Integer.valueof((Math.random() * 10000));
             }
-            when 'booleantField'{
+            when 'booleanField'{
                 return (Math.mod(Integer.valueof((Math.random() * 10000)), 2) == 0) ? 'false' : 'true';
             }
             when 'percentField' {
