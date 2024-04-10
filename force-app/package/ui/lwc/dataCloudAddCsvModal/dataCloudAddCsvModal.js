@@ -49,6 +49,24 @@ export default class DataCloudAddCsvModal extends LightningModal  {
     // The CSV string that will be loaded
     csvData;
 
+    // Local class codemirror options
+    codemirrorLoaded	= false;
+
+    // CodeMirror configuration
+    codemirrorTheme	    	  = 'default';
+    codemirrorMode	    	  = 'csv';
+    codemirrorValue	    	  = '';
+    codemirrorSize	      	  = {width : '100%', height: 250};
+    codemirrorDisabled        = false;
+    codemirrorClass           = "cm";
+    codemirrorSave            = () => {
+        this.handleAddCsv();
+    };
+    codemirrorLoadingComplete = () => {
+        this.codemirrorLoaded = true;
+        this.getCmTa().size   = {width : '100%', height: 500};
+    }
+
     // Document details used for uploading
     @track document = {
         id               : null,
@@ -77,7 +95,10 @@ export default class DataCloudAddCsvModal extends LightningModal  {
         return this.document.status != null;
     }
 
-
+    // Method to get the CodeMirror Textarea Child component
+    getCmTa(){
+        return this.template.querySelector('c-cm-textarea');
+    }
 
 
     /** **************************************************************************************************** **
@@ -85,22 +106,25 @@ export default class DataCloudAddCsvModal extends LightningModal  {
      ** **************************************************************************************************** **/
     connectedCallback() {
         try{
-            this.loading = true;
+            // Generate sample data if a config record has been selected
+            if(this.config.mdtConfigRecord){
 
-            getCsvPlaceholder({
-                mdtConfigName : this.config.mdtConfigRecord
-            })
-            .then((apexResponse) => {
-
-                this.csvData = apexResponse;
-            })
-            .catch((error) => {
-                handleError(error);
-            })
-            .finally(()=>{
-                this.loading = false;
-            });
-            
+                this.loading = true;
+                getCsvPlaceholder({
+                    mdtConfigName : this.config.mdtConfigRecord
+                })
+                .then((apexResponse) => {
+                    this.codemirrorValue = apexResponse;
+                })
+                .catch((error) => {
+                    handleError(error);
+                })
+                .finally(()=>{
+                    this.loading = false;
+                });
+            }else{
+                this.codemirrorValue = 'Select a metadata configuration to generate a sample payload based on the confugred mapping fields';
+            }
         }catch(error){
             handleError(error);
             this.loading = false;
@@ -111,9 +135,7 @@ export default class DataCloudAddCsvModal extends LightningModal  {
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
-    handleChangeCsvData(event){
-        this.csvData = event.target.value;
-    }
+  
 
     handleUploadFinished(event) {
         try{
@@ -146,9 +168,9 @@ export default class DataCloudAddCsvModal extends LightningModal  {
             this.loading = true;
 
             addCsv({
-                mdtConfigName : this.config.mdtConfigRecord,
-                jobId         : this.config.jobId,
-                csvData       : this.csvData
+                namedCredentialName : this.config.namedCredentialName,
+                jobId               : this.config.jobId,
+                csvData             : this.codemirrorValue
             })
             .then(() => {
                 this.close('ok');
@@ -175,10 +197,10 @@ export default class DataCloudAddCsvModal extends LightningModal  {
             this.document.status = STATUS_SEND_TO_DC;
 
             addCsvFromFile({
-                mdtConfigName   : this.config.mdtConfigRecord,
-                jobId           : this.config.jobId,
-                documentId      : this.document.id,
-                contentVersionId: this.document.contentVersionId
+                namedCredentialName : this.config.namedCredentialName,
+                jobId               : this.config.jobId,
+                documentId          : this.document.id,
+                contentVersionId    : this.document.contentVersionId
             })
             .then((event) => {
                 if(event === true){

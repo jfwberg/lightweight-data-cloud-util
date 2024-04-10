@@ -13,6 +13,7 @@ import {handleError}         from 'c/util';
 import {removePreAndPostFix} from 'c/util';
 
 // Modals
+import cmModal              from 'c/cmModal';
 import textModal            from 'c/textModal';
 import textareaModal        from 'c/textareaModal';
 
@@ -36,6 +37,9 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
 
     // The yaml file that is to be generated
     yamlData = '';
+
+    // Result modal codemirror theme
+    codemirrorResultTheme = 'default';
 
     // Lightning output table, set default to prevent error message
     ldt = {keyField : 'source'};
@@ -199,13 +203,16 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
             this.generateYaml();
 
             // Open the generated YAML in a modal
-            textareaModal.open({
+            cmModal.open({
+                            
                 // Modal info
-                size             : 'small',
-                label            : 'YAML Creation Result',
-                content          : this.yamlData,
+                size             : "small",
+                header           : "YAML Creation Result",
+                value            : this.yamlData,
+                mode             : "text/x-yaml",
+                theme            : this.codemirrorResultTheme,
                 disabled         : false,
-                
+   
                 // Download info
                 fileName         : 'YAML',
                 fileExtension    : '.yaml',

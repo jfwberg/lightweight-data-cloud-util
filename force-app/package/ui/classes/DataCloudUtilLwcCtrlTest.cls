@@ -42,7 +42,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         Test.startTest();
         System.runAs(TST_USER){
             // Happy Path
-            DataCloudUtilLwcCtrl.getMtdConfigOptions();
+            DataCloudUtilLwcCtrl.getMtdConfigOptions('Apex_Unit_Test');
 
             // Forced error path
             try{
@@ -50,7 +50,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
                 utl.Tst.addForcedException('AURA_EXCEPTION');
 
                 // Execute method
-                DataCloudUtilLwcCtrl.getMtdConfigOptions();
+                DataCloudUtilLwcCtrl.getMtdConfigOptions('Apex_Unit_Test');
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();
@@ -913,7 +913,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
     }
 
     @IsTest
-    static void getDataGraphJsonBlob(){
+    static void testGetDataGraph(){
 
         // Variable to hold the test Exceptions
         Exception auraException;
@@ -923,16 +923,17 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         System.runAs(TST_USER){
 
             // Set the API Response
-            utl.Mck.setResponse('{"data" : [{"json_blob__c" : "JSON_STRING"}]}');
-            DataCloudUtilLwcCtrl.getDataGraphJsonBlob('NC01','DG01','DG_RC_ID_01');
+            utl.Mck.setResponse('{"data":[{"json_blob__c":"{\\"ssot__Id__c\\":\\"0038d00000fkClnAAE\\",\\"KQ_Id__c\\":\\" \\",\\"ssot__LastName__c\\":\\"Cooke\\",\\"Individual_SM_1676899826474__dlm\\":[{\\"Id__c\\":\\"0038d00000fkClnAAE\\",\\"KQ_Id__c\\":\\" \\",\\"Segment_Id__c\\":\\"1sg8d000000CaXZ\\"}]}"}],"done":true}');
+            DataCloudUtilLwcCtrl.getDataGraph('NC01','DG01','DG_RC_ID_01','jsonblob');
+            DataCloudUtilLwcCtrl.getDataGraph('NC01','DG01','DG_RC_ID_01','raw');
+            DataCloudUtilLwcCtrl.getDataGraph('NC01','DG01','DG_RC_ID_01','table');
+            DataCloudUtilLwcCtrl.getDataGraph('NC01','DG01','DG_RC_ID_01','csv');
+            DataCloudUtilLwcCtrl.getDataGraph('NC01','DG01','DG_RC_ID_01','keyvalue');
 
             // Forced error path
             try{
-                // Force the exception
-                utl.Tst.addForcedException('AURA_EXCEPTION');
-
                 // Execute method
-                DataCloudUtilLwcCtrl.getDataGraphJsonBlob('NC01','DG01','DG_RC_ID_01');
+                DataCloudUtilLwcCtrl.getDataGraph('NC01','DG01','DG_RC_ID_01','invalid');
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();

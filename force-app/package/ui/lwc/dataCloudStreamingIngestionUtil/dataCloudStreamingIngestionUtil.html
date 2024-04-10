@@ -19,21 +19,29 @@
                     variant="neutral"
                     label="Send" 
                     onclick={handleClickSend} 
-                    disabled={buttonsEnabled}
+                    disabled={actionButtonsDisabled}
                 ></lightning-button>
                 
                 <lightning-button 
                     variant="neutral"
                     label="Test" 
                     onclick={handleClickTest} 
-                    disabled={buttonsEnabled}
+                    disabled={actionButtonsDisabled}
                 ></lightning-button>
             
                 <lightning-button
                     variant="neutral"
-                    label="Show Mapping" 
+                    label="Metadata Info" 
                     onclick={handleClickShowMapping} 
-                    disabled={buttonsEnabled}
+                    disabled={actionButtonsDisabled}
+                ></lightning-button>
+
+                <lightning-button 
+                    variant="neutral"
+                    icon-name="utility:refresh"
+                    icon-position="right" 
+                    onclick={handleClickRefresh} 
+                    disabled={actionButtonsDisabled}
                 ></lightning-button>
 
                 <lightning-button
@@ -51,9 +59,21 @@
 
         </div>
 
+        <!-- BODY -->
         <div class="slds-var-p-around_small">
+            
             <lightning-combobox
-                lwc:if      = {mdtConfigOptionsLoaded}
+                disabled    = {ncDisabled}
+                name        = "Data Cloud Named Credential"
+                label       = "Data Cloud Named Credential"
+                value       = {ncName}
+                placeholder = "Select..."
+                options     = {ncOptions}
+                onchange    = {handleChangeNcName}
+            ></lightning-combobox>
+
+            <lightning-combobox
+                disabled    = {mdtConfigDisabled}
                 name        = "Metadata Configuration"
                 label       = "Metadata Configuration"
                 value       = {mdtConfigRecord}
@@ -62,15 +82,27 @@
                 onchange    = {handleChangeMtdConfig}
                 >
             </lightning-combobox>
-        </div>
         
-        <div class="slds-var-p-around_small">
+        
             <div class="slds-form-element">
+                <label class="slds-form-element__label" for="payload">Streaming API Payload</label>
                 <div class="slds-form-element__control">
-                    <textarea id="ta" placeholder="Streaming Data Payload" class="slds-textarea ta" oninput={handleChangePayload}>{payload}</textarea>
+                    <div class="slds-box payload-box" id="payload">
+                        <c-cm-textarea
+                            theme             = {codemirrorTheme}
+                            mode              = {codemirrorMode} 
+                            value             = {codemirrorValue} 
+                            size              = {codemirrorSize}
+                            disabled          = {codemirrorDisabled}
+                            class             = {codemirrorClass}
+                            onsave            = {codemirrorSave}
+                            onloadingcomplete = {codemirrorLoadingComplete}
+                        ></c-cm-textarea>
+                    </div>
                 </div>
             </div>
+
         </div>
-    
+
     </lightning-card>
 </template>

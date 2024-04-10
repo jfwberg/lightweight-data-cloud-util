@@ -1,5 +1,6 @@
-.ta{
-    min-height: 163px;
-    font-family: Consolas, 'Courier New', Courier, monospace;
-    font-size: 11px;
+.query-box{
+    
+    /*margin-top: 22px !important;*/
+    padding: 0px !important;
+    border-color: #747474 !important;
 }

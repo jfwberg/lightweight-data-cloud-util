@@ -208,6 +208,7 @@ private with sharing class DcTest{
         System.runAs(TST_USER){
 
             response = Dc.getConfigMetadataRecordsPicklistOptions();
+            response = Dc.getConfigMetadataRecordsPicklistOptions('Apex_Unit_Test');
         }
         Test.stopTest();
 

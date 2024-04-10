@@ -220,6 +220,33 @@ global with sharing class Dc {
 
 
     /**
+     * @description Method to get the metadata configuration labels and names in an LWC
+     *              picklist values for a specific named credential only.
+     * @param namedCredentialName The name of the named credential
+     * @return      An LWC ready to use set of picklist values
+     */
+    global static List<Map<String,String>> getConfigMetadataRecordsPicklistOptions(String namedCredentialName){
+
+        // Filter out the test metadata, except whilst testing
+        Set<String> testFilter = (!Test.isRunningTest()) ? new Set<String>{'Apex_Unit_Test'} : new Set<String>();
+
+        List<Map<String,String>> output = new List<Map<String,String>>();
+        for(Data_Cloud_Ingestion_API_Configuration__mdt record : [  SELECT Label,DeveloperName
+                                                                    FROM Data_Cloud_Ingestion_API_Configuration__mdt
+                                                                    WHERE 
+                                                                        (NOT DeveloperName IN :testFilter) AND
+                                                                        Named_Credential_Name__c = :namedCredentialName
+                                                                    WITH USER_MODE ORDER BY Label LIMIT 1000]){
+            output.add(new Map<String,String>{
+                'label' => record.Label,
+                'value' => record.DeveloperName
+            });
+        }
+        return output;
+    }
+
+
+    /**
      * @description Method to query named credential parameters to get the list of
      *              Data Cloud Related Named Credentials on the current org
      * @return      Ready to use picklist values for a data cloud named credential picklist
@@ -265,18 +292,18 @@ global with sharing class Dc {
     /**
      * @description Overload method
      */
-     global static utl.Rst executeQuery(String mdtConfigName, String query){
-        return executeQuery(mdtConfigName, query, 'v1');
+     global static utl.Rst executeQuery(String namedCredentialName, String query){
+        return executeQuery(namedCredentialName, query, 'v1');
     }
 
 
     /**
      * @description Method to execute a query against data cloud
-     * @param  mdtConfigName The Developer Name of the metadata record
-     * @param  query         The SQL query to run against Data Cloud
+     * @param  namedCredentialName The Developer Name of the named credential
+     * @param  query               The SQL query to run against Data Cloud
      * @return The execution result of the Rest Execution  (utl.Rst)
      */
-    global static utl.Rst executeQuery(String mdtConfigName, String query, String apiVersion){
+    global static utl.Rst executeQuery(String namedCredentialName, String query, String apiVersion){
 
         // Input validation
         if(String.isBlank(query)){
@@ -292,16 +319,13 @@ global with sharing class Dc {
             // Force an exception for testing purposes
             utl.Tst.forceException('DC_QUERY');
 
-            // Query the record
-            Data_Cloud_Ingestion_API_Configuration__mdt record = getMetadataRecord(mdtConfigName);
-
             // Sanatize the query as the api is very sensitive to line breaks and tabs for some reason
             query = query.replaceAll('\n', ' ');
             query = query.replaceAll('\t', ' ');
             query = query.trim();
 
             // Execute the query
-            return new utl.Rst(record.Named_Credential_Name__c, true)
+            return new utl.Rst(namedCredentialName, true)
                 .setHandleSfEndpoint(false)
                 .setEndpoint('/api/' + apiVersion + '/query')
                 .setMethod('POST')
@@ -384,20 +408,33 @@ global with sharing class Dc {
             (Map<String, Object>) utl.Jsn.getObjectList(
                 'data',
                 (Map<String, Object>) JSON.deserializeUntyped(
-                    new utl.Rst(namedCredentialName, true)
-                    .setHandleSfEndpoint(false)
-                    .setEndpoint(
-                        String.format(
-                            '/api/v1/dataGraph/{0}/{1}',
-                            new String[]{dataGraphName,dataGraphRecordId})
-                        )
-                    .setMethod('GET')
-                    .call()
-                    .getResponse()
-                    .getBody()
+                    getDataGraph(namedCredentialName, dataGraphName, dataGraphRecordId)
                 )
             )[0]
         );
+    }
+
+
+    /**
+     * @description               Method to get the blob JSON for a data graph
+     * @param namedCredentialName The name of the data cloud named credential
+     * @param dataGraphName       The name of the specific Graph API details
+     * @param dataGraphRecordId   The record Id of the primary object's Primary key field
+     * @return                    The raw data graph API response
+     */
+    global static String getDataGraph(String namedCredentialName, String dataGraphName, String dataGraphRecordId){
+        return new utl.Rst(namedCredentialName, true)
+            .setHandleSfEndpoint(false)
+            .setEndpoint(
+                String.format(
+                    '/api/v1/dataGraph/{0}/{1}',
+                    new String[]{dataGraphName,dataGraphRecordId})
+                )
+            .setMethod('GET')
+            .call()
+            .getResponse()
+            .getBody()
+        ;
     }
 
 
@@ -626,6 +663,12 @@ global with sharing class Dc {
             throw new DataCloudUtilException(CSV_LIST_INPUT_ERROR_MSG);
         }
 
+        // Get all record info
+        Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
+
+        // Get the NC from the configuration to handle the upsert completely start to finish
+        String namedCredentialName = config.Named_Credential_Name__c;
+
         // Create a correlation Id that can be used in the entire job chain to find messages in the debug logs
         String correlationId = utl.Rst.guid();
 
@@ -637,23 +680,23 @@ global with sharing class Dc {
         try{
             // Add all the files
             for (Integer i = 0; i < csvFiles.size(); i++) {
-                addCsvToIngestionBulkJob(mdtConfigName, correlationId, jobId, csvFiles[i]);
+                addCsvToIngestionBulkJob(namedCredentialName, correlationId, jobId, csvFiles[i]);
             }
         }catch(Exception e){
             // If one of the CSV fiels fails, abort the job
-            updateIngestionBulkJobState(mdtConfigName, correlationId, jobId, 'Aborted');
+            updateIngestionBulkJobState(namedCredentialName, correlationId, jobId, 'Aborted');
             throw new DataCloudUtilException(e.getMessage());
         }
 
         /* --------- STEP 03 - CLOSE THE JOB --------- */
         try{
             // Finally close the job when ingestion is complete
-            updateIngestionBulkJobState(mdtConfigName, correlationId, jobId, 'UploadComplete');
+            updateIngestionBulkJobState(namedCredentialName, correlationId, jobId, 'UploadComplete');
         }catch(Exception e){
 
             // If the upload complete fails, delete the job so we can start over again
             // If one of the CSV fiels fails, abort the job
-            updateIngestionBulkJobState(mdtConfigName, correlationId, jobId, 'Aborted');
+            updateIngestionBulkJobState(namedCredentialName, correlationId, jobId, 'Aborted');
             throw new DataCloudUtilException(e.getMessage());
         }
     }
@@ -664,7 +707,7 @@ global with sharing class Dc {
      * @param mdtConfigName The name of the metadata configuration record
      * @return A list of key value maps with the job details for all jobs
      */
-    global static List<Map<String,Object>> getBulkIngestionJobs(String mdtConfigName){
+    global static List<Map<String,Object>> getBulkIngestionJobs(String namedCredentialName){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('LIST_BULK_JOBS');
@@ -672,12 +715,9 @@ global with sharing class Dc {
             // Output of lists
             List<Map<String,Object>> output = new List<Map<String,Object>>();
 
-            // Get all record info
-            Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
-
             // Get all jobs and iterate the response list
             for(Object record : utl.Jsn.getObjectList('data', (Map<String,Object>) JSON.deserializeUntyped(
-                new utl.Rst(config.Named_Credential_Name__c, true)
+                new utl.Rst(namedCredentialName, true)
                     .setHandleSfEndpoint(false)
                     .setRequestIdHeader(null)
                     .setEndpoint('/api/v1/ingest/jobs')
@@ -705,17 +745,14 @@ global with sharing class Dc {
      * @param jobId         The Id for the bulk job
      * @return A key value map with the job details
      */
-    global static Map<String,Object> getBulkIngestionJobDetails(String mdtConfigName, String jobId){
+    global static Map<String,Object> getBulkIngestionJobDetails(String namedCredentialName, String jobId){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('BULK_JOB_DETAILS');
 
-            // Get all record info
-            Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
-
             // Get all jobs and iterate the response list
             return (Map<String,Object>) JSON.deserializeUntyped(
-                new utl.Rst(config.Named_Credential_Name__c, true)
+                new utl.Rst(namedCredentialName, true)
                     .setHandleSfEndpoint(false)
                     .setRequestIdHeader(null)
                     .setEndpoint(String.format('/api/v1/ingest/jobs/{0}', new String[]{jobId}))
@@ -792,22 +829,20 @@ global with sharing class Dc {
      * @param jobId         The Id for the bulk job
      * @param csvData       The Raw CSV data
      */
-    global static void addCsvToIngestionBulkJob(String mdtConfigName, String correlationId, String jobId, String csvData){
+    global static void addCsvToIngestionBulkJob(String namedCredentialName, String correlationId, String jobId, String csvData){
 
         // Input validation for the files
         if(csvData == null || String.isBlank(csvData)){
             throw new DataCloudUtilException(INVALID_CSV_ERROR_MSG);
         }
 
-        // Get all record info
-        Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
 
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('ADD_CSV_TO_BULK_JOB');
 
             // Execute the call out for a specific named credential
-            utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
+            utl.Rst callout = new utl.Rst(namedCredentialName, true)
                 .setMockResponseIdentifier('ADD_CSV_TO_BULK_JOB')
                 .setCorrelationIdHeader(correlationId)
                 .setHandleSfEndpoint(false)
@@ -834,7 +869,7 @@ global with sharing class Dc {
      * @param jobId         The Id for the bulk job
      * @param state         The new state ('UploadComplete','Aborted')
      */
-    global static void updateIngestionBulkJobState(String mdtConfigName, String correlationId, String jobId, String state){
+    global static void updateIngestionBulkJobState(String namedCredentialName, String correlationId, String jobId, String state){
 
         // Validate operation types
         if(!(new Set<String>{'UploadComplete','Aborted'}).contains(state)){
@@ -846,9 +881,6 @@ global with sharing class Dc {
             );
         }
 
-        // Get all record info
-        Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
-
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('UPDATE_BULK_JOB');
@@ -859,7 +891,7 @@ global with sharing class Dc {
             });
 
             // Execute the call out for a specific named credential
-            utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
+            utl.Rst callout = new utl.Rst(namedCredentialName, true)
                 .setMockResponseIdentifier('UPDATE_BULK_JOB')
                 .setCorrelationIdHeader(correlationId)
                 .setHandleSfEndpoint(false)
@@ -884,16 +916,13 @@ global with sharing class Dc {
      * @param correlationId The correlation Id for the API calls
      * @param jobId         The Id for the bulk job
      */
-    global static void deleteIngestionBulkJob(String mdtConfigName, String correlationId, String jobId){
-        // Get all record info
-        Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
-
+    global static void deleteIngestionBulkJob(String namedCredentialName, String correlationId, String jobId){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('DELETE_BULK_JOB');
 
             // Execute the call out for a specific named credential
-            utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
+            utl.Rst callout = new utl.Rst(namedCredentialName, true)
                 .setMockResponseIdentifier('DELETE_BULK_JOB')
                 .setCorrelationIdHeader(correlationId)
                 .setHandleSfEndpoint(false)

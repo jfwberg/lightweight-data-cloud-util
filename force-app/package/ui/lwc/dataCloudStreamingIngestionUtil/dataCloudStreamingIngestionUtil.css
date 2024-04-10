@@ -1,5 +1,4 @@
-.ta{
-    min-height: 220px;
-    font-family: Consolas, 'Courier New', Courier, monospace;
-    font-size: 11px;
+.payload-box{
+    padding     : 0px !important;
+    border-color: #747474 !important;
 }

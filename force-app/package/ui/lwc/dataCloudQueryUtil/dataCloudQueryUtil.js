@@ -12,15 +12,17 @@ import {LightningElement}  from "lwc";
 import {handleError}       from 'c/util';
 
 // Modals
+import cmModal             from 'c/cmModal';
 import textModal           from 'c/textModal';
-import textareaModal       from 'c/textareaModal';
 import ldtModal            from 'c/ldtModal';
 import multiLdtModal       from 'c/multiLdtModal';
 
+
 // Apex methods for setup
-import getMtdConfigOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
-import getQueryPlaceholder from "@salesforce/apex/DataCloudUtilLwcCtrl.getQueryPlaceholder";
-import getMetadataInfo     from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
+import getDcNamedCredentialOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcNamedCredentialOptions";
+import getMtdConfigOptions         from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getQueryPlaceholder         from "@salesforce/apex/DataCloudUtilLwcCtrl.getQueryPlaceholder";
+import getMetadataInfo             from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
 
 // Apex methods for query results
 import getDcQueryCsv       from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcQueryCsv";
@@ -33,11 +35,11 @@ export default class DataCloudQueryUtil extends LightningElement {
     // Loading indicator
     loading = false;
 
-    // The query
-    query = '';
-
-    // Metadata configuration tables
-    mdtTableList;
+    // Named Credentials picklist details / button indicators
+    ncName;
+    ncOptions;
+    ncOptionsLoaded  = false;
+    ncOptionSelected = false;
 
     // Indicator to view the button
     mdtConfigOptionsLoaded = false;
@@ -47,6 +49,14 @@ export default class DataCloudQueryUtil extends LightningElement {
     mdtConfigRecord;
     mdtConfigOptions;
 
+    // CodeMirror Always set some default values
+    codemirrorClass     = 'ta';
+    codemirrorLoaded	= false;
+    codemirrorMode		= 'text/x-sql';
+    codemirrorSize		= {width : '100%', height: 250};
+    codemirrorTheme		= 'default';
+    codemirrorValue		= '';
+    
     // Output as either csv or LWC data table
     resultFormat = 'table';
     resultFormatOptions = [
@@ -74,31 +84,82 @@ export default class DataCloudQueryUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                            GETTER METHODS                                            **
      ** **************************************************************************************************** **/
+    // Disabled when not loaded yet from apex
+    get dcNcDisabled(){
+        return !this.ncOptionsLoaded;
+    }
+
     // Disable buttons
-    get actionDisabled(){
+    get executeButtonDisabled(){
+        return !this.ncOptionSelected;
+    }
+
+    // Disable buttons
+    get metadataButtonDisabled(){
         return !this.mdtConfigSelected;
     }
 
-    get inputDisabled(){
-        return !this.mdtConfigOptionsLoaded;
+    // Disable metadata when no NC is selected or the options are not loaded
+    get metadataConfigInputDisabled(){
+        return !this.ncOptionSelected;
     }
 
+    // Disable metadata when no NC is selected or the options are not loaded
+    get fieldSelectionInputDisabled(){
+        return !this.mdtConfigSelected;
+    }
+
+    get codemirrorDisabled(){
+        return !this.ncOptionSelected;
+    }
+
+    // Method to get the CodeMirror Textarea Child component
+    getCmTa(){
+        return this.template.querySelector('c-cm-textarea');
+    }
 
     /** **************************************************************************************************** **
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback(){
-        this.handleGetMdtOptions();
+        this.handleGetDcNamedCredentialOptions();
     }
+
+    //connectedCallback(){
+        //this.handleGetMdtOptions();
+    //}
 
 
     /** **************************************************************************************************** **
      **                                            APEX HANDLERS                                             **
      ** **************************************************************************************************** **/
+    handleGetDcNamedCredentialOptions(){
+        try{
+            this.loading = true;
+            getDcNamedCredentialOptions()
+                .then((apexResponse) => {
+                    this.ncOptions      = apexResponse;
+                    this.ncOptionsLoaded= true;
+                })
+                .catch((error) => {
+                    handleError(error);
+                })
+                .finally(()=>{
+                    this.loading = false; 
+                });
+        }catch(error){
+            handleError(error);
+            this.loading = false; 
+        }
+    }
+
+
     handleGetMdtOptions(){
         try{
             this.loading = true;
-            getMtdConfigOptions()
+            getMtdConfigOptions({
+                namedCredentialName : this.ncName
+            })
                 .then((apexResponse) => {
                     this.mdtConfigOptions = apexResponse;
                     this.mdtConfigOptionsLoaded = true;
@@ -124,8 +185,7 @@ export default class DataCloudQueryUtil extends LightningElement {
                 fieldSelection : this.fieldSelection
             })
             .then((apexResponse) => {
-                this.query = apexResponse;
-                this.template.querySelector(".ta").value = apexResponse;
+                this.getCmTa().value = apexResponse;
             })
             .catch((error) => {
                 handleError(error);
@@ -166,14 +226,15 @@ export default class DataCloudQueryUtil extends LightningElement {
         try{
             this.loading = true;
             getDcQueryTable({
-                mdtConfigName : this.mdtConfigRecord,
-                query         : this.query,
-                apiVersion    : this.queryApiVersion
+                namedCredentialName : this.ncName,
+                query               : this.getCmTa().value,
+                apiVersion          : this.queryApiVersion
             })
             .then((apexResponse) => {
                 this.handleOpenDcResultTableModal(apexResponse);
             })
             .catch((error) => {
+                handleError(error);
             })
             .finally(()=>{
                 this.loading = false;
@@ -189,9 +250,9 @@ export default class DataCloudQueryUtil extends LightningElement {
         try{
             this.loading = true;
             getDcQueryCsv({
-                mdtConfigName : this.mdtConfigRecord,
-                query         : this.query,
-                apiVersion    : this.queryApiVersion
+                namedCredentialName : this.ncName,
+                query               : this.getCmTa().value,
+                apiVersion          : this.queryApiVersion
             })
             .then((apexResponse) => {
                 this.handleOpenDcResultCsvModal(apexResponse);
@@ -213,9 +274,9 @@ export default class DataCloudQueryUtil extends LightningElement {
         try{
             this.loading = true;
             getDcQueryRaw({
-                mdtConfigName : this.mdtConfigRecord,
-                query         : this.query,
-                apiVersion    : this.queryApiVersion
+                namedCredentialName : this.ncName,
+                query               : this.getCmTa().value,
+                apiVersion          : this.queryApiVersion
             })
             .then((apexResponse) => {
                 this.handleOpenDcResultRawModal(apexResponse);
@@ -236,25 +297,50 @@ export default class DataCloudQueryUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
+     handleChangeNcName(event) {
+        try{
+            // On a change reset the metadata settings
+            this.mdtConfigSelected = false;
+            this.mdtConfigOptionsLoaded = false;
+            this.mdtConfigOptions = [];
+            this.mdtConfigRecord = '';
+            
+            // Update named credential
+            this.ncName           = event.detail.value;
+            this.ncOptionSelected = true;
+
+            // Extract the code mirror
+            let cm = this.template.querySelector('.' + this.codemirrorClass)
+                
+            // Update the sizing
+            cm.setDisabled(false);
+
+        }catch(error){
+            handleError(error);
+        }
+
+        // Get the org's data graph options
+        this.handleGetMdtOptions();
+    }
+
+
     // Set the config record name and update the table
     handleChangeMtdConfig(event) {
         this.mdtConfigRecord = event.detail.value;
         this.mdtConfigSelected = true;
-
         this.handleGetQueryPlaceholder();
     }
 
-    handleChangeQuery(){
-        this.query = this.template.querySelector(".ta").value;
-    }
-
+    
     handlechangeResultFormat(event) {
         this.resultFormat = event.detail.value;
     }
 
+
     handlechangeQueryApiVersion(event) {
         this.queryApiVersion = event.detail.value;
     }
+
 
     handlechangeFieldSelection(event) {
         this.fieldSelection = event.detail.value;
@@ -353,12 +439,13 @@ export default class DataCloudQueryUtil extends LightningElement {
      */
     handleOpenDcResultCsvModal(apexResponse){
         try{
-            textareaModal.open({
-                
+            cmModal.open({
                 // Modal info
-                size             : 'large',
-                label            : 'Data Cloud - Query Results - CSV',
-                content          : apexResponse,
+                size             : "large",
+                header           : "Data Cloud - Query Results - CSV",
+                value            : apexResponse,
+                mode             : "csv",
+                theme            : this.codemirrorTheme,
                 disabled         : false,
                 
                 // Download info
@@ -384,12 +471,13 @@ export default class DataCloudQueryUtil extends LightningElement {
      */
     handleOpenDcResultRawModal(apexResponse){
         try{
-            textareaModal.open({
-                
+            cmModal.open({
                 // Modal info
-                size             : 'large',
-                label            : 'Data Cloud - Query Results - RAW',
-                content          : apexResponse,
+                size             : "large",
+                header           : "Data Cloud - Query Results - RAW",
+                value            : apexResponse,
+                mode             : "text/javascript",
+                theme            : this.codemirrorTheme,
                 disabled         : false,
                 
                 // Download info
@@ -407,5 +495,21 @@ export default class DataCloudQueryUtil extends LightningElement {
         }catch(error){
             handleError(error);
         }
+    }
+
+    // Actions that run once the code mirror windows has been loaded and added to the DOM
+    handleCodemirrorLoaded(){
+        // Set the loaded value to true
+        this.codemirrorLoaded = true;      
+    }
+
+
+    handleCodemirrorSave(){
+        this.createTable();
+    }
+
+    // Handle any updates in case the theme changes
+    handleThemeChange(event) {
+        this.codemirrorTheme = event.detail;
     }
 }

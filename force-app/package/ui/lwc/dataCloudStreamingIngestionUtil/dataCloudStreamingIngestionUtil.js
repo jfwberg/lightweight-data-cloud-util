@@ -16,19 +16,25 @@ import { handleError }         from 'c/util';
 import textModal               from 'c/textModal';
 import multiLdtModal           from 'c/multiLdtModal';
 
-
 // Apex methods
-import getMtdConfigOptions     from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
-import getMetadataInfo         from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
-import getStreamingPlaceholder from "@salesforce/apex/DataCloudUtilLwcCtrl.getStreamingPlaceholder";
-import sendDataStream          from "@salesforce/apex/DataCloudUtilLwcCtrl.sendDataStream";
-import testDataStream          from "@salesforce/apex/DataCloudUtilLwcCtrl.testDataStream";
+import getDcNamedCredentialOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcNamedCredentialOptions";
+import getMtdConfigOptions         from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getMetadataInfo             from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
+import getStreamingPlaceholder     from "@salesforce/apex/DataCloudUtilLwcCtrl.getStreamingPlaceholder";
+import sendDataStream              from "@salesforce/apex/DataCloudUtilLwcCtrl.sendDataStream";
+import testDataStream              from "@salesforce/apex/DataCloudUtilLwcCtrl.testDataStream";
 
 // Main class
 export default class DataCloudBulkIngestionUtil extends LightningElement {
 
     // Loading indicator for the spinner
     loading = false;
+
+    // Named Credentials picklist details / button indicators
+    ncName;
+    ncOptions;
+    ncOptionsLoaded  = false;
+    ncOptionSelected = false;
 
     // Indicator to view the button
     mdtConfigOptionsLoaded = false;
@@ -38,12 +44,42 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     mdtConfigRecord;
     mdtConfigOptions = [];
 
-    // The payload of the streaming event
-    payload='';
+    // Local class codemirror options
+    codemirrorLoaded	= false;
+
+    // CodeMirror configuration
+    codemirrorTheme	    	  = 'default';
+    codemirrorMode	    	  = 'application/json';
+    codemirrorValue	    	  = '';
+    codemirrorSize	      	  = {width : '100%', height: 250};
+    codemirrorDisabled        = false;
+    codemirrorClass           = "cm";
+    codemirrorSave            = () => {
+        this.handleSendDataStream();
+    };
+    codemirrorLoadingComplete = () => {
+        this.codemirrorLoaded = true;
+        this.getCmTa().size   = {width : '100%', height: 365};
+    }
+
+    // Disabled when not loaded yet from apex
+    get dcNcDisabled(){
+        return !this.ncOptionsLoaded;
+    }
+
+    // Disabled when not loaded yet from apex
+    get mdtConfigDisabled(){
+        return !this.mdtConfigOptionsLoaded;
+    }
 
     // Disable buttons
-    get buttonsEnabled(){
+    get actionButtonsDisabled(){
         return !this.mdtConfigSelected;
+    }
+
+    // Method to get the CodeMirror Textarea Child component
+    getCmTa(){
+        return this.template.querySelector('c-cm-textarea');
     }
 
 
@@ -51,16 +87,37 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback(){
-        this.handleGetMdtOptions();
+        this.handleGetDcNamedCredentialOptions();
     }
 
 
     /** **************************************************************************************************** **
      **                                            APEX HANDLERS                                             **
      ** **************************************************************************************************** **/
+    handleGetDcNamedCredentialOptions(){
+        try{
+            this.loading = true;
+            getDcNamedCredentialOptions()
+                .then((apexResponse) => {
+                    this.ncOptions      = apexResponse;
+                    this.ncOptionsLoaded= true;
+                })
+                .catch((error) => {
+                    handleError(error);
+                })
+                .finally(()=>{
+                    this.loading = false; 
+                });
+        }catch(error){
+            handleError(error);
+            this.loading = false; 
+        }
+    }
+
+
     handleGetMdtOptions(){
         try{
-            getMtdConfigOptions()
+            getMtdConfigOptions({namedCredentialName : this.ncName})
                 .then((apexResponse) => {
                     this.mdtConfigOptions       = apexResponse;
                     this.mdtConfigOptionsLoaded = true;
@@ -103,8 +160,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         try{
             getStreamingPlaceholder({ mdtConfigName : this.mdtConfigRecord})
                 .then((apexResponse) => {
-                    this.payload                             = apexResponse;
-                    this.template.querySelector(".ta").value = apexResponse;
+                    this.getCmTa().value = apexResponse;
                 })
                 .catch((error) => {
                     handleError(error);
@@ -123,8 +179,10 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         try{
             this.loading = true;
             sendDataStream(
-                { mdtConfigName : this.mdtConfigRecord,
-                    payload     : this.payload}
+                { 
+                    mdtConfigName : this.mdtConfigRecord,
+                    payload       : this.getCmTa().value
+                }
             )
             .then((apexResponse) => {
                 if(apexResponse==true){
@@ -153,7 +211,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             this.loading = true;
             testDataStream({ 
                 mdtConfigName : this.mdtConfigRecord, 
-                payload       : this.payload}
+                payload       : this.getCmTa().value}
             )
             .then((apexResponse) => {
                 if(apexResponse === true){
@@ -180,6 +238,26 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
+     handleChangeNcName(event) {
+        try{
+            // On a change reset the metadata settings
+            this.mdtConfigSelected      = false;
+            this.mdtConfigOptionsLoaded = false;
+            this.mdtConfigOptions       = [];
+            this.mdtConfigRecord        = '';
+            
+            // Update named credential
+            this.ncName           = event.detail.value;
+            this.ncOptionSelected = true;
+
+        }catch(error){
+            handleError(error);
+        }
+
+        // Get the org's data graph options
+        this.handleGetMdtOptions();
+    }
+
     /**
      * Set the config record name and update the table
      */
@@ -188,18 +266,6 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             this.mdtConfigRecord   = event.detail.value;
             this.mdtConfigSelected = true;
             this.handleGetStreamingPlaceholder();
-        }catch(error){
-            handleError(error);
-        }
-    }
-
-
-    /**
-     * Update changes in the payload textarea
-     */
-    handleChangePayload() {
-        try{
-            this.payload = this.template.querySelector(".ta").value;
         }catch(error){
             handleError(error);
         }
@@ -220,6 +286,10 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleClickShowMapping(){
         this.handleGetMetadataInfo();
     }
+
+    handleClickRefresh(){
+        this.handleGetStreamingPlaceholder();
+     }
 
     handleClickHelp(){
        this.handleOpenHelpModal() ;

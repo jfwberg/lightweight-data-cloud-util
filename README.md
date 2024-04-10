@@ -23,9 +23,9 @@ If you use the *managed package* you need to installed the managed package depen
 |Github URL | https://github.com/jfwberg/lightweight-apex-unit-test-util-v2 |
 | | |
 |Name|Lightweight - LWC Util|
-|Version|0.3.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000R7F7IAK* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000R7GjIAK* |
+|Version|0.6.0-2|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000T7ZBIA0* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000T7cPIAS* |
 |Github URL | https://github.com/jfwberg/lightweight-lwc-util |
 | | |
 |Name|Lightweight - Apex REST Util|
@@ -35,9 +35,9 @@ If you use the *managed package* you need to installed the managed package depen
 |Github URL | https://github.com/jfwberg/lightweight-apex-rest-util |
 | | |
 |Name|Lightweight - Apex JSON Util|
-|Version|0.5.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6mjIAC* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6pxIAC* |
+|Version|0.7.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000T7m5IAC* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000T7nhIAC* |
 |Github URL | https://github.com/jfwberg/lightweight-json-util |
 
 
@@ -119,6 +119,10 @@ Set<String> columns = utl.Dc.getOrderedColumnNamesFromMetadata(Map<String,Object
 // Method to get the metadata configuration labels and names in a ready to use LWC picklist format
 List<Map<String,String>> mdtOptions = utl.Dc.getConfigMetadataRecordsPicklistOptions();
 
+// Method to get the metadata configuration labels and names in a ready to use LWC picklist format
+// With a fitler for Data Cloud Named credentials only. This is the name of a DATA CLOUD named credential
+List<Map<String,String>> mdtOptions = utl.Dc.getConfigMetadataRecordsPicklistOptions(String namedCredentialName);
+
 // Method to get list of picklist options with only Data Cloud Named Credentials in a ready to Use LWC picklist format
 // Works based on endpoint that end with "c360a.my.salesforce.com"
 List<Map<String,String>> ncOptions = utl.Dc.getDataCloudNamedCredentialPicklistOptions()
@@ -143,10 +147,12 @@ class FieldMetadata{
  * QUERY API v2 METHODS
  */
 // Method to execute a Data Cloud SQL query, uses V1 by default
-utl.Rst callout = utl.Dc.executeQuery(String mdtConfigName, String query);
+// Note: This works based on the name of the Data Cloud Named Credential, not a configuration record
+utl.Rst callout = utl.Dc.executeQuery(String namedCredentialName, String query);
 
 // Allows to specify a different query API valid values are "v1" or "v2"
-utl.Rst callout = utl.Rst executeQuery(String mdtConfigName, String query, String apiVersion)
+// Note: This works based on the name of the Data Cloud Named Credential, not a configuration record
+utl.Rst callout = utl.Rst executeQuery(String namedCredentialName, String query, String apiVersion)
 ```
 
 ### Data Graph Methods
@@ -162,9 +168,12 @@ List<Map<String,Object>> dgMetadataList = utl.Dc.getAllDataGraphMetadata(String 
 // Note: This works based on the name of the Data Cloud Named Credential, not a configuration record
 Map<String,Object> dgMetadata = utl.Dc.getDetailedDataGraphMetadata(String namedCredentialName, String dataGraphName)
 
-// Method that queries the Data Graph and returns the JSON Blob based on the data graph name and a record Id
+// Method that queries the Data Graph and returns the JSON Blob from the Data Graph API response based on the data graph name and a record Id
 // The record Id needs to be bassed of the primary key field
 String dgJsonBlob = utl.Dc.getDataGraphJsonBlob(String namedCredentialName, String dataGraphName, String dataGraphRecordId)
+
+// // Method that queries the Data Graph and returns the RAW JSON Response based on the data graph name and a record Id
+String utl.Dc.getDataGraph(String namedCredentialName, String dataGraphName, String dataGraphRecordId)
 ```
 
 
@@ -177,7 +186,6 @@ String dgJsonBlob = utl.Dc.getDataGraphJsonBlob(String namedCredentialName, Stri
 // we are required to serialize the sObjects using JSON.serialize(sObject[] records)
 // Use this on (platform event) triggers
 utl.Dc.streamRecordsToDataCloudAsync(String mdtConfigName, String serializedRecords);
-
 
 // Method to synchronously call the ingest API with the records and the config from the metadata record
 utl.Dc.streamRecordsToDataCloud(String mdtConfigName, sObject[] records);
@@ -212,24 +220,29 @@ String payload = utl.Dc.createIngestStreamPayload(List<Map<String,Object>> recor
 // !! This is very limited in what it can handle is size and exists for test purposes only !!
 utl.Dc.ingestBulkCsvDataInDataCloud(String mdtConfigName, String operation, String[] csvFiles);
 
-// Method to get a list of all Bulk ingestion jobs for a certain Ingestion API Connector
-List<Map<String,Object>> jobTable = utl.Dc.getBulkIngestionJobs(String mdtConfigName);
-
-// Method to get all info for a specific job
-Map<String,Object> jobInfo = utl.Dc.getBulkIngestionJobDetails(String mdtConfigName, String jobId);
-
 // Method to create a new bulk ingestion job, return the Id on success
 // Valid operation are 'upsert' or 'delete'
+// Note: this uses the metadata configuration as it needs the ingestion API details
 String jobId = utl.Dc.createIngestionBulkJob(String mdtConfigName, String correlationId, String operation);
 
+// Method to get a list of all Bulk ingestion jobs for a certain Ingestion API Connector
+// Note: This works based on the name of the Data Cloud Named Credential, not a configuration record
+List<Map<String,Object>> jobTable = utl.Dc.getBulkIngestionJobs(String namedCredentialName);
+
+// Method to get all info for a specific job
+Map<String,Object> jobInfo = utl.Dc.getBulkIngestionJobDetails(String namedCredentialName, String jobId);
+
 // Method to add a CSV to the ingestion job
-utl.Dc.addCsvToIngestionBulkJob(String mdtConfigName, String correlationId, String jobId, String csvData);
+// Note: Uses Named credential
+utl.Dc.addCsvToIngestionBulkJob(String namedCredentialName, String correlationId, String jobId, String csvData);
 
 // Method to update the ingestion job state to 'UploadComplete' or 'Aborted'
-utl.Dc.updateIngestionBulkJobState(String mdtConfigName, String correlationId, String jobId, String state);
+// Note: Uses Named credential
+utl.Dc.updateIngestionBulkJobState(String namedCredentialName, String correlationId, String jobId, String state);
 
 // Method to delete a bulk job
-utl.Dc.deleteIngestionBulkJob(String mdtConfigName, String correlationId, String jobId);
+// Note: Uses Named credential
+utl.Dc.deleteIngestionBulkJob(String namedCredentialName, String correlationId, String jobId);
 ```
 
 

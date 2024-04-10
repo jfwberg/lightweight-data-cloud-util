@@ -19,28 +19,29 @@
                     variant="success"
                     label="Create Upsert Job" 
                     onclick={handleClickNew} 
-                    disabled={buttonsEnabled}
+                    disabled={jobActionButtonsDisabled}
                 ></lightning-button>
 
                 <lightning-button 
                     variant="destructive"
                     label="Create Delete Job" 
                     onclick={handleClickNewDelete} 
-                    disabled={buttonsEnabled}
+                    disabled={jobActionButtonsDisabled}
+                ></lightning-button>
+
+                <lightning-button
+                    variant="neutral"
+                    label="Metadata Info" 
+                    onclick={handleClickShowMapping} 
+                    disabled={jobActionButtonsDisabled}
                 ></lightning-button>
 
                 <lightning-button 
                     variant="neutral"
-                    label="Refresh" 
+                    icon-name="utility:refresh"
+                    icon-position="right" 
                     onclick={handleClickRefresh} 
-                    disabled={buttonsEnabled}
-                ></lightning-button>
-                
-                <lightning-button
-                    variant="neutral"
-                    label="Show Mapping" 
-                    onclick={handleClickShowMapping} 
-                    disabled={buttonsEnabled}
+                    disabled={refreshButtonDisabled}
                 ></lightning-button>
 
                 <lightning-button
@@ -60,8 +61,18 @@
 
         <div class="slds-var-p-around_small">
             <lightning-combobox
+                disabled    = {ncDisabled}
+                name        = "Data Cloud Named Credential"
+                label       = "Data Cloud Named Credential"
+                value       = {ncName}
+                placeholder = "Select..."
+                options     = {ncOptions}
+                onchange    = {handleChangeNcName}
+            ></lightning-combobox>
+
+            <lightning-combobox
               
-                lwc:if      = {mdtConfigOptionsLoaded}
+                disabled    = {mdtConfigDisabled}
                 name        = "Metadata Configuration"
                 label       = "Metadata Configuration"
                 value       = {mdtConfigRecord}
@@ -75,6 +86,7 @@
         
         <div class="slds-var-p-around_small ta">
             <lightning-datatable
+                lwc:if                  = {jobTableLoaded}
                 key-field               = {ldt.keyField} 
                 data                    = {ldt.data} 
                 columns                 = {ldt.columns}

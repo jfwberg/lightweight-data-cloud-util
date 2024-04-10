@@ -1,5 +1,4 @@
-.ta{
-    min-height: 300px;
-    font-family: Consolas, 'Courier New', Courier, monospace;
-    font-size: 11px;
+.hideOverflow {
+    overflow: hidden;
 }
+

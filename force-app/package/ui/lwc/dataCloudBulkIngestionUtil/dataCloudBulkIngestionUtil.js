@@ -13,20 +13,22 @@ import { LightningElement } from "lwc";
 import {handleError}        from 'c/util';
 
 // Modals
+import cmModal              from 'c/cmModal';
 import textModal            from 'c/textModal';
 import lLdtModal            from 'c/ldtModal';
 import multiLdtModal        from 'c/multiLdtModal';
 import addCsvModal          from 'c/dataCloudAddCsvModal';
 
 // Apex methods
-import getMtdConfigOptions  from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
-import getMetadataInfo      from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
-import getIngestionJobTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getIngestionJobTable";
-import getJobInfo           from "@salesforce/apex/DataCloudUtilLwcCtrl.getJobInfo";
-import newJob               from "@salesforce/apex/DataCloudUtilLwcCtrl.newJob";
-import abortJob             from "@salesforce/apex/DataCloudUtilLwcCtrl.abortJob";
-import completeJob          from "@salesforce/apex/DataCloudUtilLwcCtrl.completeJob";
-import deleteJob            from "@salesforce/apex/DataCloudUtilLwcCtrl.deleteJob";
+import getDcNamedCredentialOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcNamedCredentialOptions";
+import getMtdConfigOptions         from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getMetadataInfo             from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
+import getIngestionJobTable        from "@salesforce/apex/DataCloudUtilLwcCtrl.getIngestionJobTable";
+import getJobInfo                  from "@salesforce/apex/DataCloudUtilLwcCtrl.getJobInfo";
+import newJob                      from "@salesforce/apex/DataCloudUtilLwcCtrl.newJob";
+import abortJob                    from "@salesforce/apex/DataCloudUtilLwcCtrl.abortJob";
+import completeJob                 from "@salesforce/apex/DataCloudUtilLwcCtrl.completeJob";
+import deleteJob                   from "@salesforce/apex/DataCloudUtilLwcCtrl.deleteJob";
 
 
 // Main class
@@ -38,6 +40,15 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     // Bulk job datatable
     ldt = {};
     
+    // Named Credentials picklist details / button indicators
+    ncName;
+    ncOptions;
+    ncOptionsLoaded  = false;
+    ncOptionSelected = false;
+
+    // Jobs table loaded
+    jobTableLoaded;
+
     // Indicator to view the button
     mdtConfigOptionsLoaded = false;
     mdtConfigSelected      = false;
@@ -46,8 +57,22 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     mdtConfigRecord;
     mdtConfigOptions = [];
 
+    // Disabled when not loaded yet from apex
+    get dcNcDisabled(){
+        return !this.ncOptionsLoaded;
+    }
+
+    // Disabled when not loaded yet from apex
+    get mdtConfigDisabled(){
+        return !this.mdtConfigOptionsLoaded;
+    }
+
+    get refreshButtonDisabled(){
+        return !this.ncOptionSelected;
+    }
+
     // Disable buttons
-    get buttonsEnabled(){
+    get jobActionButtonsDisabled(){
         return !this.mdtConfigSelected;
     }
 
@@ -55,7 +80,7 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback(){
-        this.handleGetMdtOptions();
+        this.handleGetDcNamedCredentialOptions();
     }
 
 
@@ -72,18 +97,20 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
 
             case 'csv':
                 this.handleOpenAddCsvModal({
-                        mdtConfigRecord : this.mdtConfigRecord,
-                        jobId : row.id,
-                        isUpload : false
-                    });
+                    namedCredentialName : this.ncName,    
+                    mdtConfigRecord     : this.mdtConfigRecord,
+                    jobId               : row.id,
+                    isUpload            : false
+                });
             break;
 
             case 'uploadCsv':
                 this.handleOpenAddCsvModal({
-                        mdtConfigRecord : this.mdtConfigRecord,
-                        jobId : row.id,
-                        isUpload : true
-                    });
+                    namedCredentialName : this.ncName,    
+                    mdtConfigRecord     : this.mdtConfigRecord,
+                    jobId               : row.id,
+                    isUpload            : true
+                });
             break;
 
             case 'complete':
@@ -104,6 +131,46 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                            APEX HANDLERS                                             **
      ** **************************************************************************************************** **/
+    handleGetDcNamedCredentialOptions(){
+        try{
+            this.loading = true;
+            getDcNamedCredentialOptions()
+                .then((apexResponse) => {
+                    this.ncOptions      = apexResponse;
+                    this.ncOptionsLoaded= true;
+                })
+                .catch((error) => {
+                    handleError(error);
+                })
+                .finally(()=>{
+                    this.loading = false; 
+                });
+        }catch(error){
+            handleError(error);
+            this.loading = false; 
+        }
+    }
+
+
+    handleGetMdtOptions(){
+        try{
+            getMtdConfigOptions({namedCredentialName : this.ncName})
+                .then((apexResponse) => {
+                    this.mdtConfigOptions       = apexResponse;
+                    this.mdtConfigOptionsLoaded = true;
+                })
+                .catch((error) => {
+                    handleError(error);
+                })
+                .finally(()=>{
+                    this.loading = false;
+                });
+        }catch(error){
+            handleError(error); 
+        }
+    }
+
+
     handleGetMetadataInfo(){
         try{
             this.loading = true;
@@ -131,8 +198,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             this.loading = true;
 
             getJobInfo({
-                mdtConfigName : this.mdtConfigRecord,
-                jobId         : jobId
+                namedCredentialName : this.ncName,
+                jobId               : jobId
             })
             .then((apexResponse) => {
                 this.handleOpenJobDetailsModal(apexResponse)
@@ -159,9 +226,9 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             })
                 .then((apexResponse) => {
                     LightningAlert.open({
-                        message: 'Succesfully created a new bulk UPSERT job with Id : "' + apexResponse +'"',
-                        label: 'Success',
-                        theme : 'success'
+                        message : 'Succesfully created a new bulk UPSERT job with Id : "' + apexResponse +'"',
+                        label   : 'Success',
+                        theme   : 'success'
                     });
 
                     // Update the job table after creation
@@ -190,9 +257,9 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             })
                 .then((apexResponse) => {
                     LightningAlert.open({
-                        message: 'Succesfully created a new bulk DELETE job with Id : "' + apexResponse +'"',
-                        label: 'Success',
-                        theme : 'success'
+                        message : 'Succesfully created a new bulk DELETE job with Id : "' + apexResponse +'"',
+                        label   : 'Success',
+                        theme   : 'success'
                     });
 
                     // Update the job table after creation
@@ -215,23 +282,26 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleAbort(jobId){
         try{
             this.loading = true;
-            abortJob({mdtConfigName : this.mdtConfigRecord, jobId : jobId})
-                .then(() => {
-                    LightningAlert.open({
-                        message: 'Succesfully ABORTED the a bulk job with Id : "' + jobId +'"',
-                        label: 'Success',
-                        theme : 'success'
-                    });
-
-                    // Update the job table after creation
-                    this.handleGetIngestionJobTable();
-                })
-                .catch((error) => {
-                    handleError(error);
-                })
-                .finally(()=>{
-                    this.loading = false;
+            abortJob({
+                namedCredentialName : this.ncName,
+                jobId               : jobId
+            })
+            .then(() => {
+                LightningAlert.open({
+                    message: 'Succesfully ABORTED the a bulk job with Id : "' + jobId +'"',
+                    label: 'Success',
+                    theme : 'success'
                 });
+
+                // Update the job table after creation
+                this.handleGetIngestionJobTable();
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
         }catch(error){
             handleError(error);
             this.loading = false;
@@ -242,23 +312,26 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleDelete(jobId){
         try{
             this.loading = true;
-            deleteJob({mdtConfigName : this.mdtConfigRecord, jobId : jobId})
-                .then(() => {
-                    LightningAlert.open({
-                        message: 'Succesfully DELETED the a bulk job with Id : "' + jobId +'"',
-                        label: 'Success',
-                        theme : 'success'
-                    });
-
-                    // Update the job table after creation
-                    this.handleGetIngestionJobTable();
-                })
-                .catch((error) => {
-                    handleError(error);
-                })
-                .finally(()=>{
-                    this.loading = false;
+            deleteJob({
+                namedCredentialName : this.ncName,
+                jobId               : jobId
+            })
+            .then(() => {
+                LightningAlert.open({
+                    message : 'Succesfully DELETED the a bulk job with Id : "' + jobId +'"',
+                    label   : 'Success',
+                    theme   : 'success'
                 });
+
+                // Update the job table after creation
+                this.handleGetIngestionJobTable();
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
         }catch(error){
             handleError(error);
             this.loading = false;
@@ -269,42 +342,26 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleComplete(jobId){
         try{
             this.loading = true;
-            completeJob({mdtConfigName : this.mdtConfigRecord, jobId : jobId})
-                .then(() => {
-                    LightningAlert.open({
-                        message: 'Succesfully COMPLETED the a bulk job with Id : "' + jobId +'"',
-                        label: 'Success',
-                        theme : 'success'
-                    });
-
-                    // Update the job table after creation
-                    this.handleGetIngestionJobTable();
-                })
-                .catch((error) => {
-                    handleError(error);
-                })
-                .finally(()=>{
-                    this.loading = false;
+            completeJob({
+                namedCredentialName : this.ncName,
+                jobId               : jobId
+            })
+            .then(() => {
+                LightningAlert.open({
+                    message : 'Succesfully COMPLETED the a bulk job with Id : "' + jobId +'"',
+                    label   : 'Success',
+                    theme   : 'success'
                 });
-        }catch(error){
-            handleError(error);
-            this.loading = false;
-        }
-    }
 
-
-    handleGetMdtOptions(){
-        try{
-            getMtdConfigOptions()
-                .then((apexResponse) => {
-                    this.mdtConfigOptions = apexResponse;
-                })
-                .catch((error) => {
-                    handleError(error);
-                })
-                .finally(()=>{
-                    this.mdtConfigOptionsLoaded = true;
-                });
+                // Update the job table after creation
+                this.handleGetIngestionJobTable();
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+            });
         }catch(error){
             handleError(error);
             this.loading = false;
@@ -315,19 +372,20 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     handleGetIngestionJobTable(){
         try{
             this.loading = true;
-            getIngestionJobTable({mdtConfigName : this.mdtConfigRecord})
-                .then((apexResponse) => {
-                    this.ldt = apexResponse;
-                })
-                .catch((error) => {
-                    handleError(error);
 
-                    // Disable buttons on fault state
-                    this.mdtConfigSelected = false;
-                })
-                .finally(()=>{
-                    this.loading = false;
-                });
+            getIngestionJobTable({
+                namedCredentialName : this.ncName
+            })
+            .then((apexResponse) => {
+                this.ldt = apexResponse;
+            })
+            .catch((error) => {
+                handleError(error);
+            })
+            .finally(()=>{
+                this.loading = false;
+                this.jobTableLoaded = true;
+            });
         }catch(error){
             handleError(error);
             this.loading = false;
@@ -338,12 +396,39 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
+    handleChangeNcName(event) {
+        try{
+            // On a change reset the metadata settings
+            this.mdtConfigSelected = false;
+            this.mdtConfigOptionsLoaded = false;
+            this.mdtConfigOptions = [];
+            this.mdtConfigRecord = '';
+            
+            // Update named credential
+            this.ncName           = event.detail.value;
+            this.ncOptionSelected = true;
+
+            // Clear the data table
+            this.ldt = null;
+            this.jobTableLoaded = false;
+
+
+        }catch(error){
+            handleError(error);
+        }
+
+        // Get he ingestion table
+        this.handleGetIngestionJobTable();
+
+        // Get the metadata configuration option
+        this.handleGetMdtOptions();
+    }
+
+
     // Set the config record name and update the table
     handleChangeMtdConfig(event) {
-        this.jobTableData = [];
         this.mdtConfigRecord = event.detail.value;
         this.mdtConfigSelected = true;
-        this.handleGetIngestionJobTable();
     }
 
 

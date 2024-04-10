@@ -77,12 +77,22 @@
             ></lightning-combobox>
 
             <lightning-input
-                type="text"
-                label="Primary Key Record Id"
-                value={pkRecordId}
-                disabled={pkRecordIdDisabled}
-                onchange={handleChangePkRecordId}
+                type    = "text"
+                label   = "Primary Key Record Id"
+                value   = {pkRecordId}
+                disabled= {pkRecordIdDisabled}
+                onchange= {handleChangePkRecordId}
             ></lightning-input>
+
+            <lightning-combobox
+                disabled    = {executeDisabled}
+                name        = "resultFormat"
+                label       = "Result Format"
+                value       = {resultFormat}
+                placeholder = "Select..."
+                options     = {resultFormatOptions}
+                onchange    = {handlechangeResultFormat}
+            ></lightning-combobox>
 
         </div>
     </lightning-card>

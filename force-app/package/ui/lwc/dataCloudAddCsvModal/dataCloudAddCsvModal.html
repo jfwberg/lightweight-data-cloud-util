@@ -9,18 +9,23 @@
 
     <lightning-modal-header label="Add CSV (Data) to Bulk Job"></lightning-modal-header>
 
-    <lightning-modal-body>
     
-        <div class="slds-var-p-bottom_medium" if:false={isUpload}>
-            <div class="slds-form-element">
-                <div class="slds-form-element__control">
-                    <textarea id="ta" placeholder="CSV String..." class="slds-textarea ta" onchange={handleChangeCsvData}>{csvData}</textarea>
-                </div>
-            </div>
-        </div>
+    <div class="slds-modal__content hideOverflow" if:false = {isUpload}>
+        <c-cm-textarea
+            theme             = {codemirrorTheme}
+            mode              = {codemirrorMode} 
+            value             = {codemirrorValue} 
+            size              = {codemirrorSize}
+            disabled          = {codemirrorDisabled}
+            class             = {codemirrorClass}
+            onsave            = {codemirrorSave}
+            onloadingcomplete = {codemirrorLoadingComplete}
+        ></c-cm-textarea>
+    </div>
+
+    <lightning-modal-body lwc:if = {isUpload}>
 
         <lightning-file-upload
-            lwc:if          = {isUpload}
             label           = "Upload CSV File"
             name            = "fileUploader"
             accept          = {acceptedFormats}

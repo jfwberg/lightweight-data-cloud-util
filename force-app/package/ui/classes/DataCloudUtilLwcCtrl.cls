@@ -63,13 +63,13 @@ public with sharing class DataCloudUtilLwcCtrl {
      **                                    CUSTOM METADATA AURA METHODS                                      **
      ** **************************************************************************************************** **/
     @AuraEnabled
-    public static List<Map<String,String>>  getMtdConfigOptions(){
+    public static List<Map<String,String>>  getMtdConfigOptions(String namedCredentialName){
         try{
             // Force an exception for testing purposes
-            utl.Tst.forceException('AURA_EXCEPTION');
+            utl.Tst.forceException('AURA_EXCEPTION'); 
 
             // Return the metadata configuration picklist options
-            return Dc.getConfigMetadataRecordsPicklistOptions();
+            return Dc.getConfigMetadataRecordsPicklistOptions(namedCredentialName);
 
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -101,11 +101,11 @@ public with sharing class DataCloudUtilLwcCtrl {
             // Create the configuration table
             utl.Ldt mappingTable = new utl.Ldt()
                 .setKeyField('source')
-                .addColumn(new Ldt.Col('Source Field (Salesforce)', 'source', 'text'))
-                .addColumn(new Ldt.Col('Target Field (Data Cloud)', 'target', 'text'))
-                .addColumn(new Ldt.Col('Field Type (Data Cloud)',   'ftype',  'text'))
-                .addColumn(new Ldt.Col('Is Primary Key',            'isPk',   'boolean'))
-                .addColumn(new Ldt.Col('Is Event Time Field',       'isEt',   'boolean'))
+                .addColumn(new utl.Ldt.Col('Source Field (Salesforce)', 'source', 'text'))
+                .addColumn(new utl.Ldt.Col('Target Field (Data Cloud)', 'target', 'text'))
+                .addColumn(new utl.Ldt.Col('Field Type (Data Cloud)',   'ftype',  'text'))
+                .addColumn(new utl.Ldt.Col('Is Primary Key',            'isPk',   'boolean'))
+                .addColumn(new utl.Ldt.Col('Is Event Time Field',       'isEt',   'boolean'))
             ;
 	        
             // Add mapping data
@@ -190,7 +190,7 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static utl.Ldt getJobInfo(String mdtConfigName, String jobId){
+    public static utl.Ldt getJobInfo(String namedCredentialName, String jobId){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
@@ -200,7 +200,7 @@ public with sharing class DataCloudUtilLwcCtrl {
                 .setupKeyValue()
                 .setData(
                     new utl.JsnTbl()
-                        .create(Dc.getBulkIngestionJobDetails(mdtConfigName,jobId))
+                        .create(Dc.getBulkIngestionJobDetails(namedCredentialName,jobId))
                         .getKeyValuePairData()
                 )
             ;
@@ -211,33 +211,34 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static utl.Ldt getIngestionJobTable(String mdtConfigName){
+    public static utl.Ldt getIngestionJobTable(String namedCredentialName){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
 
             // Create a lightning data table
             return new utl.Ldt()
-                .addColumn(new Ldt.Col('Created Date',  'createdDate', 'date'))
-                .addColumn(new Ldt.Col('Job Id',        'id',          'text'))
-                .addColumn(new Ldt.Col('Operation',     'operation',   'text'))
-                .addColumn(new Ldt.Col('Object',        'object',      'text'))
-                .addColumn(new Ldt.Col('Job State',     'state',       'text'))
+                .setKeyField('id')
+                .addColumn(new utl.Ldt.Col('Created Date',  'createdDate', 'date'))
+                .addColumn(new utl.Ldt.Col('Job Id',        'id',          'text'))
+                .addColumn(new utl.Ldt.Col('Operation',     'operation',   'text'))
+                .addColumn(new utl.Ldt.Col('Object',        'object',      'text'))
+                .addColumn(new utl.Ldt.Col('Job State',     'state',       'text'))
                 .addColumn(
                     new utl.Ldt.Col(null, null)
                         .setType('action')
                         .setTypeAttributes(
                             new utl.Ldt.TypeAttributes()
                                 .setMenuAlignment('auto')
-                                .addRowAction(new Ldt.RowAction('Details',      'details'   ))
-                                .addRowAction(new Ldt.RowAction('Add CSV Data', 'csv'       ))
-                                .addRowAction(new Ldt.RowAction('Upload CSV',   'uploadCsv' ))
-                                .addRowAction(new Ldt.RowAction('Complete',     'complete'  ))
-                                .addRowAction(new Ldt.RowAction('Abort',        'abort'     ))
-                                .addRowAction(new Ldt.RowAction('Delete',       'delete'    ))
+                                .addRowAction(new utl.Ldt.RowAction('Details',      'details'   ))
+                                .addRowAction(new utl.Ldt.RowAction('Add CSV Data', 'csv'       ))
+                                .addRowAction(new utl.Ldt.RowAction('Upload CSV',   'uploadCsv' ))
+                                .addRowAction(new utl.Ldt.RowAction('Complete',     'complete'  ))
+                                .addRowAction(new utl.Ldt.RowAction('Abort',        'abort'     ))
+                                .addRowAction(new utl.Ldt.RowAction('Delete',       'delete'    ))
                         ) 
                 )
-                .setData(Dc.getBulkIngestionJobs(mdtConfigName))
+                .setData(Dc.getBulkIngestionJobs(namedCredentialName))
             ;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -261,13 +262,13 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static Boolean abortJob(String mdtConfigName, String jobId){
+    public static Boolean abortJob(String namedCredentialName, String jobId){
         try{
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
 
             // Update the job status
-            Dc.updateIngestionBulkJobState(mdtConfigName, jobId, jobId, 'Aborted');
+            Dc.updateIngestionBulkJobState(namedCredentialName, jobId, jobId, 'Aborted');
 
             // return true when all is good
             return true;
@@ -279,13 +280,13 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static Boolean completeJob(String mdtConfigName, String jobId){
+    public static Boolean completeJob(String namedCredentialName, String jobId){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
 
             // Update the bulk job status
-            Dc.updateIngestionBulkJobState(mdtConfigName, jobId, jobId, 'UploadComplete');
+            Dc.updateIngestionBulkJobState(namedCredentialName, jobId, jobId, 'UploadComplete');
 
             // return true when all is good
             return true;
@@ -297,13 +298,13 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static Boolean deleteJob(String mdtConfigName, String jobId){
+    public static Boolean deleteJob(String namedCredentialName, String jobId){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
 
             // Delete the ingestion bulk job
-            Dc.deleteIngestionBulkJob(mdtConfigName, jobId, jobId);
+            Dc.deleteIngestionBulkJob(namedCredentialName, jobId, jobId);
 
             // return true when all is good
             return true;
@@ -315,13 +316,13 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static Boolean addCsv(String mdtConfigName, String jobId, String csvData){
+    public static Boolean addCsv(String namedCredentialName, String jobId, String csvData){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
 
             // Add CSV data
-            Dc.addCsvToIngestionBulkJob(mdtConfigName, jobId, jobId, csvData);
+            Dc.addCsvToIngestionBulkJob(namedCredentialName, jobId, jobId, csvData);
 
             // return true when all is good
             return true;
@@ -333,14 +334,14 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static Boolean addCsvFromFile(String mdtConfigName, String jobId, String documentId, String contentVersionId){
+    public static Boolean addCsvFromFile(String namedCredentialName, String jobId, String documentId, String contentVersionId){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
 
             // Send the file content to Data Cloud
             Dc.addCsvToIngestionBulkJob(
-                mdtConfigName,
+                namedCredentialName,
                 jobId,
                 jobId,
                 [SELECT VersionData FROM ContentVersion WHERE Id = :contentVersionId WITH USER_MODE LIMIT 1]?.VersionData?.toString()
@@ -531,7 +532,7 @@ public with sharing class DataCloudUtilLwcCtrl {
      **                                   DATA CLOUD QUERY AURA METHODS                                      **
      ** **************************************************************************************************** **/
     @AuraEnabled
-    public static utl.Ldt getDcQueryTable(String mdtConfigName, String query, String apiVersion){
+    public static utl.Ldt getDcQueryTable(String namedCredentialName, String query, String apiVersion){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
@@ -551,7 +552,7 @@ public with sharing class DataCloudUtilLwcCtrl {
 
             // Cast the response as an object so we can get both the data and metadata
             Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(
-                Dc.executeQuery(mdtConfigName, query, apiVersion)
+                Dc.executeQuery(namedCredentialName, query, apiVersion)
                     .getResponse()
                     .getBody()
             );
@@ -610,14 +611,14 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static String getDcQueryCsv(String mdtConfigName, String query, String apiVersion){
+    public static String getDcQueryCsv(String namedCredentialName, String query, String apiVersion){
         try{
            // Force an exception for testing purposes
            utl.Tst.forceException('AURA_EXCEPTION');
 
            // Cast the response as an object so we can get both the data and metadata
             Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(
-                Dc.executeQuery(mdtConfigName, query, apiVersion)
+                Dc.executeQuery(namedCredentialName, query, apiVersion)
                     .getResponse()
                     .getBody()
             );
@@ -640,13 +641,13 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static String getDcQueryRaw(String mdtConfigName, String query, String apiVersion){
+    public static String getDcQueryRaw(String namedCredentialName, String query, String apiVersion){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
             
             // Return the raw response body
-            return Dc.executeQuery(mdtConfigName, query, apiVersion)
+            return Dc.executeQuery(namedCredentialName, query, apiVersion)
                 .getResponse()
                 .getBody();
 
@@ -864,17 +865,68 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static String getDataGraphJsonBlob(String namedCredentialName, String dataGraphName, String dataGraphRecordId){
+    public static Object getDataGraph(String namedCredentialName, String dataGraphName, String dataGraphRecordId, String resultFormat){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
- 
-            return Dc.getDataGraphJsonBlob(namedCredentialName, dataGraphName, dataGraphRecordId);
+
+            switch on resultFormat {
+                
+                when 'table' {
+                    
+                    utl.JsnTbl jsnTbl = getDataGraphJsnTable(namedCredentialName, dataGraphName, dataGraphRecordId);
+
+                    // Add the columns
+                    utl.Ldt ldt = new utl.Ldt();
+                    for(String columnName : jsnTbl.getColumnNames()){
+                        ldt.addColumn(new utl.Ldt.Col(columnName,columnName));
+                    }
+                    return ldt.setData(jsnTbl.getKeyValueData());
+                    
+                }
+
+                when 'csv' {
+                    return getDataGraphJsnTable(namedCredentialName, dataGraphName, dataGraphRecordId).getCsvString();
+                }
+
+                when 'keyvalue' {
+                    return new utl.Ldt()
+                        .setupKeyValue()
+                        .setData(getDataGraphJsnTable(namedCredentialName, dataGraphName, dataGraphRecordId).getKeyValuePairData())
+                    ;
+                }
+
+                when 'jsonblob' {
+                    return Dc.getDataGraphJsonBlob(namedCredentialName, dataGraphName, dataGraphRecordId);
+                }
+
+                when 'raw' {
+                    return Dc.getDataGraph(namedCredentialName, dataGraphName, dataGraphRecordId);
+                }
+
+                when else {
+                   throw new Dc.DataCloudUtilException('Invalid response format'); 
+                }
+            }
 
         }catch(Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
+
+    private static utl.JsnTbl getDataGraphJsnTable(String namedCredentialName, String dataGraphName, String dataGraphRecordId){
+       return new utl.JsnTbl()
+            .create(
+                (Map<String,Object>) JSON.deserializeUntyped(
+                    Dc.getDataGraphJsonBlob(namedCredentialName, dataGraphName, dataGraphRecordId)
+                )
+            )
+        ;
+    }
+
+
+
 
     /** **************************************************************************************************** **
      **                                      SOQL QUERY AURA METHODS                                         **

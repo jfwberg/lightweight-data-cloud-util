@@ -12,15 +12,16 @@ import {LightningElement} from "lwc";
 import {handleError}      from 'c/util';
 
 // Custom Modals
+import cmModal            from 'c/cmModal';
+import ldtModal           from 'c/ldtModal';
 import textModal          from 'c/textModal';
-import textareaModal      from 'c/textareaModal';
 import multiLdtModal      from 'c/multiLdtModal';
 
 // Apex methods
 import getDcNamedCredentialOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcNamedCredentialOptions";
 import getDataGraphOptions         from "@salesforce/apex/DataCloudUtilLwcCtrl.getDataGraphOptions";
 import getDataGraphDetails         from "@salesforce/apex/DataCloudUtilLwcCtrl.getDataGraphDetails";
-import getDataGraphJsonBlob        from "@salesforce/apex/DataCloudUtilLwcCtrl.getDataGraphJsonBlob";
+import getDataGraph                from "@salesforce/apex/DataCloudUtilLwcCtrl.getDataGraph";
 
 
 // Main class
@@ -28,9 +29,6 @@ export default class DataCloudDataGraphUtil extends LightningElement {
 
     // Loading indicator
     loading = false;
-
-    // The JSON Blob
-    jsonBlob;
 
     // Named Credentials picklist details / button indicators
     ncName;
@@ -53,6 +51,16 @@ export default class DataCloudDataGraphUtil extends LightningElement {
 
     // Record id of the private key
     pkRecordId;
+
+    // Output as either csv or LWC data table
+    resultFormat = 'keyvalue';
+    resultFormatOptions = [
+        {label : 'LWC Data Table',      value:'table'     },
+        {label : 'Key / Value Table',   value:'keyvalue'  },
+        {label : 'JSON Blob',           value:'jsonblob'  },
+        {label : 'CSV',                 value:'csv'       },
+        {label : 'Raw API Response',    value:'raw'       }
+    ];
 
     /** **************************************************************************************************** **
      **                                            GETTER METHODS                                            **
@@ -206,17 +214,112 @@ export default class DataCloudDataGraphUtil extends LightningElement {
     }
 
 
-    handleGetDataGraphJsonBlob(){
+    handleGetDataGraph(){
         try{
             this.loading = true;
-            getDataGraphJsonBlob({
+
+            getDataGraph({
                 namedCredentialName : this.ncName,
                 dataGraphName       : this.dgName,
                 dataGraphRecordId   : this.pkRecordId,
+                resultFormat        : this.resultFormat
             })
             .then((apexResponse) => {
-                this.jsonBlob = apexResponse;
-                this.handleOpenExecuteModal();
+                switch (this.resultFormat) {
+                    
+                    case 'table':{
+                        ldtModal.open({
+                            header : 'Data Graph - Result - LWC Data Table',
+                            ldt: apexResponse
+                        });
+                        break;
+                    }
+
+                    case 'keyvalue':{
+                        ldtModal.open({
+                            header : 'Data Graph - Result - Key/Value Pair Table',
+                            ldt: apexResponse
+                        });
+
+                        break;
+                    }
+
+                    case 'jsonblob' : {
+                        cmModal.open({
+                            // Modal info
+                            size             : 'small',
+                            header           : 'Data Graph Execution Result',
+                            value            : apexResponse,
+                            mode             : 'text/javascript',
+                            disabled         : false,
+                            
+                            // Download info
+                            fileName         : 'DataGraph',
+                            fileExtension    : '.json',
+                            fileMimeType     : 'application/json; charset=utf-8;',
+                            includeTimestamp : true,
+                            
+                            // Button visibillity
+                            copyButton       : true,
+                            downloadButton   : true,
+                            prettifyButton   : true,
+                            closeButton      : true
+                        });
+
+                        break;
+                    }
+
+                    case 'csv' : {
+                        cmModal.open({
+                            // Modal info
+                            size             : 'small',
+                            header           : 'Data Graph - Result - CSV Response',
+                            value            : apexResponse,
+                            mode             : 'csv',
+                            disabled         : false,
+                            
+                            // Download info
+                            fileName         : 'DataGraph',
+                            fileExtension    : '.csv',
+                            fileMimeType     : 'text/csv',
+                            includeTimestamp : true,
+                            
+                            // Button visibillity
+                            copyButton       : true,
+                            downloadButton   : true,
+                            prettifyButton   : false,
+                            closeButton      : true
+                        });
+
+                        break;
+                    }
+                    
+                    case 'raw' : {
+                        cmModal.open({
+                            // Modal info
+                            size             : 'small',
+                            header           : 'Data Graph - Result - RAW API Response',
+                            value            : apexResponse,
+                            mode             : 'text/javascript',
+                            disabled         : false,
+                            
+                            // Download info
+                            fileName         : 'DataGraph',
+                            fileExtension    : '.json',
+                            fileMimeType     : 'application/json; charset=utf-8;',
+                            includeTimestamp : true,
+                            
+                            // Button visibillity
+                            copyButton       : true,
+                            downloadButton   : true,
+                            prettifyButton   : true,
+                            closeButton      : true
+                        });
+
+                        break;
+                    }
+                }
+
             })
             .catch((error) => {
                 handleError(error);
@@ -293,6 +396,10 @@ export default class DataCloudDataGraphUtil extends LightningElement {
         }
     }
 
+    handlechangeResultFormat(event) {
+        this.resultFormat = event.detail.value;
+    }
+
 
     /** **************************************************************************************************** **
      **                                        CLICK BUTTON HANDLERS                                         **
@@ -306,7 +413,7 @@ export default class DataCloudDataGraphUtil extends LightningElement {
     }
 
     handleClickExecute(){
-        this.handleGetDataGraphJsonBlob();
+        this.handleGetDataGraph();
     }
 
 
@@ -347,26 +454,7 @@ export default class DataCloudDataGraphUtil extends LightningElement {
 
     handleOpenExecuteModal(){
         try{
-            textareaModal.open({
-                
-                // Modal info
-                size             : 'small',
-                label            : 'Data Graph Execution Result',
-                content          : this.jsonBlob,
-                disabled         : false,
-                
-                // Download info
-                fileName         : 'DataGraph',
-                fileExtension    : '.json',
-                fileMimeType     : 'application/json; charset=utf-8;',
-                includeTimestamp : true,
-                
-                // Button visibillity
-                copyButton       : true,
-                downloadButton   : true,
-                prettifyButton   : true,
-                closeButton      : true
-            });
+            
         }catch(error){
             handleError(error);
         }
