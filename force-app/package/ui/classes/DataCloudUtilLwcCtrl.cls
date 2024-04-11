@@ -59,6 +59,42 @@ public with sharing class DataCloudUtilLwcCtrl {
     };
 
 
+    // Mapping between data cloud query types and lightning datatable types
+    private final static Map<Schema.DisplayType,String> FIELD_TYPE_DATA_CLOUD_DATA_TYPE_MAP = new Map<Schema.DisplayType,String>{
+        Schema.DisplayType.ADDRESS                   => 'textField',
+        Schema.DisplayType.ANYTYPE                   => 'textField',
+        Schema.DisplayType.BASE64                    => 'textField',
+        Schema.DisplayType.BOOLEAN                   => 'booleanField',
+        Schema.DisplayType.COMBOBOX                  => 'textField',
+        Schema.DisplayType.COMPLEXVALUE              => 'textField',
+        Schema.DisplayType.CURRENCY                  => 'numberField',
+        Schema.DisplayType.DATACATEGORYGROUPREFERENCE=> 'textField',
+        Schema.DisplayType.DATE                      => 'dateField',
+        Schema.DisplayType.DATETIME                  => 'dateTimeField',
+        Schema.DisplayType.DOUBLE                    => 'numberField',
+        Schema.DisplayType.EMAIL                     => 'emailField',
+        Schema.DisplayType.ENCRYPTEDSTRING           => 'textField',
+        Schema.DisplayType.ID                        => 'textField',
+        Schema.DisplayType.INTEGER                   => 'numberField',
+        Schema.DisplayType.JSON                      => 'textField',
+        Schema.DisplayType.LOCATION                  => 'numberField',
+        Schema.DisplayType.LONG                      => 'numberField',
+        Schema.DisplayType.MULTIPICKLIST             => 'textField',
+        Schema.DisplayType.PERCENT                   => 'percentField',
+        Schema.DisplayType.PHONE                     => 'phoneField',
+        Schema.DisplayType.PICKLIST                  => 'textField',
+        Schema.DisplayType.REFERENCE                 => 'textField',
+        Schema.DisplayType.SOBJECT                   => 'textField',
+        Schema.DisplayType.STRING                    => 'textField',
+        Schema.DisplayType.TEXTAREA                  => 'textField',
+        Schema.DisplayType.TIME                      => 'textField',
+        Schema.DisplayType.URL                       => 'urlField'
+   };
+
+
+    
+
+
     /** **************************************************************************************************** **
      **                                    CUSTOM METADATA AURA METHODS                                      **
      ** **************************************************************************************************** **/
@@ -495,11 +531,12 @@ public with sharing class DataCloudUtilLwcCtrl {
             utl.Ldt ldt = new utl.Ldt()
                 .setKeyField('source')
                 .setHideCheckboxColumn(false)
-                .addColumn(new utl.Ldt.Col('Source field (Salesforce)', 'source', 'text'    ))
-                .addColumn(new utl.Ldt.Col('Salesforce field Type',     'sfFtype','text'    ))
-                .addColumn(new utl.Ldt.Col('Custom field?',             'custom', 'boolean' ))
-                .addColumn(new utl.Ldt.Col('Target field (Data Cloud)', 'target', 'text'    ))
-                .addColumn(new utl.Ldt.Col('Data Cloud Field Type',     'dcFtype','text'    ))
+                .addColumn(new utl.Ldt.Col('Source field (Salesforce)', 'source',  'text'    ))
+                .addColumn(new utl.Ldt.Col('Salesforce Soap Type',      'sType',   'text'    ))
+                .addColumn(new utl.Ldt.Col('Salesforce Field Type',     'fType',   'text'    ))
+                .addColumn(new utl.Ldt.Col('Custom field?',             'custom',  'boolean' ))
+                .addColumn(new utl.Ldt.Col('Target field (Data Cloud)', 'target',  'text'    ))
+                .addColumn(new utl.Ldt.Col('Data Cloud Field Type',     'dcFtype', 'text'    ))
             ;
 
             // Get the describe for the fields
@@ -512,10 +549,11 @@ public with sharing class DataCloudUtilLwcCtrl {
 
                 ldt.addRow(new Map<String,Object>{
                     'source'  => sfr.name,
-                    'sfFtype' => String.valueOf(sfr.SoapType),
+                    'sType'   => String.valueOf(sfr.SoapType),
+                    'fType'   => String.valueof(sfr.getType()),
                     'custom'  => sfr.custom,
                     'target'  => sfr.name,
-                    'dcFtype' => SOAP_TYPE_DATA_CLOUD_DATA_TYPE_MAP.get(sfr.SoapType)
+                    'dcFtype' => FIELD_TYPE_DATA_CLOUD_DATA_TYPE_MAP.get(sfr.getType())
                 });
             }
 
@@ -915,15 +953,7 @@ public with sharing class DataCloudUtilLwcCtrl {
     }
 
 
-    private static utl.JsnTbl getDataGraphJsnTable(String namedCredentialName, String dataGraphName, String dataGraphRecordId){
-       return new utl.JsnTbl()
-            .create(
-                (Map<String,Object>) JSON.deserializeUntyped(
-                    Dc.getDataGraphJsonBlob(namedCredentialName, dataGraphName, dataGraphRecordId)
-                )
-            )
-        ;
-    }
+
 
 
 
@@ -959,18 +989,10 @@ public with sharing class DataCloudUtilLwcCtrl {
 
     
     @AuraEnabled
-    public static String getSoqlQueryRaw(String mdtConfigName, String query, Boolean tooling){
+    public static String getSoqlQueryRaw(String query, Boolean tooling){
         try{
-           // Force an exception for testing purposes
-           utl.Tst.forceException('AURA_EXCEPTION');
-
-            // Map to hold the mappings
-            Map<String,String> mapping = new Map<String,String>();
-
-            if(mdtConfigName != null){
-                // Create the mapping
-                mapping = Dc.createFieldMapping(Dc.getMetadataRecord(mdtConfigName).Data_Cloud_Ingestion_API_Field_Mappings__r);
-            }
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
 
             // Execute the query and return the result
             return new utl.Rst(true)
@@ -987,7 +1009,7 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static utl.Ldt getSoqlQueryTable(String mdtConfigName, String query, Boolean tooling){
+    public static utl.Ldt getSoqlQueryTable(String query, Boolean tooling){
 
         try{
             // Force an exception for testing purposes
@@ -1109,6 +1131,20 @@ public with sharing class DataCloudUtilLwcCtrl {
         // Return the output as a CSV string
         return table;
     }
+
+
+    /**
+     * @description Method to get a jsnTble object from a data graph response
+     */
+    private static utl.JsnTbl getDataGraphJsnTable(String namedCredentialName, String dataGraphName, String dataGraphRecordId){
+        return new utl.JsnTbl()
+             .create(
+                 (Map<String,Object>) JSON.deserializeUntyped(
+                     Dc.getDataGraphJsonBlob(namedCredentialName, dataGraphName, dataGraphRecordId)
+                 )
+             )
+         ;
+     }
 
 
     /**

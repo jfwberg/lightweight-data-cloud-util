@@ -999,7 +999,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         System.runAs(TST_USER){
             // Happy Path
             utl.Mck.setResponse(SOQL_RESPONSE);
-            DataCloudUtilLwcCtrl.getSoqlQueryRaw('Apex_Unit_Test','SELECT Id FROM User', false);
+            DataCloudUtilLwcCtrl.getSoqlQueryRaw('SELECT Id FROM User', false);
 
             // Forced error path
             try{
@@ -1007,7 +1007,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
                 utl.Tst.addForcedException('AURA_EXCEPTION');
 
                 // Execute method
-                DataCloudUtilLwcCtrl.getSoqlQueryRaw('Apex_Unit_Test','SELECT Id FROM User', false);
+                DataCloudUtilLwcCtrl.getSoqlQueryRaw('SELECT Id FROM User', false);
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();
@@ -1035,12 +1035,12 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         System.runAs(TST_USER){
             // Happy Path
             utl.Mck.setResponse(SOQL_RESPONSE);
-            DataCloudUtilLwcCtrl.getSoqlQueryTable('Apex_Unit_Test','SELECT Id FROM User', false);
+            DataCloudUtilLwcCtrl.getSoqlQueryTable('SELECT Id FROM User', false);
 
             // Forced error path
             try{
                 // Execute method
-                DataCloudUtilLwcCtrl.getSoqlQueryTable('Apex_Unit_Test','SELECT Id FROM Invalid', false);
+                DataCloudUtilLwcCtrl.getSoqlQueryTable('SELECT Id FROM Invalid', false);
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();
@@ -1055,7 +1055,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
                 utl.Tst.addForcedException('AURA_EXCEPTION');
 
                 // Execute method
-                DataCloudUtilLwcCtrl.getSoqlQueryTable('Apex_Unit_Test','SELECT Id FROM User', false);
+                DataCloudUtilLwcCtrl.getSoqlQueryTable('SELECT Id FROM User', false);
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();

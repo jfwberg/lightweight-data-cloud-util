@@ -15,7 +15,6 @@ import {removePreAndPostFix} from 'c/util';
 // Modals
 import cmModal              from 'c/cmModal';
 import textModal            from 'c/textModal';
-import textareaModal        from 'c/textareaModal';
 
 // Apex methods
 import getSObjectOptions    from "@salesforce/apex/DataCloudUtilLwcCtrl.getSObjectOptions";
@@ -23,10 +22,15 @@ import getSObjectFieldInfo  from "@salesforce/apex/DataCloudUtilLwcCtrl.getSObje
 
 // Mapping for the YAML
 const FIELD_TYPE_MAPPING = {
-    "textField"     : "string",
-    "numberField"   : "number",
+    "booleanField"  : "boolean",
     "dateField"     : "string\n          format: date",
-    "dateTimeField" : "string\n          format: date-time"
+    "dateTimeField" : "string\n          format: date-time",
+    "emailField"    : "string\n          format: email",
+    "numberField"   : "number",
+    "phoneField"    : "string\n          format: phone",
+    "percentField"  : "string\n          format: percent",
+    "textField"     : "string",
+    "urlField"      : "string\n          format: url",    
 };
 
 // Main class
@@ -259,7 +263,7 @@ export default class DataCloudSObjectToYamlUtil extends LightningElement {
             this.yamlData='openapi: 3.0.3\ncomponents:\n  schemas:\n';
 
             // Add objects
-            for (let sObjectName in this.currentlySelectedRows) {
+            for (let sObjectName in this.currentlySelectedRows){
                 
                 // Remove objects without any fields
                 if(this.currentlySelectedRows[sObjectName].length > 0){

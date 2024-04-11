@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
     <description>Created by Lightning App Builder</description>
-    <flexiPage>JSON_Utility</flexiPage>
-    <label>JSON Utility</label>
+    <flexiPage>Data_Cloud_JSON_Utility</flexiPage>
+    <label>Data Cloud JSON Utility</label>
     <motif>Custom2: Fan</motif>
 </CustomTab>

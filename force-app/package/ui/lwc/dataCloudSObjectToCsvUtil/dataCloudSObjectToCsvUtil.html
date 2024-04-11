@@ -23,8 +23,10 @@
                 <lightning-button
                     disabled= {actionDisabled}
                     variant = "neutral"
-                    label   = "Show Mapping" 
-                    onclick = {handleClickShowMapping} 
+                    title   = "Metadata Info" 
+                    onclick = {handleClickShowMapping}
+                    icon-name="utility:data_mapping"
+                    icon-position="right"
                 ></lightning-button>
 
                 <lightning-button
@@ -40,43 +42,71 @@
         <div slot="footer">
 
         </div>
-        <div class="slds-var-p-around_small">
+        <lightning-tabset>
+            <lightning-tab label="Input">
+                <div class="slds-var-p-around_small">
 
-            <lightning-combobox
-                disabled    = {inputDisabled}
-                name        = "Metadata Configuration"
-                label       = "Metadata Configuration"
-                value       = {mdtConfigRecord}
-                placeholder = "Select..."
-                options     = {mdtConfigOptions}
-                onchange    = {handleChangeMtdConfig}
-            ></lightning-combobox>
+                    <lightning-combobox
+                        disabled    = {ncDisabled}
+                        name        = "Data Cloud Named Credential"
+                        label       = "Data Cloud Named Credential"
+                        value       = {ncName}
+                        placeholder = "Select..."
+                        options     = {ncOptions}
+                        onchange    = {handleChangeNcName}
+                    ></lightning-combobox>
 
-            <lightning-combobox
-                name        = "resultFormat"
-                label       = "Result Format"
-                value       = {resultFormat}
-                placeholder = "Select..."
-                options     = {resultFormatOptions}
-                onchange    = {handlechangeResultFormat}
-            ></lightning-combobox>
+                    <lightning-combobox
+                        disabled    = {mdtConfigDisabled}
+                        name        = "Metadata Configuration"
+                        label       = "Metadata Configuration"
+                        value       = {mdtConfigRecord}
+                        placeholder = "Select..."
+                        options     = {mdtConfigOptions}
+                        onchange    = {handleChangeMtdConfig}
+                    ></lightning-combobox>
 
-            <lightning-input 
-                type        = "checkbox"
-                label       = "Is Tooling Query"
-                name        = "tooling"
-                value       = {tooling}
-                onchange    = {handleChangeTooling}
-            ></lightning-input>
+                    <lightning-input 
+                        type        = "checkbox"
+                        label       = "Is Tooling Query"
+                        name        = "tooling"
+                        value       = {tooling}
+                        onchange    = {handleChangeTooling}
+                    ></lightning-input>
 
-            <div class="slds-form-element">
-                <label class="slds-form-element__label" for="textarea-id-01">SOQL Query</label>
-                <div class="slds-form-element__control">
-                    <textarea id="ta" class="slds-textarea ta" oninput={handleChangeQuery}>{query}</textarea>
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="payload">SOQL Query</label>
+                        <div class="slds-form-element__control">
+                            <div class="slds-box soql-box" id="soql">
+                                <c-cm-textarea
+                                    theme             = {codemirrorTheme}
+                                    mode              = {codemirrorMode} 
+                                    value             = {codemirrorValue} 
+                                    size              = {codemirrorSize}
+                                    disabled          = {codemirrorDisabled}
+                                    class             = {codemirrorClass}
+                                    onsave            = {codemirrorSave}
+                                    onloadingcomplete = {codemirrorLoadingComplete}
+                                ></c-cm-textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>    
+            </lightning-tab>
+            <lightning-tab label="Output">
+                <div class="slds-var-p-around_small">
+                    <lightning-combobox
+                        name        = "resultFormat"
+                        label       = "Result Format"
+                        value       = {resultFormat}
+                        placeholder = "Select..."
+                        options     = {resultFormatOptions}
+                        onchange    = {handlechangeResultFormat}
+                    ></lightning-combobox>
                 </div>
-            </div>
-        </div>
-        
+            </lightning-tab>
+        </lightning-tabset>
+
     </lightning-card>
 
 </template>

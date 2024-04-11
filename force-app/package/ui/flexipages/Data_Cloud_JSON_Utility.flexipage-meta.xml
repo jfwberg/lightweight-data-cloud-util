@@ -14,7 +14,7 @@
         <name>column2</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>JSON Utility</masterLabel>
+    <masterLabel>Data Cloud JSON Utility</masterLabel>
     <template>
         <name>flexipage:appHomeTemplateTwoColumns</name>
     </template>

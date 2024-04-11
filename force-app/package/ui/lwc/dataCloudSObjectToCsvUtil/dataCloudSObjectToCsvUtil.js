@@ -12,15 +12,16 @@ import { LightningElement } from "lwc";
 import {handleError}        from 'c/util';
 
 // Modals
-import textModal           from 'c/textModal';
-import textareaModal       from 'c/textareaModal';
-import ldtModal            from 'c/ldtModal';
-import multiLdtModal       from 'c/multiLdtModal';
+import cmModal              from 'c/cmModal';
+import textModal            from 'c/textModal';
+import ldtModal             from 'c/ldtModal';
+import multiLdtModal        from 'c/multiLdtModal';
 
 // Apex methods for setup
-import getMtdConfigOptions      from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
-import getMetadataInfo          from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
-import generateQueryFromMapping from "@salesforce/apex/DataCloudUtilLwcCtrl.generateQueryFromMapping";
+import getDcNamedCredentialOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.getDcNamedCredentialOptions";
+import getMtdConfigOptions         from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
+import getMetadataInfo             from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
+import generateQueryFromMapping    from "@salesforce/apex/DataCloudUtilLwcCtrl.generateQueryFromMapping";
 
 // Apex Methods for result handling
 import getSoqlQueryTable from "@salesforce/apex/DataCloudUtilLwcCtrl.getSoqlQueryTable";
@@ -42,14 +43,30 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     mdtConfigRecord;
     mdtConfigOptions = [];
 
-    // The query we are going to test
-    query = 'SELECT Id, Name, TrialExpirationDate, CreatedDate, CreatedBy.Name FROM Organization LIMIT 1';
+    // Local class codemirror options
+    codemirrorLoaded	= false;
 
+    // CodeMirror configuration
+    codemirrorTheme	    	  = 'default';
+    codemirrorMode	    	  = 'text/x-sql';
+    codemirrorValue	    	  = 'SELECT Id, Name, TrialExpirationDate, CreatedDate, CreatedBy.Name FROM Organization LIMIT 1';
+    codemirrorSize	      	  = {width : '100%', height: 250};
+    codemirrorDisabled        = false;
+    codemirrorClass           = "cm";
+    codemirrorSave            = () => {
+        this.handleSendDataStream();
+    };
+    codemirrorLoadingComplete = () => {
+        this.codemirrorLoaded = true;
+        this.getCmTa().size   = {width : '100%', height: 365};
+    }
+
+   
     // Indicate this is a tooling query
     tooling = false;
 
     // Output as either csv or LWC data table
-    resultFormat = 'table';
+    resultFormat = 'csv';
     resultFormatOptions = [
         {label : 'Lightning - Datatable', value:'table'},
         {label : 'CSV',                   value:'csv'  },
@@ -60,13 +77,23 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                            GETTER METHODS                                            **
      ** **************************************************************************************************** **/
+    // Disabled when not loaded yet from apex
+    get ncDisabled(){
+        return !this.ncOptionsLoaded;
+    }
+
+    get mdtConfigDisabled(){
+        return !this.mdtConfigOptionsLoaded;
+    }   
+       
     // Disable buttons
     get actionDisabled(){
         return !this.mdtConfigSelected;
     }
 
-    get inputDisabled(){
-        return !this.mdtConfigOptionsLoaded;
+    // Method to get the CodeMirror Textarea Child component
+    getCmTa(){
+        return this.template.querySelector('c-cm-textarea');
     }
 
 
@@ -74,16 +101,37 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
      **                                         LIFECYCLE HANDLERS                                           **
      ** **************************************************************************************************** **/
     connectedCallback(){
-        this.handleGetMdtOptions();
+        this.handleGetDcNamedCredentialOptions();
     }
 
 
     /** **************************************************************************************************** **
      **                                            APEX HANDLERS                                             **
      ** **************************************************************************************************** **/
+    handleGetDcNamedCredentialOptions(){
+        try{
+            this.loading = true;
+            getDcNamedCredentialOptions()
+                .then((apexResponse) => {
+                    this.ncOptions      = apexResponse;
+                    this.ncOptionsLoaded= true;
+                })
+                .catch((error) => {
+                    handleError(error);
+                })
+                .finally(()=>{
+                    this.loading = false; 
+                });
+        }catch(error){
+            handleError(error);
+            this.loading = false; 
+        }
+    }
+
+
     handleGetMdtOptions(){
         try{
-            getMtdConfigOptions()
+            getMtdConfigOptions({namedCredentialName : this.ncName})
                 .then((apexResponse) => {
                     this.mdtConfigOptions = apexResponse;
                 })
@@ -128,8 +176,7 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
                 mdtConfigName : this.mdtConfigRecord
             })
             .then((apexResponse) => {
-                this.query = apexResponse;
-                this.template.querySelector(".ta").value = apexResponse;
+                this.codemirrorValue = apexResponse;
             })
             .catch((error) => {
                 handleError(error);
@@ -148,8 +195,7 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
         try{
             this.loading = true;
             getSoqlQueryTable({
-                mdtConfigName : this.mdtConfigRecord,
-                query         : this.query,
+                query         : this.getCmTa().value,
                 tooling       : this.tooling
             })
             .then((apexResponse) => {
@@ -173,7 +219,7 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
             this.loading = true;
             getSoqlQueryCsv({
                 mdtConfigName : this.mdtConfigRecord,
-                query         : this.query,
+                query         : this.getCmTa().value,
                 tooling       : this.tooling
             })
             .then((apexResponse) => {
@@ -196,8 +242,7 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
         try{
             this.loading = true;
             getSoqlQueryRaw({
-                mdtConfigName : this.mdtConfigRecord,
-                query         : this.query,
+                query         : this.getCmTa().value,
                 tooling       : this.tooling
             })
             .then((apexResponse) => {
@@ -219,6 +264,26 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
      ** **************************************************************************************************** **/
+    handleChangeNcName(event) {
+        try{
+            // On a change reset the metadata settings
+            this.mdtConfigSelected      = false;
+            this.mdtConfigOptionsLoaded = false;
+            this.mdtConfigOptions       = [];
+            this.mdtConfigRecord        = '';
+            
+            // Update named credential
+            this.ncName           = event.detail.value;
+            this.ncOptionSelected = true;
+
+        }catch(error){
+            handleError(error);
+        }
+
+        // Get the org's data graph options
+        this.handleGetMdtOptions();
+    }
+
     // Set the config record name and update the table
     handleChangeMtdConfig(event) {
         this.mdtConfigRecord = event.detail.value;
@@ -228,10 +293,6 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
 
     handlechangeResultFormat(event) {
         this.resultFormat = event.detail.value;
-    }
-
-    handleChangeQuery(){
-        this.query = this.template.querySelector(".ta").value;
     }
 
     handleChangeTooling(event){
@@ -329,12 +390,12 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
      */
     handleOpenSoqlResultCsvModal(apexResponse){
         try{
-            textareaModal.open({
-                
+            cmModal.open({
                 // Modal info
                 size             : 'large',
-                label            : 'SOQL - Query Results - CSV',
-                content          : apexResponse,
+                header           : 'SOQL - Query Results - CSV',
+                value            : apexResponse,
+                mode             : 'csv',
                 disabled         : false,
                 
                 // Download info
@@ -360,12 +421,12 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
      */
     handleOpenSoqlResultRawModal(apexResponse){
         try{
-            textareaModal.open({
-                
+            cmModal.open({
                 // Modal info
                 size             : 'large',
-                label            : 'SOQL - Query Results - RAW',
-                content          : apexResponse,
+                header           : 'SOQL - Query Results - RAW',
+                value            : apexResponse,
+                mode             : 'application/json',
                 disabled         : false,
                 
                 // Download info
@@ -379,7 +440,7 @@ export default class DataCloudSObjectToCsvUtil extends LightningElement {
                 downloadButton   : true,
                 prettifyButton   : true,
                 closeButton      : true
-            }); 
+            });
         }catch(error){
             handleError(error);
         }

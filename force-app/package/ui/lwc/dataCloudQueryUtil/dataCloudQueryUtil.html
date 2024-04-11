@@ -24,9 +24,11 @@
                 
                 <lightning-button
                     variant = "neutral"
-                    label   = "Metadata Info" 
+                    title   = "Metadata Info" 
                     onclick = {handleClickShowMapping} 
                     disabled= {metadataButtonDisabled}
+                    icon-name="utility:data_mapping"
+                    icon-position="right"
                 ></lightning-button>
 
                 <lightning-button
@@ -42,77 +44,86 @@
         <div slot="footer">
             
         </div>
-        <div class="slds-var-p-around_small">
-            
-            <lightning-combobox
-                disabled    = {ncDisabled}
-                name        = "Data Cloud Named Credential"
-                label       = "Data Cloud Named Credential"
-                value       = {ncName}
-                placeholder = "Select..."
-                options     = {ncOptions}
-                onchange    = {handleChangeNcName}
-            ></lightning-combobox>
 
-            <lightning-combobox
-                disabled    = {executeButtonDisabled}
-                name        = "queryApiVersion"
-                label       = "Query API Version"
-                value       = {queryApiVersion}
-                placeholder = "Select..."
-                options     = {queryApiVersionOptions}
-                onchange    = {handlechangeQueryApiVersion}
-            ></lightning-combobox>
+        <lightning-tabset>
+            <lightning-tab label="Input">
+                <div class="slds-var-p-around_small">
+                    
+                    <lightning-combobox
+                        disabled    = {ncDisabled}
+                        name        = "Data Cloud Named Credential"
+                        label       = "Data Cloud Named Credential"
+                        value       = {ncName}
+                        placeholder = "Select..."
+                        options     = {ncOptions}
+                        onchange    = {handleChangeNcName}
+                    ></lightning-combobox>
 
-            <lightning-combobox
-                disabled    = {metadataConfigInputDisabled}
-                name        = "Metadata Configuration"
-                label       = "Metadata Configuration (Optional)"
-                value       = {mdtConfigRecord}
-                placeholder = "Select..."
-                options     = {mdtConfigOptions}
-                onchange    = {handleChangeMtdConfig}
-            ></lightning-combobox>
-            
-            <lightning-combobox
-                disabled    = {fieldSelectionInputDisabled}
-                name        = "fieldSelection"
-                label       = "Metadata Field Selection (Optional)"
-                value       = {fieldSelection}
-                placeholder = "Select..."
-                options     = {fieldSelectionOptions}
-                onchange    = {handlechangeFieldSelection}
-            ></lightning-combobox>
+                    <lightning-combobox
+                        disabled    = {metadataConfigInputDisabled}
+                        name        = "Metadata Configuration"
+                        label       = "Metadata Configuration (Optional)"
+                        value       = {mdtConfigRecord}
+                        placeholder = "Select..."
+                        options     = {mdtConfigOptions}
+                        onchange    = {handleChangeMtdConfig}
+                    ></lightning-combobox>
+                    
+                    <lightning-combobox
+                        disabled    = {fieldSelectionInputDisabled}
+                        name        = "fieldSelection"
+                        label       = "Metadata Field Selection (Optional)"
+                        value       = {fieldSelection}
+                        placeholder = "Select..."
+                        options     = {fieldSelectionOptions}
+                        onchange    = {handlechangeFieldSelection}
+                    ></lightning-combobox>
 
-            <lightning-combobox
-                disabled    = {executeButtonDisabled}
-                name        = "resultFormat"
-                label       = "Result Format"
-                value       = {resultFormat}
-                placeholder = "Select..."
-                options     = {resultFormatOptions}
-                onchange    = {handlechangeResultFormat}
-            ></lightning-combobox>
 
-            <div class="slds-form-element">
-                <label class="slds-form-element__label" for="query-box">SQL Query</label>
-                <div class="slds-form-element__control">
-                    <div class="slds-box query-box" id="query-box">
-                        <c-cm-textarea
-                            onloadingcomplete = {handleCodemirrorLoaded}
-                            onsave            = {handleCodemirrorSave}
-                            disabled          = {codemirrorDisabled}
-                            value             = {codemirrorValue} 
-                            theme             = {codemirrorTheme}
-                            mode              = {codemirrorMode} 
-                            size              = {codemirrorSize}
-                            class             = "ta"
-                        ></c-cm-textarea>
+
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="query-box">SQL Query</label>
+                        <div class="slds-form-element__control">
+                            <div class="slds-box query-box" id="query-box">
+                                <c-cm-textarea
+                                    onloadingcomplete = {handleCodemirrorLoaded}
+                                    onsave            = {handleCodemirrorSave}
+                                    disabled          = {codemirrorDisabled}
+                                    value             = {codemirrorValue} 
+                                    theme             = {codemirrorTheme}
+                                    mode              = {codemirrorMode} 
+                                    size              = {codemirrorSize}
+                                    class             = "ta"
+                                ></c-cm-textarea>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </lightning-tab>
+            <lightning-tab label="Output">
+                <div class="slds-var-p-around_small">
+                    <lightning-combobox
+                        disabled    = {executeButtonDisabled}
+                        name        = "queryApiVersion"
+                        label       = "Query API Version"
+                        value       = {queryApiVersion}
+                        placeholder = "Select..."
+                        options     = {queryApiVersionOptions}
+                        onchange    = {handlechangeQueryApiVersion}
+                    ></lightning-combobox>
 
-        </div>
+                    <lightning-combobox
+                        disabled    = {executeButtonDisabled}
+                        name        = "resultFormat"
+                        label       = "Result Format"
+                        value       = {resultFormat}
+                        placeholder = "Select..."
+                        options     = {resultFormatOptions}
+                        onchange    = {handlechangeResultFormat}
+                    ></lightning-combobox>
+                </div>
+            </lightning-tab>
+        </lightning-tabset>
     </lightning-card>
 
 </template>

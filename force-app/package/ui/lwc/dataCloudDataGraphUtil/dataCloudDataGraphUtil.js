@@ -250,7 +250,7 @@ export default class DataCloudDataGraphUtil extends LightningElement {
                             size             : 'small',
                             header           : 'Data Graph Execution Result',
                             value            : apexResponse,
-                            mode             : 'text/javascript',
+                            mode             : 'application/json',
                             disabled         : false,
                             
                             // Download info
@@ -284,7 +284,7 @@ export default class DataCloudDataGraphUtil extends LightningElement {
                             fileMimeType     : 'text/csv',
                             includeTimestamp : true,
                             
-                            // Button visibillity
+                            // Button visibillity 
                             copyButton       : true,
                             downloadButton   : true,
                             prettifyButton   : false,
@@ -300,7 +300,7 @@ export default class DataCloudDataGraphUtil extends LightningElement {
                             size             : 'small',
                             header           : 'Data Graph - Result - RAW API Response',
                             value            : apexResponse,
-                            mode             : 'text/javascript',
+                            mode             : 'application/json',
                             disabled         : false,
                             
                             // Download info

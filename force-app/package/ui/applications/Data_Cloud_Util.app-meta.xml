@@ -18,7 +18,7 @@
     <tabs>Data_Cloud_Ingestion</tabs>
     <tabs>Data_Cloud_Query</tabs>
     <tabs>Data_Cloud_Utility</tabs>
-    <tabs>JSON_Utility</tabs>
+    <tabs>Data_Cloud_JSON_Utility</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>Data_Cloud_Utility_UtilityBar</utilityBar>
 </CustomApplication>

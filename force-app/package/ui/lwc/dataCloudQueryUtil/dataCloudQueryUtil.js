@@ -455,7 +455,7 @@ export default class DataCloudQueryUtil extends LightningElement {
                 includeTimestamp : true,
                 
                 // Button visibillity
-                copyButton       : true,
+                copyButton       : true, 
                 downloadButton   : true,
                 prettifyButton   : false,
                 closeButton      : true
@@ -476,7 +476,7 @@ export default class DataCloudQueryUtil extends LightningElement {
                 size             : "large",
                 header           : "Data Cloud - Query Results - RAW",
                 value            : apexResponse,
-                mode             : "text/javascript",
+                mode             : "application/json",
                 theme            : this.codemirrorTheme,
                 disabled         : false,
                 

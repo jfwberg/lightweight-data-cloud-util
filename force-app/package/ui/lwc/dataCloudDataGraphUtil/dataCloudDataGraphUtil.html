@@ -24,7 +24,7 @@
                 ></lightning-button>
 
                 <lightning-button
-                    label           = "Metadata"
+                    label           = "Data Graph Metadata"
                     disabled        = {metadataDisabled}
                     variant         = "neutral"
                     onclick         = {handleClickMetadata}
@@ -45,56 +45,66 @@
         <div slot="footer">
 
         </div>
-        <div class="slds-var-p-around_small">
-            <lightning-combobox
-                disabled    = {ncDisabled}
-                name        = "Data Cloud Named Credential"
-                label       = "Data Cloud Named Credential"
-                value       = {ncName}
-                placeholder = "Select..."
-                options     = {ncOptions}
-                onchange    = {handleChangeNcName}
-            ></lightning-combobox>
 
-            <lightning-combobox
-                disabled    = {dgDisabled}
-                name        = "Data Graph"
-                label       = "Data Graph"
-                value       = {dgName}
-                placeholder = "Select..."
-                options     = {dgOptions}
-                onchange    = {handleChangeDgName}
-            ></lightning-combobox>
+        <lightning-tabset>
+            <lightning-tab label="Input">
+                <div class="slds-var-p-around_small">
 
-            <lightning-combobox
-                disabled    = {pkDisabled}
-                name        = "Primary Key fields"
-                label       = "Primary Key fields"
-                value       = {pkName}
-                placeholder = "Select..."
-                options     = {pkOptions}
-                onchange    = {handleChangePkName}
-            ></lightning-combobox>
+        
+                    <lightning-combobox
+                        disabled    = {ncDisabled}
+                        name        = "Data Cloud Named Credential"
+                        label       = "Data Cloud Named Credential"
+                        value       = {ncName}
+                        placeholder = "Select..."
+                        options     = {ncOptions}
+                        onchange    = {handleChangeNcName}
+                    ></lightning-combobox>
 
-            <lightning-input
-                type    = "text"
-                label   = "Primary Key Record Id"
-                value   = {pkRecordId}
-                disabled= {pkRecordIdDisabled}
-                onchange= {handleChangePkRecordId}
-            ></lightning-input>
+                    <lightning-combobox
+                        disabled    = {dgDisabled}
+                        name        = "Data Graph"
+                        label       = "Data Graph"
+                        value       = {dgName}
+                        placeholder = "Select..."
+                        options     = {dgOptions}
+                        onchange    = {handleChangeDgName}
+                    ></lightning-combobox>
 
-            <lightning-combobox
-                disabled    = {executeDisabled}
-                name        = "resultFormat"
-                label       = "Result Format"
-                value       = {resultFormat}
-                placeholder = "Select..."
-                options     = {resultFormatOptions}
-                onchange    = {handlechangeResultFormat}
-            ></lightning-combobox>
+                    <lightning-combobox
+                        disabled    = {pkDisabled}
+                        name        = "Primary Key fields"
+                        label       = "Primary Key fields"
+                        value       = {pkName}
+                        placeholder = "Select..."
+                        options     = {pkOptions}
+                        onchange    = {handleChangePkName}
+                    ></lightning-combobox>
 
-        </div>
+                    <lightning-input
+                        type    = "text"
+                        label   = "Primary Key Record Id"
+                        value   = {pkRecordId}
+                        disabled= {pkRecordIdDisabled}
+                        onchange= {handleChangePkRecordId}
+                    ></lightning-input>
+                </div>
+
+            </lightning-tab>
+            <lightning-tab label="Output">
+                <div class="slds-var-p-around_small">
+                    <lightning-combobox
+                        disabled    = {executeDisabled}
+                        name        = "resultFormat"
+                        label       = "Result Format"
+                        value       = {resultFormat}
+                        placeholder = "Select..."
+                        options     = {resultFormatOptions}
+                        onchange    = {handlechangeResultFormat}
+                    ></lightning-combobox>
+                </div>
+            </lightning-tab>
+        </lightning-tabset>
     </lightning-card>
 
 </template>
