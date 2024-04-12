@@ -104,17 +104,13 @@ This mapping in used int he utility functions to create a mapping between the so
 
 
 ## Method Signatures
-### Utility methods
+### Configuration Metadata methods
 ```java
 /**
- * UTILITY METHODS
+ * CONFIGURATION METADATA METHODS
  */
 // Method to get all the metadata including child records based on on the API Name
 utl__Data_Cloud_Ingestion_API_Configuration__mdt configRecord = utl.Dc.getMetadataRecord(String mdtConfigName);
-
-// Method to create an ordered set of column names from a Data Cloud (query) Metadata response
-// Uses the getFieldMetadata() method, see below for details
-Set<String> columns = utl.Dc.getOrderedColumnNamesFromMetadata(Map<String,Object> metadataMap);
 
 // Method to get the metadata configuration labels and names in a ready to use LWC picklist format
 List<Map<String,String>> mdtOptions = utl.Dc.getConfigMetadataRecordsPicklistOptions();
@@ -122,7 +118,13 @@ List<Map<String,String>> mdtOptions = utl.Dc.getConfigMetadataRecordsPicklistOpt
 // Method to get the metadata configuration labels and names in a ready to use LWC picklist format
 // With a fitler for Data Cloud Named credentials only. This is the name of a DATA CLOUD named credential
 List<Map<String,String>> mdtOptions = utl.Dc.getConfigMetadataRecordsPicklistOptions(String namedCredentialName);
+```
 
+### Utility methods
+```java
+/**
+ * UTILITY METHODS
+ */
 // Method to get list of picklist options with only Data Cloud Named Credentials in a ready to Use LWC picklist format
 // Works based on endpoint that end with "c360a.my.salesforce.com"
 List<Map<String,String>> ncOptions = utl.Dc.getDataCloudNamedCredentialPicklistOptions()
@@ -131,6 +133,11 @@ List<Map<String,String>> ncOptions = utl.Dc.getDataCloudNamedCredentialPicklistO
 // When removePostfix is set to true, the __c is removed from the custom fields
 // See the class format below
 utl.Dc.FieldMetadata[] = utl.Dc.getFieldMetadata(Map<String,Object> metadataMap, Boolean removePostfix)
+
+// Method to create an ordered set of column names from a Data Cloud (query) Metadata response
+// Uses the getFieldMetadata() method, see below for details
+Set<String> columns = utl.Dc.getOrderedColumnNamesFromMetadata(Map<String,Object> metadataMap);
+
 
 // Format of the utl.Dc.FieldMetadata Class
 class FieldMetadata{
