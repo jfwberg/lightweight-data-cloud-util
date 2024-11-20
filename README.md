@@ -15,30 +15,32 @@ A lightweight set of Data Cloud utilities to ingest or query data directly from 
 The following package need to be installed first before installing this package.
 If you use the *managed package* you need to installed the managed package dependency and if you use the *unlocked version* you need to use the unlocked dependency.
 | Info | Value |
+## Dependency info
+| Info | Value |
 |---|---|
 |Name|Lightweight - Apex Unit Test Util v2|
-|Version|2.4.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6OXIA0* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6Q9IAK* |
-|Github URL | https://github.com/jfwberg/lightweight-apex-unit-test-util-v2 |
-| | |
+|Version|2.5.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000rUmLIAU* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000rUpZIAU* |
+|Github URL | https://github.com/jfwberg/lightweight-apex-unit-test-util-v2
+| Info | Value |
+|---|---|
 |Name|Lightweight - LWC Util|
-|Version|0.6.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000T7ZBIA0* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000T7cPIAS* |
-|Github URL | https://github.com/jfwberg/lightweight-lwc-util |
-| | |
-|Name|Lightweight - Apex JSON Util|
-|Version|0.7.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000T7m5IAC* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000T7nhIAC* |
-|Github URL | https://github.com/jfwberg/lightweight-json-util |
+|Version|0.7.0-2|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000t8rNIAQ* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000t94HIAQ* |
+|Github URL | https://github.com/jfwberg/lightweight-lwc-util
 | | |
 |Name|Lightweight - Apex REST Util|
-|Version|0.11.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6gHIAS* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6htIAC* |
+|Version|0.12.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000tD33IAE* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000tD6HIAU* |
 |Github URL | https://github.com/jfwberg/lightweight-apex-rest-util |
+|---|---|
+|Name|Lightweight - JSON Util|
+|Version|0.8.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000tDMPIA2* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000tDRFIA2* |
 
 
 ## Optional Dependencies (!! Still recommended !!)
@@ -68,9 +70,9 @@ This package is built to be used with a custom Data Cloud Auth Provider. The aut
 | Info | Value |
 |---|---|
 |Name|Lightweight - Apex Data Cloud Util|
-|Version|0.8.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000TKD3IAO* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000TK9pIAG* |
+|Version|0.9.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000tEOvIAM* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000tEQXIA2* |
 
 ## Custom Metadata Configuration
 In order to callout to the Data Cloud Ingestion API you will need to create a configuration record for each Ingestion API Connector you want to connect to.
