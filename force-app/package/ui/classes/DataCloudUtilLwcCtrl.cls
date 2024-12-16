@@ -444,13 +444,37 @@ public with sharing class DataCloudUtilLwcCtrl {
 
 
     @AuraEnabled
-    public static Boolean sendDataStream(String mdtConfigName, String payload){
+    public static String getDeletePlaceholder(){
+        try{
+            // Force an exception for testing purposes
+            utl.Tst.forceException('AURA_EXCEPTION');
+            
+            // Create a ranndom pretty printed payload for the deletion
+            return Dc.createIngestDeletePayload(
+                new String[]{
+                    UUID.randomUUID().toString(),
+                    UUID.randomUUID().toString()
+                }, 
+                true
+            );
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+    @AuraEnabled
+    public static Boolean sendDataStream(String mdtConfigName, String payload, Boolean isDelete){
         try{
             // Force an exception for testing purposes
             utl.Tst.forceException('AURA_EXCEPTION');
 
-            // Stream records
-            Dc.streamDataToDataCloud(mdtConfigName, payload, false);
+            // Ingest or delete records
+            if(isDelete){
+                Dc.deleteDataFromDataCloud(mdtConfigName, payload);
+            }else{
+                Dc.streamDataToDataCloud(mdtConfigName, payload, false);
+            }
 
             // return true when all is good
             return true;

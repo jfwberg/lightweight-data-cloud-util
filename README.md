@@ -26,15 +26,15 @@ If you use the *managed package* you need to installed the managed package depen
 | Info | Value |
 |---|---|
 |Name|Lightweight - LWC Util|
-|Version|0.7.0-2|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000t8rNIAQ* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000t94HIAQ* |
+|Version|0.8.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000wL0rIAE* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000wL2TIAU* |
 |Github URL | https://github.com/jfwberg/lightweight-lwc-util
 | | |
 |Name|Lightweight - Apex REST Util|
-|Version|0.12.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000tD33IAE* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000tD6HIAU* |
+|Version|0.13.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000wMhhIAE* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000wMkvIAE* |
 |Github URL | https://github.com/jfwberg/lightweight-apex-rest-util |
 |---|---|
 |Name|Lightweight - JSON Util|
@@ -70,9 +70,9 @@ This package is built to be used with a custom Data Cloud Auth Provider. The aut
 | Info | Value |
 |---|---|
 |Name|Lightweight - Apex Data Cloud Util|
-|Version|0.9.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000tEOvIAM* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000tEQXIA2* |
+|Version|0.10.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000wMzRIAU* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000wN13IAE* |
 
 ## Custom Metadata Configuration
 In order to callout to the Data Cloud Ingestion API you will need to create a configuration record for each Ingestion API Connector you want to connect to.
@@ -161,7 +161,7 @@ utl.Rst callout = utl.Dc.executeQuery(String namedCredentialName, String query);
 
 // Allows to specify a different query API valid values are "v1" or "v2"
 // Note: This works based on the name of the Data Cloud Named Credential, not a configuration record
-utl.Rst callout = utl.Rst executeQuery(String namedCredentialName, String query, String apiVersion)
+utl.Rst callout = utl.Dc.executeQuery(String namedCredentialName, String query, String apiVersion)
 ```
 
 ### Data Graph Methods
@@ -186,7 +186,7 @@ String utl.Dc.getDataGraph(String namedCredentialName, String dataGraphName, Str
 ```
 
 
-### Streaming ingestion methods
+### Streaming INGESTION methods
 ```java
 /**
  * STREAMING INGESTION API METHODS
@@ -205,8 +205,29 @@ utl.Dc.streamRecordsToDataCloud(String mdtConfigName, List<Map<String,Object>> r
 
 // Method to call the ingestion API with a custom generated payload and the option to test the payload
 // against the payload validation endpoint
-utl.Dc.streamDataToDataCloud(String mdtConfigName, String payload, Boolean isTest)
+utl.Dc.streamDataToDataCloud(String mdtConfigName, String payload, Boolean isTest);
 
+```
+
+### Streaming DELETE Methods
+```java
+/**
+ * STREAMING DELETE INGESTION API METHODS
+ */
+// Method to delete records based on a list of record ids (uses the primary Id field for deletion)
+// But using a future method. Use this on (platform event) triggers
+utl.Dc.deleteRecordsFromDataCloudAsync(String mdtConfigName, String[] ids);
+
+// Method to delete records based on a list of record ids (uses the primary Id field for deletion)
+utl.Dc.deleteRecordsFromDataCloud(String mdtConfigName, String[] ids);
+
+// Method to call the ingestion delete API with a custom generated payload
+utl.Dc.deleteDataFromDataCloud(String mdtConfigName, String payload);
+
+```
+
+### Streaming API Support Methods
+```java
 // Method to generate a mapping between source and target object that can be used with the
 // streaming API
 Map<String,String> fieldMapping = utl.Dc.createFieldMapping(Data_Cloud_Ingestion_API_Field_Mapping__mdt[] fieldMappingRecords);
@@ -217,8 +238,9 @@ String payload = utl.Dc.createIngestStreamPayload(sObject[] records, Map<String,
 // Method to generate an ingestion API payload based on a mapping taking a list of object maps as input
 String payload = utl.Dc.createIngestStreamPayload(List<Map<String,Object>> records, Map<String,String> fieldMapping, Boolean prettyPrint);
 
+// Method to generate a DELETE payload for the streaming ingestion API
+String payload = utl.Dc.createIngestDeletePayload(String[] ids, Boolean prettyPrint)
 ```
-
 
 ### Bulk ingestion methods
 ```java

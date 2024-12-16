@@ -512,7 +512,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
         System.runAs(TST_USER){
             // Happy Path
             utl.Mck.setResponse(INGESTION_RESPONSE);
-            DataCloudUtilLwcCtrl.sendDataStream('Apex_Unit_Test','{}');
+            DataCloudUtilLwcCtrl.sendDataStream('Apex_Unit_Test','{}',false);
 
             // Forced error path
             try{
@@ -520,7 +520,7 @@ private with sharing class DataCloudUtilLwcCtrlTest {
                 utl.Tst.addForcedException('AURA_EXCEPTION');
 
                 // Execute method
-                DataCloudUtilLwcCtrl.sendDataStream('Apex_Unit_Test','{}');
+                DataCloudUtilLwcCtrl.sendDataStream('Apex_Unit_Test','{}',false);
 
                 // This method will fail the test as it should not be reached
                 utl.Tst.assertExceptionHasBeenThrow();

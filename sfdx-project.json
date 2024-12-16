@@ -4,22 +4,22 @@
       "path": "force-app/package",
       "default": true,
       "package": "Lightweight - Data Cloud Util",
-      "versionName": "v62.0 - 0.9",
-      "versionNumber": "0.9.0.NEXT",
-      "ancestorVersion": "0.8.0",
+      "versionName": "v62.0 - 0.10",
+      "versionNumber": "0.10.0.NEXT",
+      "ancestorVersion": "HIGHEST",
       "versionDescription": "A lightweight set of Data Cloud API and mapping utilities for streaming and bulk data ingestion.",
       "dependencies": [
         {
           "package": "Lightweight - Apex Unit Test Util v2@2.5.0-1"
         },
         {
-          "package": "Lightweight - Apex LWC Util@0.7.0-2"
+          "package": "Lightweight - Apex LWC Util@0.8.0-1"
+        },
+        {
+          "package": "Lightweight - REST Util@0.13.0-1"
         },
         {
           "package": "Lightweight - JSON Util@0.8.0-1"
-        },
-        {
-          "package": "Lightweight - REST Util@0.12.0-1"
         }
       ]
     },
@@ -27,21 +27,21 @@
       "path": "force-app/package",
       "default": false,
       "package": "Lightweight - Data Cloud Util (Unlocked)",
-      "versionName": "v62.0 - 0.9",
-      "versionNumber": "0.9.0.NEXT",
+      "versionName": "v62.0 - 0.10",
+      "versionNumber": "0.10.0.NEXT",
       "versionDescription": "A lightweight set of Data Cloud API and mapping utilities for streaming and bulk data ingestion.",
       "dependencies": [
         {
           "package": "Lightweight - Apex Unit Test Util v2 (Unlocked)@2.5.0-1"
         },
         {
-          "package": "Lightweight - Apex LWC Util (Unlocked)@0.7.0-1"
+          "package": "Lightweight - Apex LWC Util (Unlocked)@0.8.0-1"
+        },
+        {
+          "package": "Lightweight - REST Util (Unlocked)@0.13.0-1"
         },
         {
           "package": "Lightweight - JSON Util (Unlocked)@0.8.0-1"
-        },
-        {
-          "package": "Lightweight - REST Util (Unlocked)@0.12.0-1"
         }
       ]
     }
@@ -53,10 +53,10 @@
   "packageAliases": {
     "Lightweight - Apex Unit Test Util v2@2.5.0-1": "04tP3000000rUmLIAU",
     "Lightweight - Apex Unit Test Util v2 (Unlocked)@2.5.0-1": "04tP3000000rUpZIAU",
-    "Lightweight - Apex LWC Util@0.7.0-2": "04tP3000000t8rNIAQ",
-    "Lightweight - Apex LWC Util (Unlocked)@0.7.0-1": "04tP3000000t94HIAQ",
-    "Lightweight - REST Util@0.12.0-1": "04tP3000000tD33IAE",
-    "Lightweight - REST Util (Unlocked)@0.12.0-1": "04tP3000000tD6HIAU",
+    "Lightweight - Apex LWC Util@0.8.0-1": "04tP3000000wL0rIAE",
+    "Lightweight - Apex LWC Util (Unlocked)@0.8.0-1": "04tP3000000wL2TIAU",
+    "Lightweight - REST Util@0.13.0-1": "04tP3000000wMhhIAE",
+    "Lightweight - REST Util (Unlocked)@0.13.0-1": "04tP3000000wMkvIAE",
     "Lightweight - JSON Util@0.8.0-1": "04tP3000000tDMPIA2",
     "Lightweight - JSON Util (Unlocked)@0.8.0-1": "04tP3000000tDRFIA2",
     "Lightweight - Data Cloud Util": "0HoP300000000BJKAY",
@@ -77,6 +77,7 @@
     "Lightweight - Data Cloud Util (Unlocked)@0.5.0-1": "04tP3000000RISHIA4",
     "Lightweight - Data Cloud Util (Unlocked)@0.6.0-1": "04tP3000000RIfBIAW",
     "Lightweight - Data Cloud Util (Unlocked)@0.7.0-1": "04tP3000000RIvJIAW",
-    "Lightweight - Data Cloud Util (Unlocked)@0.9.0-1": "04tP3000000tEQXIA2"
+    "Lightweight - Data Cloud Util (Unlocked)@0.9.0-1": "04tP3000000tEQXIA2",
+    "Lightweight - Data Cloud Util (Unlocked)@0.10.0-1": "04tP3000000wN13IAE"
   }
 }

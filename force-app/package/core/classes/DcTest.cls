@@ -483,6 +483,78 @@ private with sharing class DcTest{
 
 
     /** **************************************************************************************************** **
+     **                                GLOBAL STREAMING DELETE INGESTION METHODS                             **
+     ** **************************************************************************************************** **/
+    @IsTest
+    static void testDeleteRecordsFromDataCloudAsync(){
+
+        // Run test
+        Test.startTest();
+
+        System.runAs(TST_USER){
+
+            // Setup the callout response
+            utl.Mck.setResponse(202, '{"accepted" : true}');
+
+            // Execute delete
+            Dc.deleteRecordsFromDataCloudAsync(
+                'Apex_Unit_Test',
+                new String[]{'ID-01','ID-02'}
+            );
+        }
+        Test.stopTest();
+
+        // Handle asserts
+        // Assert the status code
+        Assert.areEqual(
+            202,
+            Dc.testCallout.getResponse().getStatusCode(),
+            'Unexpected status code'
+        );
+
+        // Assert the response
+        Assert.areEqual(
+            '{"accepted" : true}',
+            Dc.testCallout.getResponse().getBody(),
+            'Unexpected response body'
+        );
+    }
+
+
+    @IsTest
+    static void testDeleteRecordsFromDataCloudAsyncErrorResponse(){
+
+        // Variable to hold the test Exception
+        Exception testException;
+
+        // Run test
+        Test.startTest();
+        System.runAs(TST_USER){
+            try{
+                // Setup the callout response
+                utl.Mck.setResponse(429, '{"error": "Bad Request", "message": "Missing parameter"}');
+
+                // Execute delete
+                Dc.deleteRecordsFromDataCloud(
+                    'Apex_Unit_Test',
+                    new String[]{}
+                );
+
+                // This method will fail the test as it should not be reached
+                utl.Tst.assertExceptionHasBeenThrow();
+
+            }catch(Exception e){
+                testException = e;
+            }
+        }
+        Test.stopTest();
+
+        // Assert exception
+        utl.Tst.assertExceptionMessage(Dc.CALLOUT_EXCEPTION_MSG,'Bad Request :: Missing parameter', testException);
+    }
+
+
+    /** **************************************************************************************************** **
      **                                    GLOBAL BULK INGESTION METHODS                                     **
      ** **************************************************************************************************** **/
     @IsTest
@@ -873,5 +945,4 @@ private with sharing class DcTest{
             'Unexpected callout response'
         );
     }
-
 }

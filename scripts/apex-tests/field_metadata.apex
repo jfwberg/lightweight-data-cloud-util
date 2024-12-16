@@ -4,8 +4,8 @@
 // Cast the response as an object so we can get both the data and metadata
 Map<String,Object> response = (Map<String,Object>) JSON.deserializeUntyped(
     Dc.executeQuery(
-        'TDX_DC_ORG_Smart_Demo', 
-        'SELECT DateField__c, EmailField__c, TextField__c, BooleanField__c, UrlField__c, Name__c, PercentField__c, Id__c, PhoneField__c, UUID__c, CreatedDate__c, DateTimeField__c, NumberField__c FROM Smart_Demo_Smart_Demo_EB5D1D66__dll LIMIT 1'
+        'TDX_DC_ORG', 
+        'SELECT DateField__c, EmailField__c, TextField__c, BooleanField__c, UrlField__c, Name__c, PercentField__c, Id__c, PhoneField__c, UUID__c, CreatedDate__c, DateTimeField__c, NumberField__c FROM Smart_Bill_02_Smart_Bill_3FCF6D01__dll LIMIT 10'
     )
     .getResponse()
     .getBody()

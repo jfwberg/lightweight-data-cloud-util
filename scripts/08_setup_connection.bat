@@ -1,3 +1,5 @@
+REM 00 - Add certificate from the JKS
+
 REM 01 - Update the executing user
 sf org display user 
 

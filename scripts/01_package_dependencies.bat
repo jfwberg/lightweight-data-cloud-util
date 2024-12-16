@@ -4,11 +4,11 @@ REM --------------------------------------------------------
 rem Lightweight - Apex Unit Test Util v2@2.5.0-2
 sf package install -p "04tP3000000rUmLIAU" -w 30
 
-REM Lightweight - Apex LWC Util@0.7.0-2
-sf package install --package "04tP3000000t8rNIAQ" -w 30
+REM Lightweight - Apex LWC Util@0.8.0-1
+sf package install --package "04tP3000000wL0rIAE" -w 30
 
-rem Lightweight - REST Util@0.12.0-1
-sf package install -p "04tP3000000tD33IAE" -w 30
+rem Lightweight - REST Util@0.13.0-1
+sf package install -p "04tP3000000wMhhIAE" -w 30
 
 rem Lightweight - JSON Util@0.8.0-1
 sf package install -p "04tP3000000tDMPIA2" -w 30
@@ -35,11 +35,11 @@ REM ----------------------------------------------------------------------------
 rem Lightweight - Apex Unit Test Util v2 (Unlocked)@2.5.0-2
 sf package install -p "04tP3000000rUpZIAU" -w 30
 
-REM Lightweight - Apex LWC Util@0.7.0-1 (Unlocked)
-sf package install --package "04tP3000000t94HIAQ" -w 30
+REM Lightweight - Apex LWC Util@0.8.0-1 (Unlocked)
+sf package install --package "04tP3000000wL2TIAU" -w 30
 
-rem Lightweight - REST Util (Unlocked)@0.12.0-1
-sf package install -p "04tP3000000tD6HIAU" -w 30
+rem Lightweight - REST Util (Unlocked)@0.13.0-1
+sf package install -p "04tP3000000wMkvIAE" -w 30
 
 rem Lightweight - JSON Util (Unlocked)@0.8.0-1
 sf package install -p "04tP3000000tDRFIA2" -w 30
@@ -69,8 +69,8 @@ sf org assign permset --name "Lightweight_Apex_Unit_Test_Util_v2"
 sf org assign permset --name "Lightweight_LWC_Util"
 sf org assign permset --name "Lightweight_JSON_Util"
 sf org assign permset --name "Lightweight_REST_Util"
-sf org assign permset --name "Lightweight_XML_Util"
-sf org assign permset --name "Lightweight_SOAP_Util"
+REM sf org assign permset --name "Lightweight_XML_Util"
+REM #sf org assign permset --name "Lightweight_SOAP_Util"
 
 REM OPTIONAL PACKAGES
 sf org assign permset --name "Lightweight_Auth_Provider_Util"
@@ -80,3 +80,4 @@ sf org assign permset --name "Lightweight_Salesforce_Auth_Provider"
 REM POST CODE DEPLOYMENT
 sf org assign permset --name "Lightweight_Data_Cloud_Util"
 sf org assign permset --name "Lightweight_Data_Cloud_Util_UI"
+

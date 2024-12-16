@@ -21,6 +21,7 @@ import getDcNamedCredentialOptions from "@salesforce/apex/DataCloudUtilLwcCtrl.g
 import getMtdConfigOptions         from "@salesforce/apex/DataCloudUtilLwcCtrl.getMtdConfigOptions";
 import getMetadataInfo             from "@salesforce/apex/DataCloudUtilLwcCtrl.getMetadataInfo";
 import getStreamingPlaceholder     from "@salesforce/apex/DataCloudUtilLwcCtrl.getStreamingPlaceholder";
+import getDeletePlaceholder        from "@salesforce/apex/DataCloudUtilLwcCtrl.getDeletePlaceholder";
 import sendDataStream              from "@salesforce/apex/DataCloudUtilLwcCtrl.sendDataStream";
 import testDataStream              from "@salesforce/apex/DataCloudUtilLwcCtrl.testDataStream";
 
@@ -29,6 +30,9 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
 
     // Loading indicator for the spinner
     loading = false;
+
+    // Indicator if we are running a delete or ingestion
+    isDelete = false;
 
     // Named Credentials picklist details / button indicators
     ncName;
@@ -62,6 +66,10 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         this.getCmTa().size   = {width : '100%', height: 365};
     }
 
+    get deleteButtonVariant(){
+        return this.isDelete ? 'destructive' : 'neutral';
+    }
+
     // Disabled when not loaded yet from apex
     get dcNcDisabled(){
         return !this.ncOptionsLoaded;
@@ -75,6 +83,16 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     // Disable buttons
     get actionButtonsDisabled(){
         return !this.mdtConfigSelected;
+    }
+
+    // Disable buttons, testing is disabled for deletes
+    get testButtonDisabled(){
+        return this.actionButtonsDisabled || this.isDelete;
+    }
+
+    // Disable buttons, refreshing is disabled for deletes
+    get refreshButtonDisabled(){
+        return this.actionButtonsDisabled || this.isDelete;
     }
 
     // Method to get the CodeMirror Textarea Child component
@@ -173,6 +191,25 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             this.loading = false;
         }
     }
+
+
+    handleGetDeletePlaceholder(){
+        try{
+            getDeletePlaceholder()
+                .then((apexResponse) => {
+                    this.getCmTa().value = apexResponse;
+                })
+                .catch((error) => {
+                    handleError(error);
+                })
+                .finally(()=>{
+                    this.loading = false;
+                });
+        }catch(error){
+            handleError(error);
+            this.loading = false;
+        }
+    }
     
 
     handleSendDataStream(){
@@ -181,7 +218,8 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
             sendDataStream(
                 { 
                     mdtConfigName : this.mdtConfigRecord,
-                    payload       : this.getCmTa().value
+                    payload       : this.getCmTa().value,
+                    isDelete      : this.isDelete
                 }
             )
             .then((apexResponse) => {
@@ -234,6 +272,23 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
         }
     }
 
+
+    handleChangeDelete(){
+        try{
+            
+            // Invert delete
+            this.isDelete = !this.isDelete;
+            
+            // pre-populate with example
+            if(this.isDelete){
+                this.handleGetDeletePlaceholder();
+            }else{
+                this.handleGetStreamingPlaceholder();
+            }
+        }catch(error){
+            handleError(error);
+        }
+    }
    
     /** **************************************************************************************************** **
      **                                        INPUT CHANGE HANDLERS                                         **
@@ -275,6 +330,10 @@ export default class DataCloudBulkIngestionUtil extends LightningElement {
     /** **************************************************************************************************** **
      **                                        CLICK BUTTON HANDLERS                                         **
      ** **************************************************************************************************** **/
+    handleClickDelete(){
+        this.handleChangeDelete();
+    }
+
     handleClickSend(){
         this.handleSendDataStream();
     }

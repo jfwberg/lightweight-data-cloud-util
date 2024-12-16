@@ -542,6 +542,72 @@ global with sharing class Dc {
         }
     }
 
+    
+    /** **************************************************************************************************** **
+     **                                GLOBAL STREAMING DELETE INGESTION METHODS                             **
+     ** **************************************************************************************************** **/
+    /**
+     * @description Method to stream delete up to 200 records from Data Cloud in near real-time
+     *              using a future method so it can be used with platform events
+     * @param  mdtConfigName The API name of the metadata configuration record
+     * @param  ids           A list of record ids
+     */
+    @future(callout=true)
+    global static void deleteRecordsFromDataCloudAsync(String mdtConfigName, String[] ids){
+        deleteRecordsFromDataCloud(mdtConfigName, ids);
+    }
+
+
+    /**
+     * @description Method to stream delete up to 200 records from Data Cloud in near real-time
+     * @param  mdtConfigName The API name of the metadata configuration record
+     * @param  ids           A list of record ids
+     */
+    global static void deleteRecordsFromDataCloud(String mdtConfigName, String[] ids){
+
+        // Stream the data with the generated payload
+        deleteDataFromDataCloud(
+            mdtConfigName,
+            createIngestDeletePayload(ids,false)
+        );
+    }
+
+
+    /**
+     * @description Method to stream delete up to 200 records from Data Cloud in near real-time
+     * @param  mdtConfigName The API name of the metadata configuration record
+     * @param  payload       The streaming JSON payload 
+     * @throws DataCloudUtilException In any unexpected event
+     */
+    global static void deleteDataFromDataCloud(String mdtConfigName, String payload){
+        try{
+            // Get all record info
+            Data_Cloud_Ingestion_API_Configuration__mdt config = getMetadataRecord(mdtConfigName);
+
+            // Create the ingestion API delete URL endpoint
+            String endpoint = String.format('/api/v1/ingest/sources/{0}/{1}',
+                new String[]{
+                    config.Ingestion_API_Connector_Name__c,
+                    config.Ingestion_API_Target_Object_Name__c
+                }
+            );
+
+            // Execute the call out for a specific named credential
+            utl.Rst callout = new utl.Rst(config.Named_Credential_Name__c, true)
+            .setHandleSfEndpoint(false)
+            .setEndpoint(endpoint)
+            .setMethod('DELETE')
+            .setBody(payload)
+            .call();
+
+            // For unit test assertions during a test copy the callout data
+            if(Test.isRunningTest()){testCallout = callout;}
+
+        }catch(Exception e){
+            throw new DataCloudUtilException(String.format(CALLOUT_EXCEPTION_MSG, new String[]{e.getMessage()}));
+        }
+    }
+
 
     /**
      * @description Method to create a mapping between sObject and Data Ingestion Object
@@ -640,6 +706,24 @@ global with sharing class Dc {
             // Add the data to the data items list
             data.get('data').add(dataItem);
         }
+
+        // return the JSON String
+        return prettyPrint ? JSON.serializePretty(data) : JSON.serialize(data);
+    }
+
+
+    /**
+     * @description Method to create an ingestion stream payload for a list of record ids
+     * @param  ids          List of unique record ids to be deleted
+     * @param  prettyPrint  Indicator if the payload should be serialized pretty
+     * @return A JSON String with an ingestion API delete payload format
+     */
+    global static String createIngestDeletePayload(String[] ids, Boolean prettyPrint){
+
+        // Create the base payload ({"ids" : [id1,id2,id3] })
+        Map<String,String[]> data = new Map<String,String[]>{
+            'ids' => ids
+        };
 
         // return the JSON String
         return prettyPrint ? JSON.serializePretty(data) : JSON.serialize(data);

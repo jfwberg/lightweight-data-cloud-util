@@ -26,7 +26,7 @@
                     variant="neutral"
                     label="Test" 
                     onclick={handleClickTest} 
-                    disabled={actionButtonsDisabled}
+                    disabled={testButtonDisabled}
                 ></lightning-button>
             
                 <lightning-button
@@ -43,6 +43,13 @@
                     icon-name="utility:refresh"
                     icon-position="right" 
                     onclick={handleClickRefresh} 
+                    disabled={refreshButtonDisabled}
+                ></lightning-button>
+
+                <lightning-button 
+                    variant={deleteButtonVariant}
+                    label="Delete" 
+                    onclick={handleClickDelete} 
                     disabled={actionButtonsDisabled}
                 ></lightning-button>
 
