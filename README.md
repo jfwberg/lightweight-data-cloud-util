@@ -54,13 +54,13 @@ This package is built to be used with a custom Data Cloud Auth Provider. The aut
 |GIT URL                  | https://github.com/jfwberg/lightweight-auth-provider-util |
 | | |
 |Name|Lightweight - Data Cloud Auth Provider|
-|Version|0.5.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000M6y1IAC*         |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000M6zdIAC*         |
+|Version|0.6.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP30000012U9VIAU*         |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP30000012TuzIAE*         |
 |GIT URL                  | https://github.com/jfwberg/lightweight-data-cloud-auth-provider |
 | | |
 |Name|Lightweight - Salesforce Auth Provider|
-|Version|0.4.0-1|
+|Version|0.3.0-1|
 |Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000MCLtIAO*         |
 |Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000MCNVIA4*         |
 |GIT URL                  | https://github.com/jfwberg/lightweight-salesforce-auth-provider |

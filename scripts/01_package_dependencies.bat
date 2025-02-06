@@ -17,8 +17,8 @@ REM ----------------- OPTIONAL BUT ADVICED -----------------
 rem Lightweight - Auth Provider Util v2@0.12.0-1
 sf package install -p "04tP3000000MVUzIAO" -w 30
 
-REM Lightweight - Data Cloud Auth Provider@0.5.0-1
-sf package install --package "04tP3000000M6y1IAC" -w 30
+REM Lightweight - Data Cloud Auth Provider@0.6.0-1
+sf package install --package "04tP30000012U9VIAU" -w 30
 
 REM Lightweight - Salesforce Auth Provider@0.3.0-1
 sf package install --package "04tP3000000MCLtIAO" -w 30
@@ -43,8 +43,8 @@ REM ----------------- OPTIONAL BUT ADVICED -----------------
 rem Lightweight - Auth Provider Util v2 (Unlocked)@0.12.0-1
 sf package install -p "04tP3000000MW1FIAW" -w 30
 
-REM Lightweight - Data Cloud Auth Provider (Unlocked)@0.5.0-1
-sf package install --package "04tP3000000M6zdIAC" -w 30
+REM Lightweight - Data Cloud Auth Provider (Unlocked)@0.6.0-1
+sf package install --package "04tP30000012TuzIAE" -w 30
 
 REM Lightweight - Salesforce Auth Provider (Unlocked)@0.3.0-1
 sf package install --package "04tP3000000MCNVIA4" -w 30
