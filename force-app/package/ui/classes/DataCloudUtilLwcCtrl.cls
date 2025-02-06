@@ -55,9 +55,9 @@ public with sharing class DataCloudUtilLwcCtrl {
         'DECIMAL'                       => 'number',
         'NUMBER'                        => 'number',
         'INT'                           => 'number',
-        'INTEGER'                       => 'number'
+        'INTEGER'                       => 'number',
+        'BOOLEAN'                       => 'boolean'
     };
-
 
     // Mapping between data cloud query types and lightning datatable types
     private final static Map<Schema.DisplayType,String> FIELD_TYPE_DATA_CLOUD_DATA_TYPE_MAP = new Map<Schema.DisplayType,String>{
@@ -90,9 +90,6 @@ public with sharing class DataCloudUtilLwcCtrl {
         Schema.DisplayType.TIME                      => 'textField',
         Schema.DisplayType.URL                       => 'urlField'
    };
-
-
-    
 
 
     /** **************************************************************************************************** **
@@ -631,7 +628,7 @@ public with sharing class DataCloudUtilLwcCtrl {
                 utl.Ldt.Col col = new utl.Ldt.Col(
                         fmdt.name, 
                         apiVersion == 'v1' ? fmdt.name : String.valueOf(fmdt.placeInOrder),
-                        DATA_CLOUD_DATA_TYPE_LDT_DATA_TYPE_MAP.get(fmdt.type)
+                        DATA_CLOUD_DATA_TYPE_LDT_DATA_TYPE_MAP.get(fmdt.type) ?? 'text'
                     )
                     .setInitialWidth(fmdt.name.length() < 10 ? 120 : fmdt.name.length() * 12)
                 ;
@@ -1223,7 +1220,7 @@ public with sharing class DataCloudUtilLwcCtrl {
                 return '078-' + Integer.valueof((Math.random() * 10000));
             }
             when 'booleanField'{
-                return (Math.mod(Integer.valueof((Math.random() * 10000)), 2) == 0) ? 'false' : 'true';
+                return (Math.mod(Integer.valueof((Math.random() * 10000)), 2) == 0) ? false : true;
             }
             when 'percentField' {
                 return Decimal.valueof((Math.random() * 100000)).setScale(2);

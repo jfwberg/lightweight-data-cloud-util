@@ -18,7 +18,7 @@
 
 # Comment when deploying the connection
 **/force-app/connection/**
-**/layouts/**
+#**/layouts/**
 #**/customMetadata/**
 **/namedCredentials/**
 **/externalCredentials/**

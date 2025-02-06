@@ -26,9 +26,9 @@ If you use the *managed package* you need to installed the managed package depen
 | Info | Value |
 |---|---|
 |Name|Lightweight - LWC Util|
-|Version|0.8.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000wL0rIAE* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000wL2TIAU* |
+|Version|0.9.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP30000012SvhIAE* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP30000012SxJIAU* |
 |Github URL | https://github.com/jfwberg/lightweight-lwc-util
 | | |
 |Name|Lightweight - Apex REST Util|
@@ -70,9 +70,9 @@ This package is built to be used with a custom Data Cloud Auth Provider. The aut
 | Info | Value |
 |---|---|
 |Name|Lightweight - Apex Data Cloud Util|
-|Version|0.10.0-1|
-|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP3000000wMzRIAU* |
-|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP3000000wN13IAE* |
+|Version|0.11.0-1|
+|Managed Installation URL | */packaging/installPackage.apexp?p0=04tP30000012T5NIAU* |
+|Unlocked Installation URL| */packaging/installPackage.apexp?p0=04tP30000012T6zIAE* |
 
 ## Custom Metadata Configuration
 In order to callout to the Data Cloud Ingestion API you will need to create a configuration record for each Ingestion API Connector you want to connect to.
